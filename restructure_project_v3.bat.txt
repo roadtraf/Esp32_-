@@ -1,0 +1,362 @@
+@echo off
+chcp 65001 >nul
+setlocal enabledelayedexpansion
+
+echo.
+echo ╔══════════════════════════════════════════════════════════════╗
+echo ║   ESP32_VacuumControl - PlatformIO 구조 정리 스크립트 v3   ║
+echo ║   src/ include/ test/ images/ documents/ 5폴더 구조        ║
+echo ╚══════════════════════════════════════════════════════════════╝
+echo.
+
+:: ──────────────────────────────────────────────
+:: 0. Git 설치 확인
+:: ──────────────────────────────────────────────
+where git >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Git이 설치되어 있지 않습니다.
+    echo         https://git-scm.com/download/win 에서 설치 후 다시 실행하세요.
+    pause
+    exit /b 1
+)
+
+:: ──────────────────────────────────────────────
+:: 1. 저장소 클론
+:: ──────────────────────────────────────────────
+echo [1/8] GitHub 저장소 클론 중...
+if exist "ESP32_VacuumControl" (
+    echo      이미 폴더가 존재합니다. 기존 폴더를 사용합니다.
+) else (
+    git clone https://github.com/roadtraf/ESP32_VacuumControl.git
+    if errorlevel 1 (
+        echo [ERROR] 클론 실패. 인터넷 연결 및 저장소 URL을 확인하세요.
+        pause
+        exit /b 1
+    )
+)
+
+cd ESP32_VacuumControl
+echo      완료: %CD%
+echo.
+
+:: ──────────────────────────────────────────────
+:: 2. 폴더 생성 (5개)
+:: ──────────────────────────────────────────────
+echo [2/8] 폴더 5개 생성 중...
+if not exist "src"       mkdir src
+if not exist "include"   mkdir include
+if not exist "test"      mkdir test
+if not exist "images"    mkdir images
+if not exist "documents" mkdir documents
+
+:: Git은 빈 폴더를 추적하지 않으므로 .gitkeep 생성
+if not exist "images\.gitkeep"    echo.> images\.gitkeep
+if not exist "documents\.gitkeep" echo.> documents\.gitkeep
+
+git add images\.gitkeep documents\.gitkeep >nul 2>&1
+
+echo      생성 완료:
+echo        📁 src/
+echo        📁 include/
+echo        📁 test/
+echo        📁 images/       ^(.gitkeep 추가^)
+echo        📁 documents/    ^(.gitkeep 추가^)
+echo.
+
+:: ──────────────────────────────────────────────
+:: 3. .h / .hpp 파일 → include/ 이동
+:: ──────────────────────────────────────────────
+echo [3/8] 헤더 파일(.h/.hpp) → include/ 이동 중...
+set H_COUNT=0
+
+for %%f in (*.h) do (
+    git mv "%%f" "include/%%f" 2>nul
+    if not errorlevel 1 (
+        set /a H_COUNT+=1
+        echo      [include] %%f
+    )
+)
+
+for %%f in (*.hpp) do (
+    git mv "%%f" "include/%%f" 2>nul
+    if not errorlevel 1 (
+        set /a H_COUNT+=1
+        echo      [include] %%f
+    )
+)
+
+echo      완료: !H_COUNT!개 이동
+echo.
+
+:: ──────────────────────────────────────────────
+:: 4. main.cpp → src/ 이동
+:: ──────────────────────────────────────────────
+echo [4/8] main.cpp → src/ 이동 중...
+if exist "main.cpp" (
+    git mv main.cpp src/main.cpp
+    echo      [src] main.cpp
+) else (
+    echo      [WARN] main.cpp 없음 - 건너뜀
+)
+echo.
+
+:: ──────────────────────────────────────────────
+:: 5. 테스트 .cpp → test/ 이동
+::    기준: Test_*.cpp / *_Test.cpp / SystemTest*.cpp / AdvancedAnalyzer_Test.cpp
+:: ──────────────────────────────────────────────
+echo [5/8] 테스트 파일 → test/ 이동 중...
+set TEST_COUNT=0
+
+for %%f in (*.cpp) do (
+    set FNAME=%%f
+    set IS_TEST=0
+
+    echo !FNAME! | findstr /i "^Test_"              >nul 2>&1
+    if not errorlevel 1 set IS_TEST=1
+
+    echo !FNAME! | findstr /i "_Test\.cpp$"         >nul 2>&1
+    if not errorlevel 1 set IS_TEST=1
+
+    echo !FNAME! | findstr /i "^SystemTest"         >nul 2>&1
+    if not errorlevel 1 set IS_TEST=1
+
+    echo !FNAME! | findstr /i "^AdvancedAnalyzer_Test" >nul 2>&1
+    if not errorlevel 1 set IS_TEST=1
+
+    if !IS_TEST!==1 (
+        git mv "%%f" "test/%%f" 2>nul
+        if not errorlevel 1 (
+            set /a TEST_COUNT+=1
+            echo      [test] %%f
+        )
+    )
+)
+
+echo      완료: !TEST_COUNT!개 이동
+echo.
+
+:: ──────────────────────────────────────────────
+:: 6. 나머지 .cpp → src/ 이동
+:: ──────────────────────────────────────────────
+echo [6/8] 소스 파일(.cpp) → src/ 이동 중...
+set CPP_COUNT=0
+
+for %%f in (*.cpp) do (
+    git mv "%%f" "src/%%f" 2>nul
+    if not errorlevel 1 (
+        set /a CPP_COUNT+=1
+        echo      [src] %%f
+    )
+)
+
+echo      완료: !CPP_COUNT!개 이동
+echo.
+
+:: ──────────────────────────────────────────────
+:: 7. platformio.ini 생성
+::    -I include / -I src 로 경로 통합
+::    → 모든 .cpp에서 #include "Config.h" 형태로 영구 사용
+:: ──────────────────────────────────────────────
+echo [7/8] platformio.ini 업데이트 중...
+copy platformio.ini platformio.ini.bak >nul 2>&1
+echo      백업: platformio.ini.bak
+
+(
+echo ; ================================================================
+echo ; platformio.ini - ESP32-S3 진공 제어 시스템 v3.9.5
+echo ; ================================================================
+echo ; 📁 프로젝트 구조:
+echo ;   src/          → 소스파일 ^(.cpp^)
+echo ;   include/      → 헤더파일 ^(.h / .hpp^)
+echo ;   test/         → 테스트파일 ^(Test_*.cpp / *_Test.cpp^)
+echo ;   images/       → 이미지 리소스
+echo ;   documents/    → 문서 ^(보고서, 회로도 등^)
+echo ;
+echo ; ✅ include 경로 원칙:
+echo ;   -I include + -I src 설정으로
+echo ;   모든 .cpp에서 #include "Config.h" 형태로 통일
+echo ;   → 폴더 구조 변경 시에도 코드 수정 불필요
+echo ; ================================================================
+echo.
+echo [platformio]
+echo default_envs = esp32-s3-hardened
+echo src_dir      = src
+echo include_dir  = include
+echo test_dir     = test
+echo.
+echo [common]
+echo platform  = espressif32
+echo board     = esp32-s3-devkitc-1
+echo framework = arduino
+echo lib_deps  =
+echo     lovyan03/LovyanGFX @ ^1.1.9
+echo     knolleary/PubSubClient @ ^2.8
+echo     bblanchon/ArduinoJson @ ^6.21.3
+echo     mathworks/ThingSpeak @ ^2.0.0
+echo     milesburton/DallasTemperature @ ^3.11.0
+echo     paulstoffregen/OneWire @ ^2.3.7
+echo     arduino-libraries/NTPClient @ ^3.2.1
+echo     dfrobot/DFRobotDFPlayerMini @ ^1.0.6
+echo.
+echo ; ── 공통 빌드 플래그 ──
+echo build_flags_common =
+echo     ; ── include 경로 통합 ^(핵심^) ──
+echo     -I include
+echo     -I src
+echo     ; ── 시스템 설정 ──
+echo     -DCORE_DEBUG_LEVEL=0
+echo     -DBOARD_HAS_PSRAM
+echo     -DARDUINO_USB_CDC_ON_BOOT=1
+echo     -DARDUINO_USB_MODE=1
+echo     -DENABLE_THINGSPEAK=1
+echo     -DENABLE_PREDICTIVE_MAINTENANCE=1
+echo     -DHW_HARDENED=1
+echo     -DPSRAM_SAFE_MODE=1
+echo     -DCONFIG_ESP_TASK_WDT_TIMEOUT_S=15
+echo     ; ── Brownout ^(esp_brownout_init 대체^) ──
+echo     -DCONFIG_ESP_BROWNOUT_DET=y
+echo     -DCONFIG_ESP_BROWNOUT_DET_LVL_SEL_0=y
+echo.
+echo upload_speed  = 921600
+echo monitor_speed = 115200
+echo monitor_filters =
+echo     esp32_exception_decoder
+echo     time
+echo.
+echo ; ================================================================
+echo ; [Release] 릴리즈 빌드
+echo ; ================================================================
+echo [env:esp32-s3-hardened]
+echo platform        = ${common.platform}
+echo board           = ${common.board}
+echo framework       = ${common.framework}
+echo lib_deps        = ${common.lib_deps}
+echo upload_speed    = ${common.upload_speed}
+echo monitor_speed   = ${common.monitor_speed}
+echo monitor_filters = ${common.monitor_filters}
+echo build_flags     =
+echo     ${common.build_flags_common}
+echo     -O2
+echo     -DRELEASE_BUILD
+echo     -DHW_HARDENED_RELEASE=1
+echo board_build.partitions          = partitions_16mb.csv
+echo board_build.filesystem          = spiffs
+echo board_build.arduino.memory_type = qio_qspi
+echo.
+echo ; ================================================================
+echo ; [Debug] 디버그 빌드
+echo ; ================================================================
+echo [env:esp32-s3-hardened-debug]
+echo platform        = ${common.platform}
+echo board           = ${common.board}
+echo framework       = ${common.framework}
+echo lib_deps        = ${common.lib_deps}
+echo upload_speed    = ${common.upload_speed}
+echo monitor_speed   = ${common.monitor_speed}
+echo monitor_filters = ${common.monitor_filters}
+echo build_flags     =
+echo     ${common.build_flags_common}
+echo     -DCORE_DEBUG_LEVEL=5
+echo     -DDEBUG_MODE=1
+echo     -DHW_HARDENED_DEBUG=1
+echo     -DSPI_BUS_DEBUG=1
+echo     -DI2C_RECOVERY_DEBUG=1
+echo     -DDS18B20_DEBUG=1
+echo     -DHEAP_MONITOR_VERBOSE=1
+echo     -Og
+echo     -g
+echo board_build.partitions          = partitions_16mb.csv
+echo board_build.filesystem          = spiffs
+echo board_build.arduino.memory_type = qio_qspi
+) > platformio.ini
+
+git add platformio.ini
+echo      완료: platformio.ini 업데이트
+echo.
+
+:: ──────────────────────────────────────────────
+:: 8. partitions_16mb.csv 생성
+:: ──────────────────────────────────────────────
+echo [8/8] partitions_16mb.csv 확인/생성 중...
+if not exist "partitions_16mb.csv" (
+    (
+    echo # Name,    Type, SubType,  Offset,   Size,    Flags
+    echo nvs,       data, nvs,      0x9000,   0x5000,
+    echo otadata,   data, ota,      0xe000,   0x2000,
+    echo app0,      app,  ota_0,    0x10000,  0x650000,
+    echo app1,      app,  ota_1,    0x660000, 0x650000,
+    echo spiffs,    data, spiffs,   0xCB0000, 0x340000,
+    echo coredump,  data, coredump, 0xFF0000, 0x10000,
+    ) > partitions_16mb.csv
+    git add partitions_16mb.csv
+    echo      생성 완료: partitions_16mb.csv
+) else (
+    echo      이미 존재: 건너뜀
+)
+echo.
+
+:: ──────────────────────────────────────────────
+:: Git 커밋 & 푸시
+:: ──────────────────────────────────────────────
+echo ────────────────────────────────────────────────────────────
+echo  GitHub에 변경사항 푸시할까요?
+echo  (N 선택 시 로컬 커밋만 하고 종료)
+echo ────────────────────────────────────────────────────────────
+set /p PUSH_YN=  푸시하려면 Y, 로컬만이면 N 입력: 
+
+git add -A
+git commit -m "refactor: 5폴더 구조 정리 (src/include/test/images/documents) + include 경로 통합"
+
+if /i "!PUSH_YN!"=="Y" (
+    echo.
+    echo  GitHub 푸시 중...
+    git push origin main
+    if errorlevel 1 (
+        echo [ERROR] 푸시 실패. GitHub 로그인 상태를 확인하세요.
+        echo         git push origin main 을 수동으로 실행하세요.
+    ) else (
+        echo  푸시 완료!
+    )
+) else (
+    echo  로컬 커밋 완료. 나중에 아래 명령으로 푸시하세요:
+    echo    git push origin main
+)
+
+:: ──────────────────────────────────────────────
+:: 완료 메시지
+:: ──────────────────────────────────────────────
+echo.
+echo ╔══════════════════════════════════════════════════════════════╗
+echo ║                    구조 정리 완료!                           ║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  📁 src/         → main.cpp + 모든 .cpp 소스파일           ║
+echo ║  📁 include/     → 모든 .h / .hpp 헤더파일                 ║
+echo ║  📁 test/        → Test_*.cpp / *_Test.cpp 테스트파일      ║
+echo ║  📁 images/      → 이미지 리소스 보관                      ║
+echo ║  📁 documents/   → 보고서 / 회로도 / 문서 보관             ║
+echo ║  📄 platformio.ini    → 경로 통합 설정 완료                ║
+echo ║  📄 partitions_16mb.csv → 파티션 파일 완료                 ║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  ✅ include 경로 통합 완료:                                 ║
+echo ║     모든 .cpp 파일에서 경로 없이 사용 가능                  ║
+echo ║     #include "Config.h"       ← 이렇게만 쓰면 됨           ║
+echo ║     #include "UIManager.h"    ← 폴더 구조 바뀌어도 OK      ║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  ⚠️  남은 수동 작업 4가지 ^(VS Code에서 진행^):              ║
+echo ║                                                              ║
+echo ║  1. Config.h — 중복 정의 3종 제거                           ║
+echo ║     ^(ErrorSeverity / Statistics / ErrorInfo 상단 버전^)     ║
+echo ║                                                              ║
+echo ║  2. main.cpp — 누락 헤더 3종 수정                           ║
+echo ║     VoiceAlert_Hardened.h    → VoiceAlert.h 또는 삭제      ║
+echo ║     EnhancedWatchdog_Hardened.h → EnhancedWatchdog.h       ║
+echo ║     OTA_Hardened.h           → 삭제                         ║
+echo ║                                                              ║
+echo ║  3. main.cpp — LEDC 전체 치환 ^(Ctrl+H^)                    ║
+echo ║     LEDC_HIGH_SPEED_MODE → LEDC_LOW_SPEED_MODE             ║
+echo ║                                                              ║
+echo ║  4. main.cpp setup^(^) — 1줄 삭제                           ║
+echo ║     esp_brownout_init^(^);  ← 이 줄 삭제                    ║
+echo ╚══════════════════════════════════════════════════════════════╝
+echo.
+pause

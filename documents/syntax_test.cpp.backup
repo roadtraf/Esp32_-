@@ -1,0 +1,105 @@
+// 구문 검사 테스트 파일
+#define ARDUINO 1
+#define ESP32 1
+
+// 필수 타입 정의
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef signed char int8_t;
+typedef signed short int16_t;
+typedef signed int int32_t;
+
+// Arduino 기본 함수들
+class String {
+public:
+    String(const char* s = "") {}
+    const char* c_str() const { return ""; }
+};
+
+class __FlashStringHelper;
+#define F(string_literal) (reinterpret_cast<const __FlashStringHelper *>(string_literal))
+
+void delay(unsigned long ms) {}
+unsigned long millis() { return 0; }
+
+// Config.h 필수 정의들
+#define ENABLE_PREDICTIVE_MAINTENANCE
+#define ENABLE_SMART_ALERTS
+#define ENABLE_VOICE_ALERTS
+#define ENABLE_ADVANCED_ANALYSIS
+
+// ScreenType enum 테스트
+namespace ConfigTest {
+    enum ScreenType {
+      SCREEN_MAIN,
+      SCREEN_SETTINGS,
+      SCREEN_TIMING_SETUP,
+      SCREEN_PID_SETUP,
+      SCREEN_STATISTICS,
+      SCREEN_ALARM,
+      SCREEN_ABOUT,
+      SCREEN_HELP,
+      SCREEN_CALIBRATION,
+      SCREEN_STATE_DIAGRAM,
+      SCREEN_TREND_GRAPH,
+      
+      #ifdef ENABLE_PREDICTIVE_MAINTENANCE
+      SCREEN_HEALTH,
+      SCREEN_HEALTH_TREND,
+      #endif
+          
+      #ifdef ENABLE_SMART_ALERTS
+      SCREEN_SMART_ALERT_CONFIG,
+      #endif  
+          
+      #ifdef ENABLE_VOICE_ALERTS
+      SCREEN_VOICE_SETTINGS,
+      #endif
+        
+      #ifdef ENABLE_ADVANCED_ANALYSIS
+      SCREEN_ADVANCED_ANALYSIS,
+      SCREEN_FAILURE_PREDICTION,
+      SCREEN_COMPONENT_LIFE,
+      SCREEN_OPTIMIZATION,
+      SCREEN_COMPREHENSIVE_REPORT,
+      SCREEN_COST_ANALYSIS,
+      #endif
+    };
+}
+
+// About 화면 구조체 테스트
+namespace AboutTest {
+    struct InfoItem {
+        const char* label;
+        char value[32];
+        uint16_t color;
+    };
+    
+    void test() {
+        InfoItem items[6];
+        
+        // 수정된 방식: 포인터 직접 할당
+        items[0].label = "MCU";
+        items[1].label = "Free Heap";
+        items[2].label = "Uptime";
+        items[3].label = "WiFi";
+        items[4].label = "MQTT";
+        items[5].label = "센서";
+        
+        // value는 strcpy 가능
+        // strcpy(items[0].value, "ESP32-S3");
+    }
+}
+
+int main() {
+    // enum 테스트
+    ConfigTest::ScreenType screen = ConfigTest::SCREEN_MAIN;
+    screen = ConfigTest::SCREEN_HEALTH;
+    screen = ConfigTest::SCREEN_VOICE_SETTINGS;
+    
+    // About 테스트
+    AboutTest::test();
+    
+    return 0;
+}

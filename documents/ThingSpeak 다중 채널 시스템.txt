@@ -1,0 +1,379 @@
+좋습니다! ThingSpeak 다중 채널 시스템에 대해 자세히 설명드리겠습니다.
+📊 ThingSpeak 다중 채널 시스템
+🎯 개념
+단일 채널 (v3.7):
+1개 채널에 모든 데이터를 넣음
+최대 8개 필드만 사용 가능
+데이터 구분이 어려움
+다중 채널 (v3.8):
+3개 채널로 데이터 분리
+총 24개 필드 사용 가능 (8×3)
+목적별로 데이터 구분
+📁 3개 채널 구조
+채널 1: 기본 데이터 (Main Channel)
+채널 ID: 123456
+목적: 실시간 센서 데이터
+
+필드 1: 압력 (Pressure)             -80.5 kPa
+필드 2: 온도 (Temperature)          35.2 °C
+필드 3: 전류 (Current)              3.8 A
+필드 4: 건강도 (Health Score)       85.5 %
+필드 5: 펌프 효율 (Pump Efficiency)  92.0 %
+필드 6: 작업 성공률 (Success Rate)   98.5 %
+필드 7: 작동 시간 (Uptime)          12345 초
+필드 8: 에러 카운트 (Error Count)    3 개
+
+업데이트: 15초마다 (ThingSpeak 무료 제한)
+용도: 실시간 모니터링, 대시보드
+채널 2: 추세 데이터 (Trend Channel)
+채널 ID: 234567
+목적: 분석 및 예측
+
+필드 1: 24시간 평균 (24h Avg)       86.2 %
+필드 2: 7일 평균 (7d Avg)           84.8 %
+필드 3: 추세 (Trend)                -0.15 %/day
+필드 4: 변동성 (Volatility)         2.34
+필드 5: 24시간 예측 (24h Predict)    85.0 %
+필드 6: 7일 예측 (7d Predict)        82.5 %
+필드 7: 유지보수 예상일 (Days)       45 일
+필드 8: 저하율 (Degradation)        0.05 %/hour
+
+업데이트: 1시간마다
+용도: 장기 추세 분석, 예측
+채널 3: 알림 데이터 (Alert Channel)
+채널 ID: 345678
+목적: 알림 및 이벤트 추적
+
+필드 1: 알림 레벨 (Alert Level)     2 (0-4)
+필드 2: 총 알림 수 (Total Alerts)   127 개
+필드 3: 이메일 발송 (Emails Sent)   45 개
+필드 4: SMS 발송 (SMS Sent)         12 개
+필드 5: 에러 카운트 (Errors)        8 개
+필드 6: 경고 카운트 (Warnings)      19 개
+필드 7: 정보 카운트 (Info)          96 개
+필드 8: 마지막 알림 시간 (Timestamp) 1707456789
+
+업데이트: 알림 발생 시
+용도: 알림 이력, 통계
+💻 코드 구현
+CloudManager.h
+class CloudManager {
+public:
+    CloudManager();
+    bool begin();
+    
+    // ──── v3.7: 단일 채널 (호환성) ────
+    void uploadData();  // 기본 채널만
+    
+    // ──── v3.8: 다중 채널 ────
+    void uploadExtendedData();     // 채널 1: 기본 데이터
+    void uploadTrendData();        // 채널 2: 추세 데이터
+    void uploadAlertData();        // 채널 3: 알림 데이터
+    void uploadAll();              // 모든 채널 한번에
+    
+    bool shouldUpdate();  // 15초 간격 체크
+    
+private:
+    // 채널 정보
+    unsigned long channelMain;      // 채널 1
+    const char* writeKeyMain;
+    
+    unsigned long channelTrend;     // 채널 2
+    const char* writeKeyTrend;
+    
+    unsigned long channelAlert;     // 채널 3
+    const char* writeKeyAlert;
+    
+    unsigned long lastUpdate;
+    const unsigned long updateInterval = 15000;  // 15초
+};
+CloudManager.cpp - 채널 1 (기본 데이터)
+void CloudManager::uploadExtendedData() {
+    if (!shouldUpdate()) return;
+    
+    // 채널 1: 기본 센서 데이터
+    ThingSpeak.setField(1, sensorData.pressure);
+    ThingSpeak.setField(2, sensorData.temperature);
+    ThingSpeak.setField(3, sensorData.current);
+    ThingSpeak.setField(4, healthMonitor.getHealthScore());
+    ThingSpeak.setField(5, healthMonitor.getPumpEfficiency());
+    ThingSpeak.setField(6, getSuccessRate());
+    ThingSpeak.setField(7, millis() / 1000);  // 작동 시간 (초)
+    ThingSpeak.setField(8, errorCount);
+    
+    int result = ThingSpeak.writeFields(channelMain, writeKeyMain);
+    
+    if (result == 200) {
+        Serial.println("[CloudManager] 채널 1 업로드 성공");
+    } else {
+        Serial.printf("[CloudManager] 채널 1 업로드 실패: %d\n", result);
+    }
+    
+    lastUpdate = millis();
+}
+CloudManager.cpp - 채널 2 (추세 데이터)
+void CloudManager::uploadTrendData() {
+    #ifdef ENABLE_DATA_LOGGING
+    
+    // DataLogger에서 추세 데이터 가져오기
+    TrendStatistics trend = dataLogger.getDailyTrend();
+    
+    // 채널 2: 추세 분석 데이터
+    ThingSpeak.setField(1, trend.avg_24h);
+    ThingSpeak.setField(2, trend.avg_7d);
+    ThingSpeak.setField(3, trend.trend);
+    ThingSpeak.setField(4, trend.volatility);
+    ThingSpeak.setField(5, dataLogger.predictHealthScore(24));   // 24시간 후
+    ThingSpeak.setField(6, dataLogger.predictHealthScore(168));  // 7일 후
+    ThingSpeak.setField(7, dataLogger.estimateDaysToMaintenance());
+    ThingSpeak.setField(8, advancedAnalyzer.calculateDegradationRate());
+    
+    int result = ThingSpeak.writeFields(channelTrend, writeKeyTrend);
+    
+    if (result == 200) {
+        Serial.println("[CloudManager] 채널 2 업로드 성공");
+    } else {
+        Serial.printf("[CloudManager] 채널 2 업로드 실패: %d\n", result);
+    }
+    
+    #endif
+}
+CloudManager.cpp - 채널 3 (알림 데이터)
+void CloudManager::uploadAlertData() {
+    #ifdef ENABLE_SMART_ALERTS
+    
+    // SmartAlert에서 통계 가져오기
+    MaintenanceLevel level = healthMonitor.getMaintenanceLevel();
+    
+    // 채널 3: 알림 통계
+    ThingSpeak.setField(1, (int)level);  // 0-4
+    ThingSpeak.setField(2, smartAlert.getTotalAlertsSent());
+    ThingSpeak.setField(3, smartAlert.getEmailsSent());
+    ThingSpeak.setField(4, smartAlert.getSMSSent());
+    ThingSpeak.setField(5, getErrorCount());
+    ThingSpeak.setField(6, getWarningCount());
+    ThingSpeak.setField(7, getInfoCount());
+    ThingSpeak.setField(8, time(nullptr));  // Unix timestamp
+    
+    int result = ThingSpeak.writeFields(channelAlert, writeKeyAlert);
+    
+    if (result == 200) {
+        Serial.println("[CloudManager] 채널 3 업로드 성공");
+    } else {
+        Serial.printf("[CloudManager] 채널 3 업로드 실패: %d\n", result);
+    }
+    
+    #endif
+}
+CloudManager.cpp - 모든 채널 업로드
+void CloudManager::uploadAll() {
+    if (!shouldUpdate()) return;
+    
+    Serial.println("[CloudManager] 모든 채널 업로드 시작...");
+    
+    // 채널 1: 기본 데이터
+    uploadExtendedData();
+    delay(1000);  // ThingSpeak 요청 간격 (최소 1초)
+    
+    // 채널 2: 추세 데이터 (1시간마다)
+    static unsigned long lastTrendUpdate = 0;
+    if (millis() - lastTrendUpdate > 3600000) {  // 1시간
+        uploadTrendData();
+        lastTrendUpdate = millis();
+        delay(1000);
+    }
+    
+    // 채널 3: 알림 데이터 (알림 발생 시 또는 10분마다)
+    static unsigned long lastAlertUpdate = 0;
+    if (millis() - lastAlertUpdate > 600000) {  // 10분
+        uploadAlertData();
+        lastAlertUpdate = millis();
+    }
+    
+    Serial.println("[CloudManager] 업로드 완료");
+}
+🔧 Config.h 설정
+// ════════════════════════════════════════════════════════════
+//  ThingSpeak 설정 (v3.8 다중 채널)
+// ════════════════════════════════════════════════════════════
+
+#define ENABLE_THINGSPEAK
+
+// ──── 채널 1: 기본 데이터 (필수) ────
+#define THINGSPEAK_CHANNEL_MAIN     123456
+#define THINGSPEAK_WRITE_KEY_MAIN   "ABC123XYZ789"
+
+// ──── 채널 2: 추세 데이터 (선택) ────
+#define THINGSPEAK_CHANNEL_TREND    234567
+#define THINGSPEAK_WRITE_KEY_TREND  "DEF456UVW012"
+
+// ──── 채널 3: 알림 데이터 (선택) ────
+#define THINGSPEAK_CHANNEL_ALERT    345678
+#define THINGSPEAK_WRITE_KEY_ALERT  "GHI789RST345"
+🌐 ThingSpeak 채널 생성
+채널 1 생성 (기본 데이터)
+1. ThingSpeak 로그인
+2. Channels → New Channel
+3. 채널 정보:
+   - Name: "Vacuum System - Main"
+   - Description: "Real-time sensor data"
+   
+4. 필드 설정:
+   Field 1: Pressure (kPa)
+   Field 2: Temperature (°C)
+   Field 3: Current (A)
+   Field 4: Health Score (%)
+   Field 5: Pump Efficiency (%)
+   Field 6: Success Rate (%)
+   Field 7: Uptime (seconds)
+   Field 8: Error Count
+
+5. Save Channel
+6. API Keys 탭에서 Write API Key 복사
+채널 2 생성 (추세 데이터)
+1. Channels → New Channel
+2. 채널 정보:
+   - Name: "Vacuum System - Trend"
+   - Description: "Trend analysis and prediction"
+   
+3. 필드 설정:
+   Field 1: 24h Average (%)
+   Field 2: 7d Average (%)
+   Field 3: Trend (%/day)
+   Field 4: Volatility
+   Field 5: 24h Prediction (%)
+   Field 6: 7d Prediction (%)
+   Field 7: Days to Maintenance
+   Field 8: Degradation Rate (%/hour)
+
+4. Save Channel
+5. Write API Key 복사
+채널 3 생성 (알림 데이터)
+1. Channels → New Channel
+2. 채널 정보:
+   - Name: "Vacuum System - Alerts"
+   - Description: "Alert statistics and events"
+   
+3. 필드 설정:
+   Field 1: Alert Level (0-4)
+   Field 2: Total Alerts
+   Field 3: Emails Sent
+   Field 4: SMS Sent
+   Field 5: Error Count
+   Field 6: Warning Count
+   Field 7: Info Count
+   Field 8: Last Alert Time
+
+4. Save Channel
+5. Write API Key 복사
+📊 대시보드 예시
+채널 1 대시보드
+┌─────────────────────────────────────────┐
+│ Vacuum System - Real-time Monitor      │
+├─────────────────────────────────────────┤
+│                                         │
+│  [Pressure Chart - 24h]                 │
+│   -80 kPa ──────────────────────        │
+│                                         │
+│  [Temperature Gauge]                    │
+│         35.2°C                          │
+│                                         │
+│  [Health Score]                         │
+│   ████████████░░░ 85.5%                 │
+│                                         │
+└─────────────────────────────────────────┘
+채널 2 대시보드
+┌─────────────────────────────────────────┐
+│ Vacuum System - Trend Analysis         │
+├─────────────────────────────────────────┤
+│                                         │
+│  [7-Day Trend]                          │
+│   90% ┐                                 │
+│   85% ├────╲                            │
+│   80% │     ╲____                       │
+│       └──────────────→                  │
+│                                         │
+│  [Prediction]                           │
+│   24h: 85.0%  7d: 82.5%                 │
+│                                         │
+│  [Maintenance]                          │
+│   Estimated: 45 days                    │
+│                                         │
+└─────────────────────────────────────────┘
+채널 3 대시보드
+┌─────────────────────────────────────────┐
+│ Vacuum System - Alert Statistics       │
+├─────────────────────────────────────────┤
+│                                         │
+│  [Alert Distribution]                   │
+│   Errors:   █████ 8                     │
+│   Warnings: ██████████ 19               │
+│   Info:     ████████████████████ 96     │
+│                                         │
+│  [Communication]                        │
+│   Emails: 45  SMS: 12                   │
+│                                         │
+│  [Current Level]                        │
+│   ⚠️  WARNING (Level 2)                 │
+│                                         │
+└─────────────────────────────────────────┘
+💡 왜 3개 채널로 분리?
+장점
+데이터 구분 명확
+실시간 vs 분석 vs 알림
+각 채널마다 다른 업데이트 주기
+목적별 대시보드 구성
+업데이트 주기 최적화
+채널 1: 15초 (실시간)
+채널 2: 1시간 (분석)
+채널 3: 이벤트 발생 시
+무료 한도 최대 활용
+채널당 8개 필드 × 3 = 24개 필드
+각 채널 독립적 업데이트
+효율적인 데이터 관리
+시각화 편의성
+실시간 모니터링 (채널 1)
+장기 추세 분석 (채널 2)
+알림 대시보드 (채널 3)
+🎯 사용 예시
+main.cpp
+void loop() {
+    // ... 기본 루프 ...
+    
+    #ifdef ENABLE_THINGSPEAK
+    
+    // 매 루프마다 (15초 간격은 자동 체크)
+    cloudManager.uploadExtendedData();  // 채널 1
+    
+    // 1시간마다 (내부에서 자동 체크)
+    cloudManager.uploadTrendData();     // 채널 2
+    
+    // 알림 발생 시
+    if (alertOccurred) {
+        cloudManager.uploadAlertData();  // 채널 3
+    }
+    
+    // 또는 간단하게
+    // cloudManager.uploadAll();  // 모든 채널 (자동 간격 조절)
+    
+    #endif
+    
+    delay(10);
+}
+✅ 요약
+다중 채널 구조
+채널 1 (Main):      실시간 센서 데이터 (15초)
+채널 2 (Trend):     추세 및 예측 (1시간)
+채널 3 (Alert):     알림 통계 (이벤트)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+총 24개 필드 활용 (8 × 3)
+주요 이점
+✅ 데이터 분류 명확
+✅ 효율적 업데이트
+✅ 무료 한도 최대 활용
+✅ 대시보드 구성 편리
+필수 여부
+채널 1: 필수 (기본 모니터링)
+채널 2: 선택 (분석 원하면)
+채널 3: 선택 (알림 추적 원하면)
+단일 채널만 사용해도 되지만, 3개 채널 사용 시 훨씬 강력합니다! 🚀
