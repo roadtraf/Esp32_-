@@ -71,7 +71,7 @@ void WiFiPowerManager::update() {
                 }
                 break;
                 
-            case WiFiActivityLevel::LOW:
+            case WiFiActivityLevel::WIFI_LOW:
                 // Keep modem sleep enabled
                 if (!powerSaveEnabled) {
                     enableModemSleep(true);
@@ -158,7 +158,7 @@ void WiFiPowerManager::updateActivityLevel() {
     if (totalRate == 0) {
         newLevel = WiFiActivityLevel::IDLE;
     } else if (totalRate < 5) {
-        newLevel = WiFiActivityLevel::LOW;
+        newLevel = WiFiActivityLevel::WIFI_LOW;
     } else if (totalRate < 20) {
         newLevel = WiFiActivityLevel::MEDIUM;
     } else {
@@ -334,7 +334,7 @@ void WiFiPowerManager::printStatus() const {
     Serial.printf("활동 레벨: ");
     switch (activityLevel) {
         case WiFiActivityLevel::IDLE: Serial.println("IDLE"); break;
-        case WiFiActivityLevel::LOW: Serial.println("LOW"); break;
+        case WiFiActivityLevel::WIFI_LOW: Serial.println("LOW"); break;
         case WiFiActivityLevel::MEDIUM: Serial.println("MEDIUM"); break;
         case WiFiActivityLevel::HIGH: Serial.println("HIGH"); break;
     }

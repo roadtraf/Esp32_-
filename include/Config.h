@@ -7,7 +7,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "Sensor.h"        // 센서 관련 함수
-#include "SensorBuffer.h"  // 센서 버퍼링 시스템
+#include "SensorBuffer.h"
+#include "Lang.h"  // 센서 버퍼링 시스템
 #include "SystemController.h"   // SystemController 
 #include "RemoteManager.h"    // Phase 2: 원격 관리
 #include "UITheme.h"
@@ -274,9 +275,9 @@ extern ScreenType currentScreen;
 extern bool screenNeedsRedraw;
 
 // 센서 버퍼
-extern std::vector<float> temperatureBuffer;
-extern std::vector<float> pressureBuffer;
-extern std::vector<float> currentBuffer;
+
+
+
 
 // 에러 처리
 #define ERROR_HIST_MAX 10
@@ -288,11 +289,11 @@ enum ErrorSeverity {
     SEVERITY_CRITICAL
 };
 
-extern ErrorInfo errorHistory[ERROR_HIST_MAX];
+// extern ErrorInfo errorHistory[ERROR_HIST_MAX];  // moved below struct ErrorInfo
 extern uint8_t errorHistIdx;
 extern uint8_t errorHistCnt;
 extern bool errorActive;
-extern ErrorInfo currentError;
+// extern ErrorInfo currentError;  // moved below struct ErrorInfo
 
 // ================================================================
 // 조건부 기능
@@ -341,6 +342,8 @@ struct SystemConfig {
   uint8_t    language;       // 0=EN, 1=KO
 };
 
+#ifndef SENSOR_DATA_DEFINED
+#define SENSOR_DATA_DEFINED
 struct SensorData {
   float    pressure;
   float    current;
@@ -350,6 +353,7 @@ struct SensorData {
   bool     emergencyStop;
   uint32_t timestamp;
 };
+#endif
 
 struct ErrorInfo {
   ErrorCode      code;
@@ -358,7 +362,11 @@ struct ErrorInfo {
   uint8_t        retryCount;
   char           message[128];
 };
+extern ErrorInfo errorHistory[ERROR_HIST_MAX];
+extern ErrorInfo currentError;
 
+#ifndef STATISTICS_DEFINED
+#define STATISTICS_DEFINED
 struct Statistics {
   uint32_t totalCycles;
   uint32_t successfulCycles;
@@ -370,6 +378,7 @@ struct Statistics {
   float    maxPressure;
   float    averageCurrent;
 };
+#endif
 
 // ──────── 전역 변수 (extern) ────────────
 // 정의(실체)는 main.cpp에 있음 — 여기서는 선언만
@@ -405,7 +414,7 @@ extern bool          mqttConnected;
 extern bool          sdCardAvailable;
 
 // 현재 사용언어 음성지원(v3.9)
-extern Language currentLanguage;
+// extern Language currentLanguage;  // Lang.h의 currentLang 사용
 
 extern SafeMode safeMode;
 extern WiFiResilience wifiResilience;

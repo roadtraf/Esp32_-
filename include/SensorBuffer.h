@@ -162,6 +162,7 @@ public:
 // ================================================================
 // 센서 데이터 구조체
 // ================================================================
+#define SENSOR_DATA_DEFINED
 struct SensorData {
     float temperature;
     float pressure;

@@ -19,20 +19,26 @@ enum AnomalyType {
 };
 
 // 센서 데이터 구조
+#ifndef SENSOR_DATA_DEFINED
+#define SENSOR_DATA_DEFINED
 struct SensorData {
     float vacuumPressure;
     float temperature;
     float current;
     unsigned long timestamp;
 };
+#endif
 
 // 통계 데이터
+#ifndef STATISTICS_DEFINED
+#define STATISTICS_DEFINED
 struct Statistics {
     float mean;
     float stdDev;
     float min;
     float max;
 };
+#endif
 
 class MLPredictor {
 private:

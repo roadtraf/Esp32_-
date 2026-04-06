@@ -10,6 +10,8 @@
 // ================================================================
 // 센서 데이터 구조체 (Config.h와 동일)
 // ================================================================
+#ifndef SENSOR_DATA_DEFINED
+#define SENSOR_DATA_DEFINED
 struct SensorData {
     float    pressure;
     float    current;
@@ -19,6 +21,7 @@ struct SensorData {
     bool     emergencyStop;
     uint32_t timestamp;
 };
+#endif
 
 // ================================================================
 // 센서 관리자 클래스
