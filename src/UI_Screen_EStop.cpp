@@ -3,12 +3,12 @@
 // E-Stop 발동 즉시 모든 화면 위에 오버레이
 // ================================================================
 #include <driver/gpio.h>        // gpio_get_level()
-#include "../include/UIComponents.h"
-#include "../include/UITheme.h"
-#include "../include/UIManager.h"
-#include "../include/Config.h"
-#include "../include/SystemController.h"
-#include "../include/SensorManager.h"
+#include "UIComponents.h"
+#include "UITheme.h"
+#include "UIManager.h"
+#include "Config.h"
+#include "SystemController.h"
+#include "SensorManager.h"
 
 using namespace UIComponents;
 using namespace UITheme;

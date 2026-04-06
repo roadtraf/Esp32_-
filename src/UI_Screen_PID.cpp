@@ -1,8 +1,8 @@
 // ================================================================
 // UI_Screen_PID.cpp - 재설계 PID 설정 화면
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 
 using namespace UIComponents;
 using namespace UITheme;

@@ -3,7 +3,7 @@
 // ESP32-S3 v3.9.2 Phase 3-1 - Step 5
 // ================================================================
 #include "NetworkManager.h"
-#include "../include/Config.h"
+#include "Config.h"
 
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>

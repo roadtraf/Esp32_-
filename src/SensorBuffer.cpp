@@ -1,6 +1,6 @@
 // SensorBuffer.cpp
-#include "../include/SensorBuffer.h"
-#include "../include/Sensor.h"
+#include "SensorBuffer.h"
+#include "Sensor.h"
 
 // ================================================================
 // 전역 버퍼 초기화

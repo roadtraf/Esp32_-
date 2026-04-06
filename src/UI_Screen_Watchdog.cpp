@@ -2,8 +2,8 @@
 // UI_Screen_Watchdog.cpp - Enhanced Watchdog 상태 화면
 // Phase 3-1: 안정성 강화
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 #include "EnhancedWatchdog.h"
 
 using namespace UIComponents;

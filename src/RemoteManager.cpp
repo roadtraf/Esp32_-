@@ -1,10 +1,10 @@
 // ================================================================
 // RemoteManager.cpp - MQTT 원격 관리 구현
 // ================================================================
-#include "../include/RemoteManager.h"
-#include "../include/Config.h"
-#include "../include/Sensor.h"
-#include "../include/SensorBuffer.h"
+#include "RemoteManager.h"
+#include "Config.h"
+#include "Sensor.h"
+#include "SensorBuffer.h"
 #include <ArduinoJson.h>
 
 RemoteManager remoteManager;

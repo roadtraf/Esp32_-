@@ -1,8 +1,8 @@
 // ================================================================
 // UI_Screen_AdvancedAnalysis.cpp - 재설계 고급 분석 화면
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 
 using namespace UIComponents;
 using namespace UITheme;

@@ -12,14 +12,14 @@
 //       타이머 방식으로 자동 소멸로 위 4개 함수 교체
 // ================================================================
 
-#include "../include/UI_Screens.h"
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
-#include "../include/SystemController.h"
+#include "UI_Screens.h"
+#include "UIComponents.h"
+#include "Config.h"
+#include "SystemController.h"
 #include "UI_AccessControl.h"
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
-#include "../include/HealthMonitor.h"
+#include "HealthMonitor.h"
 
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>

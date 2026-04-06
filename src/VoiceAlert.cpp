@@ -4,7 +4,7 @@
 
 #ifdef ENABLE_VOICE_ALERTS
 
-#include "../include/VoiceAlert.h"
+#include "VoiceAlert.h"
 
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>

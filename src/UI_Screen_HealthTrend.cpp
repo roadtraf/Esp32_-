@@ -1,9 +1,9 @@
 // ================================================================
 // UI_Screen_HealthTrend.cpp - 재설계 건강도 추세 화면
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
-#include "../include/HealthMonitor.h"
+#include "UIComponents.h"
+#include "Config.h"
+#include "HealthMonitor.h"
 
 using namespace UIComponents;
 using namespace UITheme;

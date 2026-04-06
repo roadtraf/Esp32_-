@@ -3,8 +3,8 @@
 // sensorData → sensorManager 변경
 // ================================================================
 
-#include "../include/CloudManager.h"
-#include "../include/Config.h"
+#include "CloudManager.h"
+#include "Config.h"
 #include "SensorManager.h"  // ← 추가
 
 extern SensorManager sensorManager;

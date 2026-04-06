@@ -7,10 +7,10 @@
 //   기존 UIComponents.cpp에서 아래 함수 본체를 이 내용으로 교체하세요.
 // ================================================================
 
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
-#include "../include/SystemController.h"
-#include "../include/HealthMonitor.h"
+#include "UIComponents.h"
+#include "Config.h"
+#include "SystemController.h"
+#include "HealthMonitor.h"
 
 extern LGFX tft;
 extern SystemController systemController;

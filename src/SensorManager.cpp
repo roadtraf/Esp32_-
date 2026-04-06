@@ -3,7 +3,7 @@
 // ================================================================
 
 #include "SensorManager.h"
-#include "../include/Config.h"
+#include "Config.h"
 #include "Sensor.h"  // 기존 센서 함수들
 
 // FreeRTOS (delay 개선)

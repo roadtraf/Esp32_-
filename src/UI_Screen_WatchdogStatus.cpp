@@ -1,7 +1,7 @@
 // UI_Screen_WatchdogStatus.cpp
 
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 #include "EnhancedWatchdog.h"
 
 using namespace UIComponents;

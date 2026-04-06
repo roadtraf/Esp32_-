@@ -1,8 +1,8 @@
 // ================================================================
 // UI_Screen_About.cpp - 재설계 정보 화면 (Bug Fixed)
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 
 using namespace UIComponents;
 using namespace UITheme;

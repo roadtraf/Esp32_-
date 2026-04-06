@@ -3,8 +3,8 @@
 // sensorData → sensorManager 변경
 // ================================================================
 
-#include "../include/DataLogger.h"
-#include "../include/Config.h"
+#include "DataLogger.h"
+#include "Config.h"
 #include "SensorManager.h"  // ← 추가
 
 extern SensorManager sensorManager;

@@ -3,13 +3,13 @@
 // [U1] UITheme / UIComponents 전면 적용
 // [U8] screenNeedsRedraw / currentScreen 직접 접근 → UIManager 경유
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/UITheme.h"
-#include "../include/UIManager.h"
-#include "../include/Config.h"
-#include "../include/SensorManager.h"
-#include "../include/SystemController.h"
-#include "../include/ErrorHandler.h"
+#include "UIComponents.h"
+#include "UITheme.h"
+#include "UIManager.h"
+#include "Config.h"
+#include "SensorManager.h"
+#include "SystemController.h"
+#include "ErrorHandler.h"
 
 using namespace UIComponents;
 using namespace UITheme;

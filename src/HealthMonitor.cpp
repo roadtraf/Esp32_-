@@ -3,13 +3,13 @@
 // sensorData → sensorManager 변경
 // ================================================================
 
-#include "../include/HealthMonitor.h"
-#include "../include/Config.h"
+#include "HealthMonitor.h"
+#include "Config.h"
 #include "SensorManager.h"  // ← 추가
 
 // v3.9: 음성 알림
 #ifdef ENABLE_VOICE_ALERTS
-#include "../include/VoiceAlert.h"
+#include "VoiceAlert.h"
 extern VoiceAlert voiceAlert;
 #endif
 

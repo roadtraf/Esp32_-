@@ -3,10 +3,10 @@
 // [U9] +/- 단순 클릭 → long-press 연속 증가 + 빠른 입력 버튼 추가
 // [U7] strlen()*N → tft.textWidth() 교체
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/UITheme.h"
-#include "../include/UIManager.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "UITheme.h"
+#include "UIManager.h"
+#include "Config.h"
 
 using namespace UIComponents;
 using namespace UITheme;

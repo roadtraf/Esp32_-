@@ -10,11 +10,11 @@
 // - Backspace/Delete: 한 자 지우기
 // - ESC: 취소
 // ================================================================
-#include "../include/UI_AccessControl.h"
-#include "../include/UIComponents.h"
-#include "../include/UITheme.h"
-#include "../include/UIManager.h"
-#include "../include/SystemController.h"
+#include "UI_AccessControl.h"
+#include "UIComponents.h"
+#include "UITheme.h"
+#include "UIManager.h"
+#include "SystemController.h"
 
 using namespace UIComponents;
 using namespace UITheme;

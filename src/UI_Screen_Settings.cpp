@@ -5,21 +5,21 @@
 // [U3]  PIN 화면 연동 (관리자 전환 시 PIN 요구)
 // [U7]  textWidth() 기반 정렬
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/UITheme.h"
-#include "../include/UIManager.h"
-#include "../include/UI_AccessControl.h"
-#include "../include/Config.h"
-#include "../include/SystemController.h"
-#include "../include/Lang.h"
+#include "UIComponents.h"
+#include "UITheme.h"
+#include "UIManager.h"
+#include "UI_AccessControl.h"
+#include "Config.h"
+#include "SystemController.h"
+#include "Lang.h"
 
 #ifdef ENABLE_VOICE_ALERTS
-#include "../include/VoiceAlert.h"
+#include "VoiceAlert.h"
 extern VoiceAlert voiceAlert;
 #endif
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
-#include "../include/HealthMonitor.h"
+#include "HealthMonitor.h"
 extern HealthMonitor healthMonitor;
 #endif
 

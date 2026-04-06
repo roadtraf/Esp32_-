@@ -1,9 +1,9 @@
 // ================================================================
 // ManagerUI.cpp - 관리자 전용 UI 구현
 // ================================================================
-#include "../include/ManagerUI.h"
-#include "../include/Config.h"
-#include "../include/UI_Screens.h"
+#include "ManagerUI.h"
+#include "Config.h"
+#include "UI_Screens.h"
 #include "UI_AccessControl.h"
 
 // FreeRTOS (delay 개선)

@@ -1,8 +1,8 @@
 // ================================================================
 // SystemController.cpp - 시스템 모드 및 접근 제어 구현
 // ================================================================
-#include "../include/SystemController.h"
-#include "../include/Config.h"
+#include "SystemController.h"
+#include "Config.h"
 
 // 전역 인스턴스
 SystemController systemController;

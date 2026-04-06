@@ -9,11 +9,11 @@
 //   [7]  Heap: 주기적 힙 상태 모니터링 추가
 // ================================================================
 #include "Tasks.h"
-#include "../include/Config.h"
-#include "../include/EnhancedWatchdog.h"
-#include "../include/HardenedConfig.h"
-#include "../include/SPIBusManager.h"
-#include "../include/SafeSensor.h"
+#include "Config.h"
+#include "EnhancedWatchdog.h"
+#include "HardenedConfig.h"
+#include "SPIBusManager.h"
+#include "SafeSensor.h"
 
 // ================================================================
 // 태스크 핸들

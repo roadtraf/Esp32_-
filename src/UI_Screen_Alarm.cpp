@@ -4,10 +4,10 @@
 // [U7] strlen()*6 → tft.textWidth() 교체
 // [U8] screenNeedsRedraw/currentScreen → uiManager 경유
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/UITheme.h"
-#include "../include/UIManager.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "UITheme.h"
+#include "UIManager.h"
+#include "Config.h"
 
 using namespace UIComponents;
 using namespace UITheme;

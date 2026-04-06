@@ -3,7 +3,7 @@
 // v3.9.4 Hardened Edition
 // ================================================================
 #include "SafeSensor.h"
-#include "../include/Config.h"
+#include "Config.h"
 
 // 전역 인스턴스 (PIN_TEMP_SENSOR = 14, Config.h 참조)
 SafeDS18B20 safeDS18B20(PIN_TEMP_SENSOR);

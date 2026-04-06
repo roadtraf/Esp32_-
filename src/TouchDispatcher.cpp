@@ -4,9 +4,9 @@
 // Tasks.cpp에서 호출하는 전역 handleTouch() 구현
 // UIManager::handleTouch()와는 별개로 실제 디스패치 수행
 // ================================================================
-#include "../include/Config.h"
-#include "../include/UI_Screens.h"
-#include "../include/UIManager.h"
+#include "Config.h"
+#include "UI_Screens.h"
+#include "UIManager.h"
 
 extern LGFX tft;
 extern ScreenType currentScreen;

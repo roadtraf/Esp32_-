@@ -1,9 +1,9 @@
 // ================================================================
 // AdvancedAnalyzer.cpp  —  v3.8.3 AI 기반 고급 분석 (완전판)
 // ================================================================
-#include "../include/AdvancedAnalyzer.h"
-#include "../include/Config.h"
-#include "../include/DataLogger.h"
+#include "AdvancedAnalyzer.h"
+#include "Config.h"
+#include "DataLogger.h"
 #include <SD.h>
 
 // 외부 참조

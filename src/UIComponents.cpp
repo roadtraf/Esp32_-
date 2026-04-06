@@ -1,10 +1,10 @@
 // ================================================================
 // UIComponents.cpp - 재사용 가능한 UI 컴포넌트 구현
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
-#include "../include/SystemController.h"
-#include "../include/HealthMonitor.h"
+#include "UIComponents.h"
+#include "Config.h"
+#include "SystemController.h"
+#include "HealthMonitor.h"
 
 extern LGFX tft;
 extern SystemController systemController;

@@ -1,11 +1,11 @@
 // ================================================================
 // UI_Screen_SmartAlertConfig.cpp - 재설계 스마트 알림 설정
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 
 #ifdef ENABLE_SMART_ALERTS
-#include "../include/SmartAlert.h"
+#include "SmartAlert.h"
 extern SmartAlert smartAlert;
 #endif
 

@@ -2,8 +2,8 @@ UI_Screen_Statistics.cpp (재설계)
 // ================================================================
 // UI_Screen_Statistics.cpp - 재설계 통계 화면
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>

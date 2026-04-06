@@ -2,8 +2,8 @@
 // Sensor.cpp  —  센서 읽기 구현
 // ================================================================
 
-#include "../include/Sensor.h"
-#include "../include/Config.h"
+#include "Sensor.h"
+#include "Config.h"
 #include <Arduino.h>
 
 // FreeRTOS (delay 개선)

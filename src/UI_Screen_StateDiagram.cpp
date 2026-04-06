@@ -2,9 +2,9 @@
 // UI_Screen_StateDiagram.cpp - 재설계 상태 다이어그램 화면
 // UIComponents 기반으로 재작성
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
-#include "../include/StateMachine.h"
+#include "UIComponents.h"
+#include "Config.h"
+#include "StateMachine.h"
 
 using namespace UIComponents;
 using namespace UITheme;

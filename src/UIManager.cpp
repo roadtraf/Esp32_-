@@ -6,8 +6,8 @@
 //      → SemaphoreHandle 보호
 // ================================================================
 #include "UIManager.h"
-#include "../include/UI_Screens.h"
-#include "../include/UI_AccessControl.h"
+#include "UI_Screens.h"
+#include "UI_AccessControl.h"
 
 // 전역 인스턴스
 UIManager uiManager;

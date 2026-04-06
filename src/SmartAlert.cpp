@@ -1,8 +1,8 @@
 // ================================================================
 // SmartAlert.cpp  —  v3.8.2 스마트 알림 시스템
 // ================================================================
-#include "../include/SmartAlert.h"
-#include "../include/Config.h"
+#include "SmartAlert.h"
+#include "Config.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <time.h>

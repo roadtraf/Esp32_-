@@ -3,7 +3,7 @@
 // ESP32-S3 v3.9.2 Phase 3-1 - Step 4
 // ================================================================
 #include "ControlManager.h"
-#include "../include/Config.h"
+#include "Config.h"
 
 // 전역 인스턴스
 ControlManager controlManager;

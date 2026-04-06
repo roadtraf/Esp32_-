@@ -3,9 +3,9 @@
 // ESP32-S3 v3.9.3 - String 최적화
 // ================================================================
 #include "SerialCommands.h"
-#include "../include/Config.h"
-#include "../include/EnhancedWatchdog.h"
-#include "../include/ConfigManager.h"
+#include "Config.h"
+#include "EnhancedWatchdog.h"
+#include "ConfigManager.h"
 #include <cstring>
 #include <cctype>
 

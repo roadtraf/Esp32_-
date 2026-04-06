@@ -1,9 +1,9 @@
 // ================================================================
 // UI_Screen_Calibration.cpp - 재설계 캘리브레이션 화면
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
-#include "../include/SystemController.h"
+#include "UIComponents.h"
+#include "Config.h"
+#include "SystemController.h"
 
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>

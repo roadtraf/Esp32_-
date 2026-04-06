@@ -1,12 +1,12 @@
 // ================================================================
 // UI_Screen_VoiceSettings.cpp - 재설계 음성 설정
 // ================================================================
-#include "../include/UIComponents.h"
-#include "../include/Config.h"
+#include "UIComponents.h"
+#include "Config.h"
 
 // Config.h에 이미 선언되어 있음
 #ifdef ENABLE_VOICE_ALERTS
-#include "../include/VoiceAlert.h"
+#include "VoiceAlert.h"
 #endif
 
 using namespace UIComponents;
