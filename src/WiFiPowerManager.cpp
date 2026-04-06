@@ -79,7 +79,7 @@ void WiFiPowerManager::update() {
                 break;
                 
             case WiFiActivityLevel::MEDIUM:
-            case WiFiActivityLevel::HIGH:
+            case WiFiActivityLevel::WIFI_HIGH:
                 // Disable power save for better performance
                 if (powerSaveEnabled) {
                     enableModemSleep(false);
@@ -162,7 +162,7 @@ void WiFiPowerManager::updateActivityLevel() {
     } else if (totalRate < 20) {
         newLevel = WiFiActivityLevel::MEDIUM;
     } else {
-        newLevel = WiFiActivityLevel::HIGH;
+        newLevel = WiFiActivityLevel::WIFI_HIGH;
     }
     
     if (newLevel != activityLevel) {
@@ -336,7 +336,7 @@ void WiFiPowerManager::printStatus() const {
         case WiFiActivityLevel::IDLE: Serial.println("IDLE"); break;
         case WiFiActivityLevel::WIFI_LOW: Serial.println("LOW"); break;
         case WiFiActivityLevel::MEDIUM: Serial.println("MEDIUM"); break;
-        case WiFiActivityLevel::HIGH: Serial.println("HIGH"); break;
+        case WiFiActivityLevel::WIFI_HIGH: Serial.println("HIGH"); break;
     }
     
     Serial.printf("연결 상태: %s\n", isConnected ? "연결됨" : "끊김");

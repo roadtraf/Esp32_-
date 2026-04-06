@@ -8,6 +8,7 @@
 #include "UITheme.h"
 #include "UIManager.h"
 #include "Config.h"
+#include "ErrorHandler.h"
 
 using namespace UIComponents;
 using namespace UITheme;

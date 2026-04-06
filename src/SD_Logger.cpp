@@ -16,6 +16,8 @@
 //   - 실패 통계 기록
 // ================================================================
 #include "Config.h"
+#include "SensorManager.h"
+extern SensorManager sensorManager;
 #include "SD_Logger.h"
 #include "StateMachine.h"
 #include "SafeSD.h"
@@ -111,8 +113,8 @@ void logSensorTrend() {
     char line[256];
     snprintf(line, sizeof(line), "%lu,%s,%.2f,%.2f,%s",
              millis(), iso,
-             sensorData.pressure,
-             sensorData.current,
+             sensorManager.getPressure(),
+             sensorManager.getCurrent(),
              getStateName(currentState));
 
     SafeSDFile f("/logs/sensor_trend.csv", FILE_APPEND);

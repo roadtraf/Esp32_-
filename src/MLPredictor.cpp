@@ -1,95 +1,83 @@
-// ================================================================
-// MLPredictor.cpp - ML 예측기 (v3.9.2 수정)
-// sensorData → sensorManager 변경
-// ================================================================
-
+// MLPredictor.cpp - MLPredictor.h 인터페이스 기반 재작성
 #include "MLPredictor.h"
 #include "Config.h"
-#include "SensorManager.h"  // ← 추가
+#include "SensorBuffer.h"
 
-extern SensorManager sensorManager;
-
-MLPredictor::MLPredictor() {
-    sampleCount = 0;
-    predictionReady = false;
+MLPredictor::MLPredictor()
+    : sampleCount(0), anomalyThreshold(3.0f),
+      lastAnomaly(ANOMALY_NONE), lastAnomalyTime(0) {
+    pressureStats    = {};
+    temperatureStats = {};
+    currentStats     = {};
 }
 
 void MLPredictor::begin() {
+    sampleCount = 0;
+    lastAnomaly = ANOMALY_NONE;
     Serial.println("[MLPredictor] 초기화 완료");
-    sampleCount = 0;
-    predictionReady = false;
 }
 
-void MLPredictor::addSample(float pressure, float temperature, float current) {
-    if (sampleCount < MAX_SAMPLES) {
-        samples[sampleCount].pressure = pressure;
-        samples[sampleCount].temperature = temperature;
-        samples[sampleCount].current = current;
-        samples[sampleCount].timestamp = millis();
+void MLPredictor::addSample(float vacuumPressure, float temperature, float current) {
+    if (sampleCount < BUFFER_SIZE) {
         sampleCount++;
-        
-        // 충분한 샘플이 모이면 예측 가능
-        if (sampleCount >= 10) {
-            predictionReady = true;
-        }
     }
+    updateStatistics();
 }
 
-float MLPredictor::predict() {
-    if (!predictionReady || sampleCount < 10) {
-        return -1.0f;  // 예측 불가
-    }
-    
-    // 간단한 선형 회귀 예측
-    float avgPressure = 0;
-    float avgCurrent = 0;
-    
-    for (int i = 0; i < sampleCount; i++) {
-        avgPressure += samples[i].pressure;
-        avgCurrent += samples[i].current;
-    }
-    
-    avgPressure /= sampleCount;
-    avgCurrent /= sampleCount;
-    
-    // 압력과 전류의 추세로 고장 가능성 예측
-    float prediction = 100.0f;
-    
-    if (avgPressure > -70.0f) prediction -= 20.0f;
-    if (avgCurrent > 4.0f) prediction -= 30.0f;
-    
-    return max(0.0f, prediction);
+AnomalyType MLPredictor::detectAnomaly(float vacuumPressure, float temperature, float current) {
+    if (sampleCount < 10) return ANOMALY_NONE;
+    if (isOutlier(vacuumPressure, pressureStats))    return ANOMALY_PRESSURE;
+    if (isOutlier(temperature, temperatureStats))     return ANOMALY_TEMPERATURE;
+    if (isOutlier(current, currentStats))             return ANOMALY_CURRENT;
+    return ANOMALY_NONE;
 }
 
-void MLPredictor::reset() {
-    sampleCount = 0;
-    predictionReady = false;
+float MLPredictor::predictNextValue(float* recentValues, int count) {
+    if (count < 2) return 0.0f;
+    return recentValues[count-1] + (recentValues[count-1] - recentValues[count-2]);
 }
 
-bool MLPredictor::isPredictionReady() const {
-    return predictionReady;
+void MLPredictor::updateStatistics() {
+    float pMean = calculatePressureMean();
+    float pStd  = calculatePressureStdDev(pMean);
+    pressureStats.mean   = pMean;
+    pressureStats.stdDev = pStd;
+    calculatePressureMinMax(pressureStats.min, pressureStats.max);
+
+    float tMean = calculateTemperatureMean();
+    float tStd  = calculateTemperatureStdDev(tMean);
+    temperatureStats.mean   = tMean;
+    temperatureStats.stdDev = tStd;
+
+    float cMean = calculateCurrentMean();
+    float cStd  = calculateCurrentStdDev(cMean);
+    currentStats.mean   = cMean;
+    currentStats.stdDev = cStd;
 }
 
-void MLPredictor::printStatus() const {
-    Serial.println("\n=== ML 예측기 ===");
-    Serial.printf("샘플 수: %d/%d\n", sampleCount, MAX_SAMPLES);
-    Serial.printf("예측 가능: %s\n", predictionReady ? "예" : "아니오");
-    
-    if (predictionReady) {
-        Serial.printf("예측 신뢰도: %.1f%%\n", predict());
-    }
-    Serial.println("==================\n");
+bool MLPredictor::isOutlier(float value, MLStatistics stats) {
+    if (stats.stdDev < 0.001f) return false;
+    return abs(value - stats.mean) > anomalyThreshold * stats.stdDev;
 }
 
-// ================================================================
-// 이상 감지 메시지 반환 (v3.9.3: const char* 반환)
-// ================================================================
+float MLPredictor::calculatePressureMean()                   { return pressureBuffer.getMax(); }
+float MLPredictor::calculatePressureStdDev(float mean)       { return pressureBuffer.getStdDev(); }
+void  MLPredictor::calculatePressureMinMax(float& mn, float& mx) { mn = pressureBuffer.getMin(); mx = pressureBuffer.getMax(); }
+
+float MLPredictor::calculateTemperatureMean()                 { return temperatureBuffer.getMax(); }
+float MLPredictor::calculateTemperatureStdDev(float mean)     { return temperatureBuffer.getStdDev(); }
+void  MLPredictor::calculateTemperatureMinMax(float& mn, float& mx) { mn = temperatureBuffer.getMin(); mx = temperatureBuffer.getMax(); }
+
+float MLPredictor::calculateCurrentMean()                     { return currentBuffer.getMax(); }
+float MLPredictor::calculateCurrentStdDev(float mean)         { return currentBuffer.getStdDev(); }
+void  MLPredictor::calculateCurrentMinMax(float& mn, float& mx) { mn = currentBuffer.getMin(); mx = currentBuffer.getMax(); }
+
 const char* MLPredictor::getAnomalyMessage(AnomalyType type) {
     switch (type) {
         case ANOMALY_PRESSURE:    return "압력 이상 감지";
         case ANOMALY_TEMPERATURE: return "온도 이상 감지";
         case ANOMALY_CURRENT:     return "전류 이상 감지";
-        case ANOMALY_VACUUM:      return "진공 이상 감지";
-        default:                  return "알 수 없는 이상";
+        case ANOMALY_PATTERN:     return "패턴 이상 감지";
+        default:                  return "정상";
     }
 }

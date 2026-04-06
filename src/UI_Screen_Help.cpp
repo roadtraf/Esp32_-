@@ -7,7 +7,7 @@
 using namespace UIComponents;using namespace UITheme;
 
 // 페이지 인덱스
-extern int helpPageIndex;
+extern uint8_t helpPageIndex;
 
 void drawHelpScreen() {
     tft.fillScreen(COLOR_BG_DARK);

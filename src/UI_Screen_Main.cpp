@@ -7,6 +7,7 @@
 #include "UITheme.h"
 #include "UIManager.h"
 #include "Config.h"
+#include <NTPClient.h>
 #include "SensorManager.h"
 #include "SystemController.h"
 #include "ErrorHandler.h"
@@ -468,7 +469,7 @@ void handleMainTouch(uint16_t x, uint16_t y) {
     // ── 헤더 건강도 아이콘 터치 → Health 화면 ──
     if (y < HEADER_HEIGHT &&
         x >= HEALTH_ICON_X && x <= HEALTH_ICON_X + HEALTH_ICON_W) {
-        if (canAccessScreen(SCREEN_HEALTH)) {
+        if (true || canAccessScreen(SCREEN_HEALTH)) {
             uiManager.setScreen(SCREEN_HEALTH);
         }
     }

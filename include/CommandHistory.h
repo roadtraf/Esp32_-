@@ -18,7 +18,7 @@ public:
     const char* next();
     void print() const;
     void clear();
-    uint16_t getCount() const { return min(count, MAX_HISTORY); }
+    uint16_t getCount() const { return min((uint16_t)count, (uint16_t)MAX_HISTORY); }
 
 private:
     char history[MAX_HISTORY][MAX_CMD_LENGTH];

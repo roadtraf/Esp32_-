@@ -8,6 +8,8 @@
 // ================================================================
 
 #include "Config.h"
+#include "Tasks.h"
+extern TaskHandle_t ds18b20TaskHandle;
 #include "AdditionalHardening.h"
 #include "SharedState.h"
 #include "EnhancedWatchdog.h"

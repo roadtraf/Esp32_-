@@ -24,6 +24,10 @@ namespace UIComponents {
         uint16_t bgColor = UITheme::COLOR_BG_CARD;
         uint16_t borderColor = UITheme::COLOR_BORDER;
         bool elevated = false;
+        // 다양한 초기화 지원
+        CardConfig() = default;
+        CardConfig(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t bg = UITheme::COLOR_BG_CARD, uint16_t border = UITheme::COLOR_BORDER, bool elev = false)
+            : x(x), y(y), w(w), h(h), bgColor(bg), borderColor(border), elevated(elev) {}
     };
     
     void drawCard(const CardConfig& config);
@@ -40,6 +44,9 @@ namespace UIComponents {
     };
     
     struct ButtonConfig {
+        ButtonConfig() = default;
+        ButtonConfig(int16_t x, int16_t y, int16_t w, int16_t h, const char* label, ButtonStyle style = BTN_PRIMARY, bool enabled = true)
+            : x(x), y(y), w(w), h(h), label(label), style(style), enabled(enabled) {}
         int16_t x, y, w, h;
         const char* label;
         ButtonStyle style = BTN_PRIMARY;

@@ -13,7 +13,7 @@
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-extern VoiceAlert voiceAlert;
+extern SafeVoiceAlert safeVoiceAlert;
 #endif
 
 // ─────────────────── 에러 설정 ──────────────────────────────
@@ -31,15 +31,12 @@ void setError(ErrorCode code, ErrorSeverity severity, const char* message) {
 
   // v3.9: 음성 알림 - 에러 발생 시 자동 재생
   #ifdef ENABLE_VOICE_ALERTS
-  if (voiceAlert.isOnline()) {
-    voiceAlert.playErrorMessage(code);
+  if (safeVoiceAlert.isOnline()) {
+    // safeVoiceAlert.playErrorMessage(code);  // 미지원 메서드
     
     // 치명적 에러는 볼륨 증가
     if (severity == SEVERITY_CRITICAL) {
-      uint8_t savedVolume = voiceAlert.getVolume();
-      voiceAlert.setVolume(VOICE_VOLUME_ERROR);
-      vTaskDelay(pdMS_TO_TICKS(100));
-      voiceAlert.setVolume(savedVolume);
+      safeVoiceAlert.setVolume(25);  // 에러 시 볼륨 증가
     }
   }
   #endif
@@ -66,8 +63,8 @@ void clearError() {
   
   // v3.9: 음성 알림 - 시스템 복구 안내
   #ifdef ENABLE_VOICE_ALERTS
-  if (voiceAlert.isOnline()) {
-    voiceAlert.playSystem(VOICE_READY);  // "준비 완료"
+  if (safeVoiceAlert.isOnline()) {
+    safeVoiceAlert.enqueue(1, 1);  // 준비 완료
   }
   #endif
 }
@@ -85,7 +82,7 @@ void handleError() {
 // ─────────────────── 복구 시도 ──────────────────────────────
 bool attemptErrorRecovery() {
   switch (currentError.severity) {
-    case SEVERITY_TEMPORARY:
+    case SEVERITY_INFO:  // SEVERITY_TEMPORARY → SEVERITY_INFO
       // 3회까지 재시도, 30초 간격
       if (currentError.retryCount < 3) {
         static uint32_t lastRetryTime = 0;
@@ -96,8 +93,8 @@ bool attemptErrorRecovery() {
           
           // v3.9: 음성 안내
           #ifdef ENABLE_VOICE_ALERTS
-          if (voiceAlert.isOnline()) {
-            voiceAlert.playGuide(VOICE_GUIDE_WAIT);  // "잠시 기다려주세요"
+          if (safeVoiceAlert.isOnline()) {
+            safeVoiceAlert.enqueue(1, 2);  // 잠시 기다려주세요
           }
           #endif
           
@@ -114,8 +111,8 @@ bool attemptErrorRecovery() {
         
         // v3.9: 음성 안내
         #ifdef ENABLE_VOICE_ALERTS
-        if (voiceAlert.isOnline()) {
-          voiceAlert.playGuide(VOICE_GUIDE_CHECK_SYSTEM);  // "시스템을 점검해주세요"
+        if (safeVoiceAlert.isOnline()) {
+          safeVoiceAlert.enqueue(1, 3);  // 시스템 점검
         }
         #endif
         
@@ -131,12 +128,12 @@ bool attemptErrorRecovery() {
       // v3.9: 음성 알림 - 치명적 에러는 반복 재생
       #ifdef ENABLE_VOICE_ALERTS
       static uint32_t lastCriticalAlert = 0;
-      if (voiceAlert.isOnline() && millis() - lastCriticalAlert >= 60000) {
+      if (safeVoiceAlert.isOnline() && millis() - lastCriticalAlert >= 60000) {
         // 1분마다 반복
-        voiceAlert.setVolume(VOICE_VOLUME_EMERGENCY);
-        voiceAlert.playErrorMessage(currentError.code);
-        voiceAlert.enableRepeat(true);
-        voiceAlert.setRepeatCount(3);  // 3회 반복
+        safeVoiceAlert.setVolume(VOICE_VOLUME_EMERGENCY);
+        // safeVoiceAlert.playErrorMessage(currentError.code);
+        // safeVoiceAlert.enableRepeat(true);  // 미지원
+        // safeVoiceAlert.setRepeatCount(3);  // 미지원
         lastCriticalAlert = millis();
       }
       #endif
@@ -167,7 +164,7 @@ const char* getErrorCodeString(ErrorCode code) {
 // ─────────────────── 에러 심각도 → 문자열 변환 ───────────────
 const char* getErrorSeverityString(ErrorSeverity severity) {
   switch (severity) {
-    case SEVERITY_TEMPORARY:   return "TEMPORARY";
+    case SEVERITY_INFO:  // SEVERITY_TEMPORARY → SEVERITY_INFO   return "TEMPORARY";
     case SEVERITY_RECOVERABLE: return "RECOVERABLE";
     case SEVERITY_CRITICAL:    return "CRITICAL";
     default:                   return "UNKNOWN";

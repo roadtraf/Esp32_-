@@ -15,6 +15,11 @@
 // SensorManager 외부 참조
 extern SensorManager sensorManager;
 
+// ─────────────────── 전역 상태 변수 ─────────────────────────
+bool    pumpActive  = false;
+bool    valveActive = false;
+uint8_t pumpPWM     = 0;
+
 // ─────────────────── 펌프 제어 ──────────────────────────────
 void controlPump(bool enable, uint8_t pwm) {
   if (!checkSafetyInterlock(enable, valveActive)) {

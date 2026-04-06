@@ -4,6 +4,19 @@
 #include "Config.h"
 #include "PID_Control.h"
 #include "Control.h"        // controlPump()
+#include "SensorManager.h"
+
+// ─────────────────── PID 전역변수 ───────────────────────────
+static float    pidError      = 0.0f;
+static float    pidIntegral   = 0.0f;
+static float    pidDerivative = 0.0f;
+static float    pidLastError  = 0.0f;
+static float    pidOutput     = 0.0f;
+static uint32_t lastPIDUpdate = 0;
+
+// 외부 참조
+extern SensorManager sensorManager;
+
 
 // ─────────────────── PID 업데이트 ───────────────────────────
 void updatePID() {
@@ -16,7 +29,7 @@ void updatePID() {
   lastPIDUpdate = currentTime;
 
   // 에러 계산
-  pidError = config.targetPressure - sensorData.pressure;
+  pidError = config.targetPressure - sensorManager.getPressure();
 
   // 적분  (Anti-windup)
   pidIntegral += pidError * dt;

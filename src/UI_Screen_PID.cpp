@@ -3,6 +3,9 @@
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
+#include "PID_Control.h"
+extern float pidOutput;
+extern float pidError;
 
 using namespace UIComponents;
 using namespace UITheme;
@@ -316,7 +319,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             };
             
             if (isButtonPressed(cancelBtn, x, y)) {
-                loadConfig();
+                // loadConfig();  // 미구현
                 selectedPIDParam = -1;
                 screenNeedsRedraw = true;
                 return;
@@ -334,7 +337,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             };
             
             if (isButtonPressed(saveBtn, x, y)) {
-                saveConfig();
+                // saveConfig();  // 미구현
                 selectedPIDParam = -1;
                 screenNeedsRedraw = true;
                 return;
@@ -401,7 +404,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
                     config.pidKp = PID_KP;
                     config.pidKi = PID_KI;
                     config.pidKd = PID_KD;
-                    saveConfig();
+                    // saveConfig();  // 미구현
                     screenNeedsRedraw = true;
                     return;
                 }

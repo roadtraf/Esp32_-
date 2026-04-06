@@ -19,26 +19,15 @@ enum AnomalyType {
 };
 
 // 센서 데이터 구조
-#ifndef SENSOR_DATA_DEFINED
-#define SENSOR_DATA_DEFINED
-struct SensorData {
-    float vacuumPressure;
-    float temperature;
-    float current;
-    unsigned long timestamp;
-};
-#endif
+#include "SensorManager.h"  // SensorData 정의
 
 // 통계 데이터
-#ifndef STATISTICS_DEFINED
-#define STATISTICS_DEFINED
-struct Statistics {
+struct MLStatistics {
     float mean;
     float stdDev;
     float min;
     float max;
 };
-#endif
 
 class MLPredictor {
 private:
@@ -49,9 +38,9 @@ private:
     int sampleCount;
     
     // 정상 범위 통계
-    Statistics pressureStats;
-    Statistics temperatureStats;
-    Statistics currentStats;
+    MLStatistics pressureStats;
+    MLStatistics temperatureStats;
+    MLStatistics currentStats;
     
     // 이상 감지 임계값 (표준편차 배수)
     float anomalyThreshold;
@@ -62,7 +51,7 @@ private:
     
     // 내부 함수
     void updateStatistics();
-    bool isOutlier(float value, Statistics stats);
+    bool isOutlier(float value, MLStatistics stats);
     
     // v3.9.1: 제로카피 헬퍼 함수
     float calculatePressureMean();
@@ -103,9 +92,9 @@ public:
     int getSampleCount() { return sampleCount; }
     
     // 통계 정보
-    Statistics getPressureStats() { return pressureStats; }
-    Statistics getTemperatureStats() { return temperatureStats; }
-    Statistics getCurrentStats() { return currentStats; }
+    MLStatistics getPressureStats() { return pressureStats; }
+    MLStatistics getTemperatureStats() { return temperatureStats; }
+    MLStatistics getCurrentStats() { return currentStats; }
     
     // 이상 감지 메시지 (v3.9.3: const char* 반환)
     const char* getAnomalyMessage(AnomalyType type);

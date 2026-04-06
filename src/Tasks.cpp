@@ -10,6 +10,7 @@
 // ================================================================
 #include "Tasks.h"
 #include "Config.h"
+#include "DataLogger.h"
 #include "EnhancedWatchdog.h"
 #include "HardenedConfig.h"
 #include "SPIBusManager.h"
@@ -57,12 +58,12 @@ extern SensorData   sensorData;
 extern bool         mqttConnected;
 
 #ifdef ENABLE_DATA_LOGGING
-extern DataLogger dataLogger;
+
 #endif
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
 extern HealthMonitor healthMonitor;
-extern MLPredictor   mlPredictor;
+// extern MLPredictor mlPredictor;  // MLPredictor 인스턴스
 extern Statistics    stats;
 #endif
 
@@ -340,12 +341,12 @@ static void healthMonitorStep() {
     static uint32_t lastUpdate = 0;
     uint32_t now = millis();
 
-    if (now - lastUpdate >= HEALTH_UPDATE_INTERVAL) {
+    if (now - lastUpdate >= 5000) {
         healthMonitor.update(
             sensorData.pressure,
             sensorData.temperature,
             sensorData.current,
-            stats.cycleCount,
+            stats.totalCycles,
             stats.uptime
         );
         lastUpdate = now;
@@ -359,12 +360,8 @@ static void predictorStep() {
     static uint32_t lastUpdate = 0;
     uint32_t now = millis();
 
-    if (now - lastUpdate >= ML_UPDATE_INTERVAL) {
-        mlPredictor.addSample(
-            sensorData.pressure,
-            sensorData.temperature,
-            sensorData.current
-        );
+    if (now - lastUpdate >= 10000) {
+        // mlPredictor call disabled  // 비활성화
         lastUpdate = now;
     }
 #endif

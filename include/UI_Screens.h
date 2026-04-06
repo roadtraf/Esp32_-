@@ -154,12 +154,16 @@ void showTemperatureSensorInfo();
 // ================================================================
 // 센서 통계 구조체
 // ================================================================
+#ifndef SENSORSTATS_DEFINED
+#define SENSORSTATS_DEFINED
 struct SensorStats {
     float avgTemperature;
     float avgPressure;
     float avgCurrent;
     uint32_t sampleCount;
 };
+#endif
+
 
 // 센서 통계 계산
 void calculateSensorStats(SensorStats& stats);

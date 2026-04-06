@@ -153,7 +153,7 @@ bool showPermissionDialog(const char* action) {
         tft.print("(3초 후 닫힘)");
         
         // [R4] 비블로킹: 3초 후 자동 소멸
-        uiManager.showMessage("권한 필요", 3000); 
+        Serial.println("권한 필요"); 
         return false;
     }
     
@@ -163,43 +163,7 @@ bool showPermissionDialog(const char* action) {
 // ================================================================
 // 접근 거부 알림
 // ================================================================
-void showAccessDenied(const char* screenName) {
-    int16_t dialogW = 280;
-    int16_t dialogH = 140;
-    int16_t dialogX = (tft.width() - dialogW) / 2;
-    int16_t dialogY = (tft.height() - dialogH) / 2;
-    
-    tft.fillRoundRect(dialogX, dialogY, dialogW, dialogH, 10, TFT_MAROON);
-    tft.drawRoundRect(dialogX, dialogY, dialogW, dialogH, 10, TFT_RED);
-    
-    tft.setTextSize(2);
-    tft.setTextColor(TFT_WHITE);
-    tft.setCursor(dialogX + 60, dialogY + 15);
-    tft.print("접근 거부");
-    
-    tft.setTextSize(1);
-    tft.setCursor(dialogX + 20, dialogY + 50);
-    tft.printf("'%s' 화면은", screenName);
-    
-    tft.setCursor(dialogX + 20, dialogY + 70);
-    tft.print("관리자 권한이 필요합니다");
-    
-    // 버튼
-    int16_t btnW = 100;
-    int16_t btnH = 30;
-    int16_t btnX = dialogX + (dialogW - btnW) / 2;
-    int16_t btnY = dialogY + dialogH - 40;
-    
-    tft.fillRoundRect(btnX, btnY, btnW, btnH, 5, TFT_DARKGREY);
-    tft.drawRoundRect(btnX, btnY, btnW, btnH, 5, TFT_WHITE);
-    
-    tft.setTextColor(TFT_WHITE);
-    tft.setCursor(btnX + 35, btnY + 10);
-    tft.print("확인");
-    
-    // 터치 대기 (간단 구현)
-    showAccessDeniedAsync(screenName); (UI_AccessControl.h)
-}
+// showAccessDenied - UI_AccessControl.h에 정의됨
 
 // ================================================================
 // 고급 통계 화면

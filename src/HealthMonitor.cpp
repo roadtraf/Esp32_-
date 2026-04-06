@@ -10,7 +10,7 @@
 // v3.9: 음성 알림
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
-extern VoiceAlert voiceAlert;
+extern SafeVoiceAlert safeVoiceAlert;
 #endif
 
 // 외부 SensorManager 참조
@@ -45,7 +45,7 @@ void HealthMonitor::update(
     float temperature,
     float current,
     uint8_t pwm,
-    SystemState state
+    int state
 ) {
     // 매개변수로 받은 값 사용
     // 추가로 필요한 센서 값은 sensorManager에서 가져옴
@@ -78,13 +78,13 @@ void HealthMonitor::update(
     maintenanceLevel = determineMaintenanceLevel();
     
     #ifdef ENABLE_VOICE_ALERTS
-    if (voiceAlert.isOnline() && maintenanceLevel != previousLevel) {
+    if (safeVoiceAlert.isOnline() && maintenanceLevel != previousLevel) {
         if (maintenanceLevel > previousLevel && maintenanceLevel >= MAINTENANCE_SOON) {
-            voiceAlert.playMaintenanceMessage(maintenanceLevel);
+            safeVoiceAlert.enqueue(2, (uint8_t)maintenanceLevel + 1);  // 유지보수 알림
             
             if (maintenanceLevel == MAINTENANCE_URGENT) {
-                voiceAlert.enableRepeat(true);
-                voiceAlert.setRepeatCount(2);
+                // safeVoiceAlert.enableRepeat(true);  // 미지원
+                // safeVoiceAlert.setRepeatCount(2);  // 미지원
             }
         }
     }
@@ -146,9 +146,9 @@ float HealthMonitor::calculateRuntimeHealth(unsigned long runtime) {
 MaintenanceLevel HealthMonitor::determineMaintenanceLevel() {
     if (currentHealthScore >= 90.0f) return MAINTENANCE_NONE;
     else if (currentHealthScore >= 75.0f) return MAINTENANCE_SOON;
-    else if (currentHealthScore >= 60.0f) return MAINTENANCE_RECOMMENDED;
+    else if (currentHealthScore >= 60.0f) return MAINTENANCE_REQUIRED;
     else if (currentHealthScore >= 45.0f) return MAINTENANCE_URGENT;
-    else return MAINTENANCE_CRITICAL;
+    else return MAINTENANCE_URGENT;
 }
 
 float HealthMonitor::getHealthScore() const {
@@ -163,10 +163,9 @@ const char* HealthMonitor::getMaintenanceLevelString() const {
     switch(maintenanceLevel) {
         case MAINTENANCE_NONE: return "정상";
         case MAINTENANCE_SOON: return "곧 필요";
-        case MAINTENANCE_RECOMMENDED: return "권장";
+        case MAINTENANCE_REQUIRED: return "권장";
         case MAINTENANCE_URGENT: return "긴급";
-        case MAINTENANCE_CRITICAL: return "위험";
-        default: return "알 수 없음";
+                default: return "알 수 없음";
     }
 }
 

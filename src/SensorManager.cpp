@@ -38,7 +38,7 @@ void SensorManager::begin() {
     currentOffset = 0.0f;
     
     // 기존 센서 초기화 함수 호출
-    initSensor();
+    initSensors();
     
     Serial.println("[SensorManager] 초기화 완료");
 }

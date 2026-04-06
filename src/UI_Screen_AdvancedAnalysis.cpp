@@ -3,6 +3,7 @@
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
+#include "ManagerUI.h"
 
 using namespace UIComponents;
 using namespace UITheme;
@@ -14,7 +15,7 @@ void drawAdvancedAnalysisScreen() {
     drawHeader("고급 분석");
     
     // 권한 확인
-    if (!systemController.getPermissions().canViewAdvanced) {
+    if (!systemController.getPermissions().canAccessAdvanced) {
         showAccessDenied("고급 분석");
         NavButton navButtons[] = {{"뒤로", BTN_OUTLINE, true}};
         drawNavBar(navButtons, 1);

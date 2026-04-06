@@ -40,7 +40,7 @@ void drawVoiceSettingsScreen() {
     };
     drawCard(statusCard);
     
-    bool voiceOnline = voiceAlert.isOnline();
+    bool voiceOnline = safeVoiceAlert.isOnline();
     
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
@@ -55,7 +55,7 @@ void drawVoiceSettingsScreen() {
         tft.setTextSize(1);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(statusCard.x + CARD_PADDING, statusCard.y + CARD_PADDING + 20);
-        tft.printf("파일 개수: %d개", voiceAlert.getFileCount());
+        tft.printf("파일 개수: %d개", safeVoiceAlert.getFileCount());
     } else {
         tft.setTextSize(1);
         tft.setTextColor(COLOR_DANGER);
@@ -80,7 +80,7 @@ void drawVoiceSettingsScreen() {
     tft.setCursor(langCard.x + CARD_PADDING, langCard.y + CARD_PADDING);
     tft.print("음성 언어");
     
-    Language currentVoiceLang = voiceAlert.getLanguage();
+    Language currentVoiceLang = safeVoiceAlert.getLanguage();
     const char* langText = (currentVoiceLang == LANGUAGE_KOREAN) ? "한국어" : "English";
     
     tft.setTextSize(TEXT_SIZE_MEDIUM);
@@ -117,7 +117,7 @@ void drawVoiceSettingsScreen() {
     tft.setCursor(volCard.x + CARD_PADDING, volCard.y + CARD_PADDING);
     tft.print("볼륨");
     
-    uint8_t currentVolume = voiceAlert.getVolume();
+    uint8_t currentVolume = safeVoiceAlert.getVolume();
     
     // 볼륨 슬라이더
     int16_t sliderX = volCard.x + CARD_PADDING;
@@ -213,7 +213,7 @@ void handleVoiceSettingsTouch(uint16_t x, uint16_t y) {
     
     #ifdef ENABLE_VOICE_ALERTS
     
-    bool voiceOnline = voiceAlert.isOnline();
+    bool voiceOnline = safeVoiceAlert.isOnline();
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     
     // 언어 전환 버튼
@@ -230,18 +230,18 @@ void handleVoiceSettingsTouch(uint16_t x, uint16_t y) {
     };
     
     if (isButtonPressed(langBtn, x, y) && voiceOnline) {
-        Language newLang = (voiceAlert.getLanguage() == LANGUAGE_KOREAN) 
+        Language newLang = (safeVoiceAlert.getLanguage() == LANGUAGE_KOREAN) 
                           ? LANGUAGE_ENGLISH 
                           : LANGUAGE_KOREAN;
-        voiceAlert.setLanguage(newLang);
-        voiceAlert.playSystem(VOICE_READY);
+        safeVoiceAlert.setLanguage(newLang);
+        safeVoiceAlert.playSystem(VOICE_READY);
         screenNeedsRedraw = true;
         return;
     }
     
     // 볼륨 조절 버튼
     int16_t volY = langY + 55 + SPACING_SM;
-    uint8_t currentVolume = voiceAlert.getVolume();
+    uint8_t currentVolume = safeVoiceAlert.getVolume();
     
     ButtonConfig volDownBtn = {
         .x = (int16_t)(SPACING_SM + CARD_PADDING),
@@ -255,8 +255,8 @@ void handleVoiceSettingsTouch(uint16_t x, uint16_t y) {
     
     if (isButtonPressed(volDownBtn, x, y) && voiceOnline) {
         if (currentVolume > 0) {
-            voiceAlert.setVolume(currentVolume - 1);
-            voiceAlert.playSystem(VOICE_READY); // 볼륨 확인
+            safeVoiceAlert.setVolume(currentVolume - 1);
+            safeVoiceAlert.playSystem(VOICE_READY); // 볼륨 확인
             screenNeedsRedraw = true;
         }
         return;
@@ -274,8 +274,8 @@ void handleVoiceSettingsTouch(uint16_t x, uint16_t y) {
     
     if (isButtonPressed(volUpBtn, x, y) && voiceOnline) {
         if (currentVolume < 30) {
-            voiceAlert.setVolume(currentVolume + 1);
-            voiceAlert.playSystem(VOICE_READY); // 볼륨 확인
+            safeVoiceAlert.setVolume(currentVolume + 1);
+            safeVoiceAlert.playSystem(VOICE_READY); // 볼륨 확인
             screenNeedsRedraw = true;
         }
         return;
@@ -301,7 +301,7 @@ void handleVoiceSettingsTouch(uint16_t x, uint16_t y) {
         };
         
         if (isButtonPressed(testBtn, x, y) && voiceOnline) {
-            voiceAlert.playSystem((VoiceSystemId)testVoices[i]);
+            safeVoiceAlert.playSystem((VoiceSystemId)testVoices[i]);
             return;
         }
     }

@@ -57,6 +57,10 @@ public:
     
     // 초기화
     void begin();
+    void update(float pressure, float temperature, float current, uint8_t pwm, int state);
+    void reset();
+    void printStatus() const;
+    const char* getMaintenanceLevelString() const;
     
     // 건강도 계산
     float calculateHealthScore(
@@ -91,9 +95,9 @@ public:
     void performMaintenance();
     
     // Getter
-    float getHealthScore() { return currentHealthScore; }
+    float getHealthScore() const;
     HealthFactors getHealthFactors() { return factors; }
-    MaintenanceLevel getMaintenanceLevel() { return maintenanceLevel; }
+    MaintenanceLevel getMaintenanceLevel() const;
     unsigned long getTotalRuntime() { return totalRuntime; }
     unsigned long getTimeSinceLastMaintenance();
     

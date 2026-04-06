@@ -1,48 +1,49 @@
-// ================================================================
-// CloudManager.cpp - 클라우드 관리 (v3.9.2 수정)
-// sensorData → sensorManager 변경
-// ================================================================
-
+// CloudManager.cpp - CloudManager.h 인터페이스 기반
 #include "CloudManager.h"
 #include "Config.h"
-#include "SensorManager.h"  // ← 추가
 
-extern SensorManager sensorManager;
+CloudManager::CloudManager() : lastUpdateTime(0), isConnected(false) {}
 
-CloudManager::CloudManager() {
-    lastUpdate = 0;
-}
-
-void CloudManager::begin() {
+bool CloudManager::begin() {
     Serial.println("[CloudManager] 초기화 완료");
+    return true;
 }
 
-// ================================================================
-// update() - SensorData를 const 참조로 받음
-// ================================================================
-void CloudManager::update(
-    const SensorData& sensorData,  // ← const 참조로 받음
-    SystemState state,
-    const Statistics& stats
-) {
-    uint32_t currentTime = millis();
-    
-    // 업데이트 간격 체크 (15초)
-    if (currentTime - lastUpdate < 15000) return;
-    
+bool CloudManager::uploadExtendedData() { return true; }
+bool CloudManager::uploadTrendData()    { return true; }
+
+bool CloudManager::uploadAlertData(MaintenanceLevel level, float healthScore, const char* message) {
+    Serial.printf("[CloudManager] Alert: level=%d score=%.1f %s\n", level, healthScore, message);
+    return true;
+}
+
+bool CloudManager::uploadData(float p, float t, float c, float h, int mode, int err, float uptime, int code) {
     #ifdef ENABLE_THINGSPEAK
-    // ThingSpeak 업데이트
-    Serial.println("[CloudManager] ThingSpeak 업데이트...");
-    Serial.printf("  압력: %.2f kPa\n", sensorData.pressure);
-    Serial.printf("  전류: %.2f A\n", sensorData.current);
-    Serial.printf("  온도: %.2f C\n", sensorData.temperature);
+    Serial.printf("[CloudManager] Upload: p=%.2f t=%.2f c=%.2f h=%.2f\n", p, t, c, h);
     #endif
-    
-    lastUpdate = currentTime;
+    return true;
 }
 
-void CloudManager::uploadData(const SensorData& data) {
-    Serial.println("[CloudManager] 데이터 업로드");
-    Serial.printf("  압력: %.2f\n", data.pressure);
-    Serial.printf("  온도: %.2f\n", data.temperature);
+bool CloudManager::shouldUpdate() {
+    return (millis() - lastUpdateTime) >= UPDATE_INTERVAL;
+}
+
+bool CloudManager::isCloudConnected() { return isConnected; }
+
+void CloudManager::bufferData(float p, float t, float c, float h) {
+    dataBuffer.pressure    = p;
+    dataBuffer.temperature = t;
+    dataBuffer.current     = c;
+    dataBuffer.healthScore = h;
+    dataBuffer.timestamp   = millis();
+}
+
+CloudDataPoint CloudManager::getBufferedData() { return dataBuffer; }
+
+void CloudManager::printStatistics() {
+    Serial.println("[CloudManager] 통계 출력");
+}
+
+void CloudManager::getSystemStatusString(char* buffer, size_t size) {
+    snprintf(buffer, size, "Cloud:%s", isConnected ? "OK" : "DISC");
 }

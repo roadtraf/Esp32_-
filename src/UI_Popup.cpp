@@ -280,7 +280,7 @@ void handleNumericPopupTouch(uint16_t x, uint16_t y) {
     if (isButtonPressed(okBtn, x, y)) {
         if (targetFloat) *targetFloat = value;
         if (targetU32)   *targetU32   = (uint32_t)value;
-        saveConfig();
+        // saveConfig();  // 미구현
         active = false;
         uiManager.requestRedraw();
         return;
@@ -373,7 +373,7 @@ bool isNumericPopupActive() {
 // ================================================================
 bool handlePopupTouch(uint16_t x, uint16_t y) {
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
-    if (handleMaintenanceAlertTouch(x, y)) return true;
+    // if (handleMaintenanceAlertTouch(x, y)) return true;  // 미구현
 #endif
     if (PopupState::active) {
         handleNumericPopupTouch(x, y);

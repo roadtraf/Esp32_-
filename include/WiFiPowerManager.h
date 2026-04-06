@@ -20,7 +20,7 @@ enum class WiFiActivityLevel {
     IDLE,               // 유휴 상태
     WIFI_LOW,             // 낮은 활동
     MEDIUM,             // 중간 활동
-    HIGH                // 높은 활동
+    WIFI_HIGH           // 높은 활동
 };
 
 // WiFi Power Configuration

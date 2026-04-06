@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 // ================================================================
 // Lang.h  —  EN / KO 다국어 지원
 //
@@ -20,7 +21,7 @@ extern Language currentLang;
 // ── 키 열거형 ─────────────────────────────────────────────────
 enum LangKey : uint8_t {
   // 공통 버튼
-  BACK, PREV, NEXT, OK, CANCEL,
+  BACK, PREV, NEXT, BTN_OK, BTN_CANCEL,
   START_BTN, STOP_BTN, MENU_BTN, RESET_BTN,
 
   // 타이틀

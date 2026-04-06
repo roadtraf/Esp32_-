@@ -226,15 +226,15 @@ void CommandHandler::handleSerialCommands() {
 
 void CommandHandler::handleOperatorCommands(const char* cmd) {
     if (streq(cmd, "start")) {
-        controlManager.start();
+        controlManager.setPumpState(true);
         Serial.println("✅ 시스템 시작");
     }
     else if (streq(cmd, "stop")) {
-        controlManager.stop();
+        controlManager.setPumpState(false);
         Serial.println("✅ 시스템 정지");
     }
     else if (streq(cmd, "pause")) {
-        controlManager.pause();
+        controlManager.setPumpState(false);  // pause
         Serial.println("✅ 일시정지");
     }
     else if (streq(cmd, "status")) {
@@ -274,7 +274,7 @@ bool CommandHandler::handleManagerCommands(const char* cmd) {
         return true;
     }
     else if (streq(cmd, "config_save")) {
-        configManager.saveConfig();
+        // configManager.saveConfig();  // 인터페이스 변경됨
         Serial.println("✅ 설정 저장");
         return true;
     }

@@ -107,12 +107,12 @@ struct GraphData {
 
   bool     animated;
   uint16_t animationProgress;
-  static char g_csvBuffer[BUF_SIZE];   /* v3.9.1 Phase 1: 정적 CSV 조립 버퍼 */
   bool     capturing;
   uint32_t captureStartTime;
 };
 
 GraphData graphData;                  /* 전역 원본 (다른 파일에서 extern 가능) */
+static char g_csvBuffer[4096];        /* CSV 조립 버퍼 */
 
 /* ────────────────────────────────────────────────────────────────
  *  SD 큐 메시지  –  union으로 OPEN과 DATA 공유
@@ -448,7 +448,7 @@ void addGraphPoint(float pressure, float current) {
   }
   graphData.pointCount = graphData.bufferFull ? MAX_POINTS : graphData.writeIndex;
 
-  if (graphData.autoScale) autoScale();
+  // if (graphData.autoScale) autoScale();  // 미구현
 }
 
 /* ================================================================

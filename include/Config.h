@@ -306,12 +306,12 @@ extern HealthMonitor healthMonitor;
 
 #ifdef ENABLE_SMART_ALERTS
 #include "SmartAlert.h"
-extern SmartAlert smartAlert;
+// extern SmartAlert smartAlert;  // SmartAlert.h에서 직접 참조
 #endif
 
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
-extern VoiceAlert voiceAlert;
+extern SafeVoiceAlert safeVoiceAlert;
 #endif
 
 // ─────────────────── 구조체 ─────────────────────────────────

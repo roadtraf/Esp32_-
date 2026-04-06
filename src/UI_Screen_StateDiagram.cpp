@@ -32,8 +32,8 @@ struct StateNode {
 static const StateNode PAGE0_NODES[] = {
     // Row 1: IDLE → VACUUM_ON → VACUUM_HOLD
     {60,  65, 90, 40, "IDLE",        STATE_IDLE,            COLOR_INFO},
-    {180, 65, 90, 40, "VAC_ON",      STATE_IDLE_TO_VACUUM,  COLOR_SUCCESS},
-    {300, 65, 90, 40, "VAC_HOLD",    STATE_VACUUMING,       COLOR_SUCCESS},
+    {180, 65, 90, 40, "VAC_ON",      STATE_IDLE,  COLOR_SUCCESS},
+    {300, 65, 90, 40, "VAC_HOLD",    STATE_VACUUM_ON,       COLOR_SUCCESS},
     
     // Row 2: VACUUM_BREAK
     {420, 65, 90, 40, "HOLD",        STATE_VACUUM_HOLD,     COLOR_SUCCESS},

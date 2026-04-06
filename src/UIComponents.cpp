@@ -31,9 +31,9 @@ void drawHeader(const char* title, bool showManagerBadge) {
 
     // 관리자 배지
     if (showManagerBadge && !systemController.isOperatorMode()) {
-        AccessLevel level = systemController.getCurrentLevel();
-        const char* badgeText  = (level == ACCESS_DEVELOPER) ? "DEV" : "MGR";
-        uint16_t    badgeColor = (level == ACCESS_DEVELOPER) ? COLOR_DEVELOPER : COLOR_MANAGER;
+        // AccessLevel level = systemController.getCurrentLevel();  // 미구현
+        const char* badgeText  = "DEV";  // level 미구현
+        uint16_t    badgeColor = UITheme::COLOR_PRIMARY;  // level 미구현
 
         // [U7] textWidth 기반 배지 위치 계산
         int16_t titleW  = tft.textWidth(title);

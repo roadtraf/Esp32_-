@@ -113,12 +113,8 @@ void EnhancedWatchdog::begin(uint32_t timeout) {
     uint32_t actualTimeout = (timeout < WDT_TIMEOUT_HW) ? WDT_TIMEOUT_HW : timeout;
     Serial.printf("[EnhancedWDT] HW WDT 타임아웃: %us\n", actualTimeout);
 
-    esp_task_wdt_config_t wdt_config = {
-        .timeout_ms = actualTimeout * 1000,
-        .idle_core_mask = 0,   // idle 태스크 WDT 비포함 (false positive 방지)
-        .trigger_panic = true  // WDT 만료 시 패닉 → 스택 덤프 출력
-    };
-    esp_task_wdt_reconfigure(&wdt_config);
+    // ESP-IDF 구버전 호환 WDT 초기화
+    esp_task_wdt_init(actualTimeout, true);
 
     // 현재 태스크(setup/loop)를 WDT에 등록
     esp_task_wdt_add(NULL);

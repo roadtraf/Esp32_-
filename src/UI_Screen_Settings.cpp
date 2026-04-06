@@ -15,7 +15,7 @@
 
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
-extern VoiceAlert voiceAlert;
+extern SafeVoiceAlert safeVoiceAlert;
 #endif
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
@@ -77,7 +77,7 @@ static void buildMenuItems(MenuItem items[], uint8_t* count) {
 
 #ifdef ENABLE_VOICE_ALERTS
     items[n++] = {"음성",
-                  voiceAlert.isOnline() ? "활성" : "비활성",
+                  safeVoiceAlert.isOnline() ? "활성" : "비활성",
                   COLOR_DEVELOPER,
                   SCREEN_VOICE_SETTINGS,
                   true, true};
@@ -247,12 +247,12 @@ void handleSettingsTouch(uint16_t x, uint16_t y) {
                 currentLang = (currentLang == LANG_EN) ? LANG_KO : LANG_EN;
                 config.language = (uint8_t)currentLang;
 #ifdef ENABLE_VOICE_ALERTS
-                if (voiceAlert.isOnline()) {
-                    voiceAlert.setLanguage((currentLang == LANG_KO)
+                if (safeVoiceAlert.isOnline()) {
+                    safeVoiceAlert.setLanguage((currentLang == LANG_KO)
                                            ? LANGUAGE_KOREAN : LANGUAGE_ENGLISH);
                 }
 #endif
-                saveConfig();
+                // saveConfig();  // 미구현
                 uiManager.requestRedraw();
                 return;
             }

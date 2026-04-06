@@ -11,7 +11,7 @@
 #include <freertos/task.h>
 
 // 전역 인스턴스
-VoiceAlert voiceAlert;
+VoiceAlert safeVoiceAlert;
 
 // ═══════════════════════════════════════════════════════════════
 //  생성자
@@ -25,7 +25,7 @@ VoiceAlert::VoiceAlert() {
     currentVolume = DEFAULT_VOLUME;
     savedVolume = DEFAULT_VOLUME;
     
-    currentLanguage = LANG_KO;  // 기본값
+    currentLang = LANG_KO;  // 기본값
     
     repeatEnabled = false;
     repeatCount = 2;
@@ -85,7 +85,7 @@ bool VoiceAlert::begin() {
     
     Serial.printf("[VoiceAlert] 볼륨: %d/30\n", currentVolume);
     Serial.printf("[VoiceAlert] 언어: %s\n", 
-                 currentLanguage == LANG_KO ? "한국어" : "English");
+                 currentLang == LANG_KO ? "한국어" : "English");
     Serial.println("[VoiceAlert] 준비 완료!");
     
     return true;
@@ -100,20 +100,20 @@ bool VoiceAlert::isOnline() {
 // ═══════════════════════════════════════════════════════════════
 
 void VoiceAlert::setLanguage(Language lang) {
-    currentLanguage = lang;
+    currentLang = lang;
     
     const char* langName = (lang == LANG_KO) ? "한국어" : "English";
     Serial.printf("[VoiceAlert] 언어 변경: %s\n", langName);
 }
 
 Language VoiceAlert::getLanguage() const {
-    return currentLanguage;
+    return currentLang;
 }
 
 uint8_t VoiceAlert::getFolderNumber(uint8_t baseFolder) {
     uint8_t offset;
     
-    switch (currentLanguage) {
+    switch (currentLang) {
         case LANG_KO:
             offset = FOLDER_OFFSET_KOREAN;
             break;

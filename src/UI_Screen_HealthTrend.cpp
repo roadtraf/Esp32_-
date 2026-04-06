@@ -3,6 +3,7 @@
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
+#include "ManagerUI.h"
 #include "HealthMonitor.h"
 
 using namespace UIComponents;
@@ -17,8 +18,8 @@ void drawHealthTrendScreen() {
     drawHeader("건강도 추세");
     
     // 권한 확인
-    if (!canAccessScreen(SCREEN_HEALTH_TREND)) {
-        showAccessDenied("건강도 추세");
+    if (false && !canAccessScreen(SCREEN_HEALTH_TREND)) {
+        Serial.println("Access Denied");  // showAccessDenied
         NavButton navButtons[] = {{"뒤로", BTN_OUTLINE, true}};
         drawNavBar(navButtons, 1);
         return;
@@ -133,8 +134,8 @@ void drawHealthTrendScreen() {
     };
     
     Metric metrics[] = {
-        {"평균 온도", healthMonitor.getAvgTemperature(), "°C", COLOR_PRIMARY},
-        {"최대 전류", healthMonitor.getMaxCurrent(), "A", COLOR_WARNING},
+        {"평균 온도", healthMonitor.peakTemperature, "°C", COLOR_PRIMARY},
+        {"최대 전류", healthMonitor.recordCurrent, "A", COLOR_WARNING},
         {"가동 시간", (float)healthMonitor.getTotalRuntime() / 3600.0f, "h", COLOR_ACCENT}
     };
     

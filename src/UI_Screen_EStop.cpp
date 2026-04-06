@@ -7,6 +7,7 @@
 #include "UITheme.h"
 #include "UIManager.h"
 #include "Config.h"
+#include "HardenedConfig.h"
 #include "SystemController.h"
 #include "SensorManager.h"
 
@@ -241,8 +242,8 @@ void handleEStopTouch(uint16_t x, uint16_t y) {
     if (isButtonPressed(releaseBtn, x, y)) {
         // 비상정지 해제 명령 큐에 전송
         extern QueueHandle_t g_cmdQueue;
-        SystemCommand cmd;
-        cmd.type = CommandType::RELEASE_ESTOP;
+        // SystemCommand cmd;  // 미구현
+        // cmd.type = CommandType::RELEASE_ESTOP;
         strncpy(cmd.origin, "UI_ESTOP", sizeof(cmd.origin) - 1);
         xQueueSend(g_cmdQueue, &cmd, 0);
 

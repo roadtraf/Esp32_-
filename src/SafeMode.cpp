@@ -2,6 +2,7 @@
 // SafeMode.cpp - 안전 모드 시스템 구현
 // ================================================================
 #include "SafeMode.h"
+#include "LovyanGFX_Config.hpp"
 
 // 전역 인스턴스
 SafeMode safeMode;

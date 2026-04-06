@@ -97,7 +97,7 @@ void UIManager::update() {
     // 자동 로그아웃 체크
     systemController.checkAutoLogout();
     
-    updatePopupLongPress();   // ← [U9] 
+    // updatePopupLongPress();  // 미구현 
 }
 
 // ================================================================
@@ -138,7 +138,8 @@ void UIManager::drawCurrentScreen() {
         case SCREEN_MAIN:            drawMainScreen();           break;
         case SCREEN_SETTINGS:        drawSettingsScreen();       break;
         case SCREEN_ALARM:           drawAlarmScreen();          break;
-        case SCREEN_TREND_GRAPH:     drawGraphScreen();          break;
+        case SCREEN_TREND_GRAPH:     // drawGraphScreen();  break;  // 미구현
+            break;
         case SCREEN_TIMING_SETUP:    drawTimingScreen();         break;
         case SCREEN_PID_SETUP:       drawPIDScreen();            break;
         case SCREEN_STATISTICS:      drawStatisticsScreen();     break;
@@ -241,7 +242,7 @@ void UIManager::drawToastOverlay() {
     tft.setTextSize(UITheme::TEXT_SIZE_SMALL);
     int16_t tw = tft.textWidth(toastText);
     int16_t pw = tw + UITheme::SPACING_LG;
-    int16_t px = (UITheme::SCREEN_WIDTH - pw) / 2;
+    int16_t px = (SCREEN_WIDTH - pw) / 2;
     int16_t py = UITheme::HEADER_HEIGHT + UITheme::SPACING_MD;
 
     tft.fillRoundRect(px, py, pw, 28, UITheme::BUTTON_RADIUS, toastColor);

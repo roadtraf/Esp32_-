@@ -15,6 +15,7 @@
 
 class UIManager {
 public:
+    void drawCurrentScreen();
     // ── 초기화 / 업데이트 ──
     void begin();
     void update();
@@ -97,7 +98,6 @@ private:
     uint8_t savedBrightness  = 255;
 
     // 내부
-    void drawCurrentScreen();
     void handlePopupTouch(uint16_t x, uint16_t y);
 };
 

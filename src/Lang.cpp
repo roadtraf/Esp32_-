@@ -337,18 +337,18 @@ static const char* HP0_KO[] = {
   "2. \uC9C4\uACF5 ON \uB8DC\uAC80 \uC2DC\uC791",                  // 진공 ON 단계
   "3. \uC9C4\uACF5 \uC720\uC9C0 \uB8DC\uAC80 (\uC815\uB9D1 \uC720\uC9C0)", // 유지
   "4. \uC9C4\uACF5 \uD574\uC81C \uB8DC\uAC80 (\uC815\uB9D1 \uD574\uC81C)", // 해제
-  "5. \uC81C\uD568 \uC81C\uC815 \uB3C0\uAE30 (\uAD80\uC77C \uC센\uC2A4)", // 제품 대기
+  "5. \uC81C\uD568 \uC81C\uC815 대기 (\uAD80\uC77C 센서)", // 제품 대기
   "6. \uC6B3\uC740 - \uB2E4\uC740 \uC0AC\uC774\uD074 \uC885\uBE58", // 완료
 };
 static const char* HP1_KO[] = {
   "\uC81C\uC5B4 \uBD80\uB3C4:",                                     // 제어 모드:
   "\uC218\uB3A8: \uACE0\uC815 PWM, \uD3B8\uBD80\uB9D1 \uC5C6\uC740", // 수동
-  "\uC790\uB3A8: \uC2DC\uC04C \uGE30\uC0BC, \uC548\uC815\uC801",   // 자동
+  "\uC790\uB3A8: \uC2DC\uC04C 계속, \uC548\uC815\uC801",   // 자동
   "PID: \uC815\uB9D1 \uD3B8\uBD80\uB9D1 \uC81C\uC5B4",             // PID
   "     \uAC80\uC7B0 \uC815\uBC00\uB9D1 \uC81C\uC5B4",             // 정밀
 };
 static const char* HP2_KO[] = {
-  "USB \uD82C\uD3D8\uB9D1 \uC81C\uC5B4:",                          // USB 키패드 제어:
+  "USB 키패드 \uC81C\uC5B4:",                          // USB 키패드 제어:
   "1:\uC2DC\uC791 2:\uC815\uC9C0  3:\uBD80\uB3C4",                 // 시작 정지 모드
   "4:\uB9AC\uC0C1 5:\uD1B5\uC81C  6:\uC815\uBCF4",                 // 리셋 통계 정보
   "7:\uD0DC\uC774\uB9BC 8:\uADF8\uB798\uD504 9:\uB3C4\uC6B8\uB9D1", // 타이밍 그래프 도움말
@@ -360,7 +360,7 @@ static const char* HP3_KO[] = {
   "- \uBE44\uC0C8\uC815\uC9C0 \uBE44\uD1B0 (NC)",                  // 비상정지 버튼
   "- \uACFC\uC804\uB978 \uBD80\uD638 (6.0A)",                      // 과전류 보호
   "- \uD3B8\uBD80/\uBC18\uB81C \uC775\uC0A4\uB85C\uAE30",         // 펌프/밸브 인터록
-  "- \uC센\uC2A4 \uC0C1\uD0DC \uBBA8\uC2D4\uB9D1\uAE30",         // 센서 상태 모니터링
+  "- 센서 \uC0C1\uD0DC \uBBA8\uC2D4\uB9D1\uAE30",         // 센서 상태 모니터링
   "- \uC6DC\uCED8\uB3A8 \uD0DC\uC774\uBFA8 (10\uC804)",           // 워치dog 타이머
   "- \uC790\uB3A8 \uC5D0\uB9AC \uBD80\uAE30",                     // 자동 에러 복구
   "- \uC774\uC911 \uC804\uC6B0 \uC81C\uB8FC CH3+CH4",             // 이중 전원 차단
@@ -383,7 +383,7 @@ static const char* HP5_KO[] = {
 const char* HELP_TITLE[2][6] = {
   { "Basic Operation", "Control Modes", "Keypad Controls",
     "Safety Features", "Data Logging",  "Network Features" },
-  { "\uAE30\uBD80 \uC791\uB3A8", "\uC81C\uC5B4 \uBD80\uB3C4", "USB \uD82C\uD3D8\uB9D1 \uC81C\uC5B4",
+  { "\uAE30\uBD80 \uC791\uB3A8", "\uC81C\uC5B4 \uBD80\uB3C4", "USB 키패드 \uC81C\uC5B4",
     "\uC548\uC804 \uAE30\uB2A5", "\uB3C4\uC774 \uB85C\uAE30",  "\uB124\uD2B8\uC6B0\uAE30 \uAE30\uB2A5" },
 };
 
@@ -446,6 +446,6 @@ const char* SD_EXIT[2][8] = {
 // ── 블록 라벨 ─────────────────────────────────────────────────
 const char* SD_BLOCK_LABEL[2][8] = {
   { "IDLE", "VAC ON", "VAC HOLD", "VAC BRK", "WAIT", "DONE", "ERROR", "EMRG" },
-  { "\uB3C0\uAE30", "\uC9C4\uACF5ON", "\uC720\uC9C0", "\uD574\uC81C",
+  { "대기", "\uC9C4\uACF5ON", "\uC720\uC9C0", "\uD574\uC81C",
     "\uC81C\uD568\uB3C0", "\uC6B3\uC740", "\uC5D0\uB9AC", "\uBE44\uC0C8" },
 };

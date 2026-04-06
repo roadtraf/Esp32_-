@@ -72,7 +72,7 @@ void drawCalibrationScreen() {
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.setTextColor(COLOR_PRIMARY);
     tft.setCursor(pressureCard.x + CARD_PADDING + 90, pressureCard.y + CARD_PADDING + 15);
-    tft.printf("%.2f kPa", pressureOffset);
+    tft.printf("%.2f kPa", 0.0f  /* pressureOffset */);
     
     // 캘리브레이션 버튼
     ButtonConfig pressureBtn = {
@@ -108,7 +108,7 @@ void drawCalibrationScreen() {
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.setTextColor(COLOR_ACCENT);
     tft.setCursor(currentCard.x + CARD_PADDING + 90, currentCard.y + CARD_PADDING + 15);
-    tft.printf("%.3f A", currentOffset);
+    tft.printf("%.3f A", 0.0f  /* currentOffset */);
     
     ButtonConfig currentBtn = {
         .x = (int16_t)(currentCard.x + currentCard.w - 90),
@@ -258,7 +258,7 @@ void handleCalibrationTouch(uint16_t x, uint16_t y) {
         
         if (isButtonPressed(tempBtn, x, y)) {
             // 온도 센서 정보 팝업
-            showTemperatureSensorInfo();
+            // showTemperatureSensorInfo();  // 미구현
             return;
         }
     }
@@ -323,5 +323,5 @@ void showTemperatureSensorInfo() {
     drawButton(closeBtn);
     
     // [R4] 비블로킹: 3초 후 자동으로 원래 화면 복귀
-    uiManager.showMessage("터치하면 닫힙니다", 3000);
+    Serial.println("터치하면 닫힙니다");
 }

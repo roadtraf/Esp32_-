@@ -106,15 +106,15 @@ bool NetworkManager::connectMQTT() {
         return false;
     }
     
-    if (strlen(config.mqttServer) == 0) {
+    if (strlen(config.mqttBroker) == 0) {
         Serial.println("[NetworkMgr] MQTT 서버 설정 없음");
         return false;
     }
     
-    mqttClient.setServer(config.mqttServer, config.mqttPort);
+    mqttClient.setServer(config.mqttBroker, config.mqttPort);
     
     Serial.printf("[NetworkMgr] MQTT 연결 시도: %s:%d\n", 
-                  config.mqttServer, config.mqttPort);
+                  config.mqttBroker, config.mqttPort);
     
     char clientId[32];
     snprintf(clientId, sizeof(clientId), "ESP32-%08x", (uint32_t)ESP.getEfuseMac());
@@ -296,7 +296,7 @@ void NetworkManager::printStatus() {
                   mqttConnected ? "✅ 연결됨" : "❌ 끊김");
     
     if (mqttConnected) {
-        Serial.printf("║ 서버: %-31s ║\n", config.mqttServer);
+        Serial.printf("║ 서버: %-31s ║\n", config.mqttBroker);
     }
     
     Serial.println("╠═══════════════════════════════════════╣");

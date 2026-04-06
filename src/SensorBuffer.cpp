@@ -29,7 +29,7 @@ void updateSensorBuffers() {
     currentBuffer.push(current);
     
     // 통합 센서 데이터 버퍼에 추가
-    SensorData data(temperature, pressure, current, limitSwitch, photoSensor, emergencyStop, timestamp);
+    SensorData data = {pressure, current, temperature, limitSwitch, photoSensor, emergencyStop, timestamp};
     sensorDataBuffer.push(data);
 }
 

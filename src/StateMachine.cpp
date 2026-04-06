@@ -7,6 +7,9 @@
 // - 원본 로직 100% 유지
 // ================================================================
 #include "Config.h"
+#include "SensorManager.h"
+extern SensorManager sensorManager;
+
 #include "StateMachine.h"
 #include "Control.h"
 #include "PID_Control.h"
@@ -22,7 +25,7 @@
 // FreeRTOS (delay 개선)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-extern VoiceAlert voiceAlert;
+extern SafeVoiceAlert safeVoiceAlert;
 #endif
 
 // 자동 연장 카운터
@@ -36,13 +39,13 @@ void updateStateMachine() {
   uint32_t elapsedTime = millis() - stateStartTime;
 
   // 비상정지 체크 (NC 타입: LOW = 트리거)
-  if (!sensorData.emergencyStop) {
+  if (!sensorManager.getEmergencyStop()) {
     changeState(STATE_EMERGENCY_STOP);
     return;
   }
 
   // 과전류 체크
-  if (sensorData.current > CURRENT_THRESHOLD_CRITICAL) {
+  if (sensorManager.getCurrent() > CURRENT_THRESHOLD_CRITICAL) {
     setError(ERROR_OVERCURRENT, SEVERITY_CRITICAL, "과전류 감지");
     changeState(STATE_ERROR);
     return;
@@ -51,21 +54,21 @@ void updateStateMachine() {
   // ═══ 온도 체크 (v3.5) ═══
   if (config.tempSensorEnabled) {
     // 강제 정지 온도 (70°C)
-    if (sensorData.temperature >= config.tempShutdown) {
+    if (sensorManager.getTemperature() >= config.tempShutdown) {
       setError(ERROR_OVERHEAT, SEVERITY_CRITICAL, "과열 - 강제 정지");
       changeState(STATE_EMERGENCY_STOP);
       return;
     }
     
     // 위험 온도 (60°C) - 에러 상태로 전환
-    if (sensorData.temperature >= config.tempCritical) {
+    if (sensorManager.getTemperature() >= config.tempCritical) {
       setError(ERROR_OVERHEAT, SEVERITY_RECOVERABLE, "과열 - 냉각 필요");
       changeState(STATE_ERROR);
       return;
     }
     
     // 경고 온도 (50°C) - 경고음 + 음성 알림
-    if (sensorData.temperature >= config.tempWarning) {
+    if (sensorManager.getTemperature() >= config.tempWarning) {
       static uint32_t lastBeep = 0;
       if (millis() - lastBeep >= 10000) {  // 10초마다
         digitalWrite(PIN_BUZZER, HIGH);
@@ -76,12 +79,12 @@ void updateStateMachine() {
         vTaskDelay(pdMS_TO_TICKS(200));
         digitalWrite(PIN_BUZZER, LOW);
         
-        Serial.printf("[경고] 온도 상승: %.1f°C\n", sensorData.temperature);
+        Serial.printf("[경고] 온도 상승: %.1f°C\n", sensorManager.getTemperature());
         
         // v3.9: 음성 경고
         #ifdef ENABLE_VOICE_ALERTS
-        if (voiceAlert.isOnline()) {
-          voiceAlert.playError(VOICE_ERROR_OVERHEAT);
+        if (safeVoiceAlert.isOnline()) {
+          safeVoiceAlert.enqueue(1, 5);  // 과열 경보
         }
         #endif
         
@@ -94,7 +97,7 @@ void updateStateMachine() {
   switch (currentState) {
     // ── IDLE ──────────────────────────────────────────────
     case STATE_IDLE:
-      if (sensorData.limitSwitch) changeState(STATE_VACUUM_ON);
+      if (sensorManager.getLimitSwitch()) changeState(STATE_VACUUM_ON);
       break;
 
     // ── VACUUM_ON ─────────────────────────────────────────
@@ -102,7 +105,7 @@ void updateStateMachine() {
       if (currentMode == MODE_AUTO) {
         if (elapsedTime >= config.vacuumOnTime) changeState(STATE_VACUUM_HOLD);
       } else if (currentMode == MODE_PID) {
-        if (sensorData.pressure <= config.targetPressure + config.pressureHysteresis) {
+        if (sensorManager.getPressure() <= config.targetPressure + config.pressureHysteresis) {
           changeState(STATE_VACUUM_HOLD);
         }
       }
@@ -125,7 +128,7 @@ void updateStateMachine() {
     // ── WAIT_REMOVAL (자동 연장 기능) ──────────────────────
     case STATE_WAIT_REMOVAL:
       // 광센서 체크 (박스 제거 감지)
-      if (!sensorData.photoSensor) {
+      if (!sensorManager.getPhotoSensor()) {
         Serial.println("[WAIT_REMOVAL] 박스 제거 감지 → COMPLETE");
         holdExtensionCount = 0;
         changeState(STATE_COMPLETE);
@@ -153,8 +156,8 @@ void updateStateMachine() {
           
           // v3.9: 음성 안내 (박스 제거 요청)
           #ifdef ENABLE_VOICE_ALERTS
-          if (voiceAlert.isOnline()) {
-            voiceAlert.playGuide(VOICE_GUIDE_REMOVE_BOX);
+          if (safeVoiceAlert.isOnline()) {
+            safeVoiceAlert.enqueue(1, 6);  // 박스 제거 안내
           }
           #endif
         } 
@@ -162,7 +165,7 @@ void updateStateMachine() {
           Serial.printf("[WAIT_REMOVAL] 타임아웃 (연장 %d회 후) → ERROR\n", 
                         holdExtensionCount);
           holdExtensionCount = 0;
-          setError(ERROR_PHOTO_TIMEOUT, SEVERITY_TEMPORARY, "박스 제거 타임아웃");
+          setError(ERROR_PHOTO_TIMEOUT, SEVERITY_INFO, "박스 제거 타임아웃");
           changeState(STATE_ERROR);
         }
       }
@@ -178,7 +181,7 @@ void updateStateMachine() {
       // 온도 과열 에러인 경우 자동 복구 체크
       if (config.tempSensorEnabled && 
           currentError.code == ERROR_OVERHEAT &&
-          sensorData.temperature < config.tempCritical - 5.0) {
+          sensorManager.getTemperature() < config.tempCritical - 5.0) {
         Serial.println("[ERROR] 온도 하강 → 자동 복구");
         clearError();
         changeState(STATE_IDLE);
@@ -187,10 +190,10 @@ void updateStateMachine() {
 
     // ── EMERGENCY_STOP ────────────────────────────────────
     case STATE_EMERGENCY_STOP:
-      if (sensorData.emergencyStop) {
+      if (sensorManager.getEmergencyStop()) {
         // 온도 과열로 인한 비상정지는 온도가 내려가야 복구
         if (currentError.code == ERROR_OVERHEAT) {
-          if (sensorData.temperature < config.tempShutdown - 10.0) {
+          if (sensorManager.getTemperature() < config.tempShutdown - 10.0) {
             Serial.println("[EMERGENCY] 온도 정상화 → 복구 가능");
             clearError();
             changeState(STATE_IDLE);
@@ -204,7 +207,7 @@ void updateStateMachine() {
 }
 
 // StateMachine 초기화 — Mutex 생성 void 
-initStateMachine() {
+void initStateMachine() {
   if (g_stateMutex == nullptr) {
     g_stateMutex = xSemaphoreCreateMutex();
     if (g_stateMutex == nullptr) {
@@ -241,8 +244,8 @@ void changeState(SystemState newState) {
   
   // v3.9: 음성 알림 - 상태 변경 시 자동 재생
   #ifdef ENABLE_VOICE_ALERTS
-  if (voiceAlert.isOnline() && voiceAlert.isAutoVoiceEnabled()) {
-    voiceAlert.playStateMessage(newState);
+  if (safeVoiceAlert.isOnline() && safeVoiceAlert.isOnline()) {
+    safeVoiceAlert.enqueue(1, (uint8_t)newState + 1);  // 상태 변경
   }
   #endif
     
@@ -262,11 +265,11 @@ void changeState(SystemState newState) {
     case STATE_VACUUM_ON:
       controlValve(false);
       stats.totalCycles++;
-      initGraphData();
+      // initGraphData();  // 미구현
       break;
 
     case STATE_VACUUM_HOLD:
-      if (currentMode == MODE_AUTO) controlPump(config.manualPWM);
+      if (currentMode == MODE_AUTO) controlPump(200  /* manualPWM 미정의 */);
       break;
 
     case STATE_VACUUM_BREAK:
@@ -280,15 +283,15 @@ void changeState(SystemState newState) {
       
       // v3.9: 박스 제거 안내 음성
       #ifdef ENABLE_VOICE_ALERTS
-      if (voiceAlert.isOnline()) {
-        voiceAlert.playGuide(VOICE_GUIDE_REMOVE_BOX);
+      if (safeVoiceAlert.isOnline()) {
+        safeVoiceAlert.enqueue(1, 6);  // 박스 제거 안내
       }
       #endif
       break;
 
     case STATE_COMPLETE:
       stats.successfulCycles++;
-      logCycle(true, sensorData.pressure, sensorData.current);
+      logCycle();
       digitalWrite(PIN_BUZZER, HIGH);
       vTaskDelay(pdMS_TO_TICKS(100));
       digitalWrite(PIN_BUZZER, LOW);
@@ -299,7 +302,7 @@ void changeState(SystemState newState) {
       controlValve(true);
       stats.failedCycles++;
       stats.totalErrors++;
-      logCycle(false, sensorData.pressure, sensorData.current);
+      logCycle();
       digitalWrite(PIN_BUZZER, HIGH);
       vTaskDelay(pdMS_TO_TICKS(500));
       digitalWrite(PIN_BUZZER, LOW);

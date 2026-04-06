@@ -4,6 +4,21 @@
 
 #include <Arduino.h>
 
+// SensorData 정의 (중복 방지)
+#ifndef SENSOR_DATA_DEFINED
+#define SENSOR_DATA_DEFINED
+struct SensorData {
+    float    pressure;
+    float    current;
+    float    temperature;
+    bool     limitSwitch;
+    bool     photoSensor;
+    bool     emergencyStop;
+    uint32_t timestamp;
+};
+#endif
+
+
 // ================================================================
 // Ring Buffer Template - 범용 링 버퍼
 // ================================================================
@@ -162,30 +177,11 @@ public:
 // ================================================================
 // 센서 데이터 구조체
 // ================================================================
-#define SENSOR_DATA_DEFINED
-struct SensorData {
-    float temperature;
-    float pressure;
-    float current;
-    bool limitSwitch;
-    bool photoSensor;
-    bool emergencyStop;
-    uint32_t timestamp;
-    
-    SensorData() 
-        : temperature(0), pressure(0), current(0), 
-          limitSwitch(false), photoSensor(false), emergencyStop(false),
-          timestamp(0) {}
-    
-    SensorData(float t, float p, float c, bool ls, bool ps, bool es, uint32_t ts) 
-        : temperature(t), pressure(p), current(c), 
-          limitSwitch(ls), photoSensor(ps), emergencyStop(es),
-          timestamp(ts) {}
-};
 
 // ================================================================
 // 센서 통계 구조체
 // ================================================================
+#define SENSORSTATS_DEFINED
 struct SensorStats {
     // Temperature stats
     float avgTemperature;
@@ -211,6 +207,7 @@ struct SensorStats {
         memset(this, 0, sizeof(SensorStats));
     }
 };
+
 
 // ================================================================
 // 전역 센서 버퍼

@@ -3,6 +3,12 @@
 // v4.0 - 완벽한 MQTT 양방향 제어 기능 추가
 // ================================================================
 #include "Config.h"
+#include "SensorManager.h"
+extern SensorManager sensorManager;
+extern bool pumpActive;
+extern bool valveActive;
+extern uint8_t pumpPWM;
+#include "Control.h"
 #include "Network.h"
 #include "StateMachine.h"  // changeState, getStateName
 #include "Sensor.h"        // calibratePressure, calibrateCurrent
@@ -47,18 +53,6 @@ void connectWiFi() {
     } else {
         Serial.println("[WiFi] 연결 실패");
     }
-}
-
-  if (WiFi.status() == WL_CONNECTED) {
-    wifiConnected = true;
-    Serial.println("\n[WiFi] 연결 성공");
-    char ipBuf[16];
-    WiFi.localIP().toString().toCharArray(ipBuf, sizeof(ipBuf));
-    Serial.printf("  IP: %s\n", ipBuf);
-  } else {
-    wifiConnected = false;
-    Serial.println("\n[WiFi] 연결 실패");
-  }
 }
 
 // ─────────────────── MQTT ───────────────────────────────────
@@ -158,9 +152,9 @@ void publishSystemStatus() {
                 currentMode == MODE_AUTO   ? "AUTO"   : "PID";
   
   // 센서 데이터
-  doc["pressure"] = sensorData.pressure;
-  doc["temperature"] = sensorData.temperature;
-  doc["current"] = sensorData.current;
+  doc["pressure"] = sensorManager.getPressure();
+  doc["temperature"] = sensorManager.getTemperature();
+  doc["current"] = sensorManager.getCurrent();
   
   // 설정값
   doc["target_pressure"] = config.targetPressure;
@@ -189,9 +183,9 @@ void publishSensorData() {
   if (!mqttConnected) return;
 
   StaticJsonDocument<256> doc;
-  doc["pressure"] = sensorData.pressure;
-  doc["temperature"] = sensorData.temperature;
-  doc["current"] = sensorData.current;
+  doc["pressure"] = sensorManager.getPressure();
+  doc["temperature"] = sensorManager.getTemperature();
+  doc["current"] = sensorManager.getCurrent();
   doc["timestamp"] = millis();
 
   char buffer[256];
@@ -209,7 +203,7 @@ void publishAlarmState() {
   if (errorActive) {
     doc["error_code"] = currentError.code;
     doc["error_message"] = currentError.message;
-    doc["error_level"] = currentError.level;
+    doc["error_level"] = currentError.severity;
   }
 
   char buffer[256];
@@ -606,8 +600,8 @@ void handleSerialCommand() {
   }
   else if (strcmp(cmd, "STATUS") == 0) {
     Serial.printf("상태: %s\n", getStateName(currentState));
-    Serial.printf("압력: %.2f kPa\n", sensorData.pressure);
-    Serial.printf("전류: %.2f A\n",   sensorData.current);
+    Serial.printf("압력: %.2f kPa\n", sensorManager.getPressure());
+    Serial.printf("전류: %.2f A\n",   sensorManager.getCurrent());
   }
   else if (strncmp(cmd, "SET_PRESSURE ", 13) == 0) {
     float value = atof(cmd + 13);
@@ -651,6 +645,10 @@ void handleSerialCommand() {
 }
 
 // ─────────────────── 절전 모드 ──────────────────────────────
+static bool sleepMode = false;
+static uint8_t savedBacklight = 100;
+static uint32_t lastIdleTime = 0;
+
 void enterSleepMode() {
   sleepMode        = true;
   savedBacklight   = config.backlightLevel;

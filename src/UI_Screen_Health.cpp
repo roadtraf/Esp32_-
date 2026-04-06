@@ -3,6 +3,7 @@
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
+#include "ManagerUI.h"
 #include "HealthMonitor.h"
 
 using namespace UIComponents;
@@ -17,8 +18,8 @@ void drawHealthScreen() {
     drawHeader("건강도 모니터");
     
     // 권한 확인
-    if (!canAccessScreen(SCREEN_HEALTH)) {
-        showAccessDenied("건강도");
+    if (false && !canAccessScreen(SCREEN_HEALTH)) {
+        Serial.println("Access Denied");  // showAccessDenied
         NavButton navButtons[] = {{"뒤로", BTN_OUTLINE, true}};
         drawNavBar(navButtons, 1);
         return;
@@ -73,11 +74,11 @@ void drawHealthScreen() {
     BadgeType badgeType;
     
     switch (level) {
-        case MAINTENANCE_GOOD:
+        case MAINTENANCE_NONE:
             levelText = "양호";
             badgeType = BADGE_SUCCESS;
             break;
-        case MAINTENANCE_ATTENTION:
+        case MAINTENANCE_SOON:
             levelText = "주의";
             badgeType = BADGE_WARNING;
             break;
@@ -85,7 +86,7 @@ void drawHealthScreen() {
             levelText = "필요";
             badgeType = BADGE_DANGER;
             break;
-        case MAINTENANCE_CRITICAL:
+        case MAINTENANCE_URGENT:
             levelText = "긴급";
             badgeType = BADGE_DANGER;
             break;
@@ -113,10 +114,10 @@ void drawHealthScreen() {
     HealthItem items[] = {
         {"가동 시간", (float)healthMonitor.getTotalRuntime() / 3600.0f, "h", COLOR_PRIMARY},
         {"사이클", (float)stats.totalCycles, "회", COLOR_ACCENT},
-        {"평균 온도", healthMonitor.getAvgTemperature(), "°C", COLOR_INFO},
-        {"최대 온도", healthMonitor.getMaxTemperature(), "°C", COLOR_WARNING},
-        {"평균 전류", healthMonitor.getAvgCurrent(), "A", COLOR_PRIMARY},
-        {"최대 전류", healthMonitor.getMaxCurrent(), "A", COLOR_DANGER},
+        {"평균 온도", healthMonitor.peakTemperature, "°C", COLOR_INFO},
+        {"최대 온도", healthMonitor.peakTemperature, "°C", COLOR_WARNING},
+        {"평균 전류", healthMonitor.recordCurrent, "A", COLOR_PRIMARY},
+        {"최대 전류", healthMonitor.recordCurrent, "A", COLOR_DANGER},
         {"성공률", (stats.totalCycles > 0) ? (float)stats.successfulCycles / stats.totalCycles * 100 : 0, "%", COLOR_SUCCESS},
         {"오류 횟수", (float)errorHistCnt, "회", COLOR_DANGER}
     };

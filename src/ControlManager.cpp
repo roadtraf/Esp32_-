@@ -82,7 +82,7 @@ void ControlManager::setValveState(bool on) {
 
 void ControlManager::writeValveState(bool on) {
     // 실제 하드웨어 제어
-    digitalWrite(VALVE_PIN, on ? HIGH : LOW);
+    digitalWrite(PIN_VALVE, on ? HIGH : LOW);
 }
 
 // ================================================================
