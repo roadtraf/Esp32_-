@@ -1,6 +1,6 @@
 // ================================================================
-// Utils.cpp - 공통 유틸리티 구현 (v3.9.3 String 최적화)
-// String → char[] 변환으로 힙 단편화 방지
+// Utils.cpp -    (v3.9.3 String )
+// String  char[]    
 // ================================================================
 #include "Utils.h"
 #include <SPIFFS.h>
@@ -14,7 +14,7 @@
 namespace Utils {
 
 // ================================================================
-// 시간 포맷팅 (버퍼 기반)
+//   ( )
 // ================================================================
 
 void formatTime(char* buffer, size_t bufferSize, uint32_t seconds) {
@@ -61,7 +61,7 @@ void formatUptime(char* buffer, size_t bufferSize, uint32_t milliseconds) {
 }
 
 // ================================================================
-// 문자열 변환 (버퍼 기반)
+//   ( )
 // ================================================================
 
 void formatFloat(char* buffer, size_t bufferSize, float value, uint8_t decimals) {
@@ -100,7 +100,7 @@ void formatBytes(char* buffer, size_t bufferSize, uint32_t bytes) {
 }
 
 // ================================================================
-// 데이터 검증
+//  
 // ================================================================
 
 bool isInRange(float value, float min, float max) {
@@ -117,11 +117,11 @@ bool isValidString(const char* str, size_t maxLen) {
 }
 
 // ================================================================
-// 수학 함수
+//  
 // ================================================================
 
 float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
-    if (in_max == in_min) return out_min;  // 0으로 나누기 방지
+    if (in_max == in_min) return out_min;  // 0  
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
@@ -143,7 +143,7 @@ float averageFloat(const float* array, size_t count) {
 }
 
 // ================================================================
-// 로깅
+// 
 // ================================================================
 
 void logInfo(const char* tag, const char* message) {
@@ -165,7 +165,7 @@ void logDebug(const char* tag, const char* message) {
 }
 
 // ================================================================
-// 색상 변환
+//  
 // ================================================================
 
 uint16_t rgb565(uint8_t r, uint8_t g, uint8_t b) {
@@ -181,7 +181,7 @@ void rgb565ToRGB(uint16_t color, uint8_t* r, uint8_t* g, uint8_t* b) {
 }
 
 // ================================================================
-// 파일 시스템
+//  
 // ================================================================
 
 bool fileExists(const char* path) {
@@ -211,7 +211,7 @@ bool deleteFile(const char* path) {
 }
 
 // ================================================================
-// 메모리
+// 
 // ================================================================
 
 void printMemoryInfo() {
@@ -219,17 +219,17 @@ void printMemoryInfo() {
     uint32_t totalHeap = ESP.getHeapSize();
     uint32_t minFreeHeap = ESP.getMinFreeHeap();
     
-    Serial.println("\n=== 메모리 정보 ===");
-    Serial.printf("  전체 힙:     %u bytes\n", totalHeap);
-    Serial.printf("  사용 가능:   %u bytes\n", freeHeap);
-    Serial.printf("  최소 여유:   %u bytes\n", minFreeHeap);
-    Serial.printf("  사용률:      %.1f%%\n", 
+    Serial.println("\n===   ===");
+    Serial.printf("   :     %u bytes\n", totalHeap);
+    Serial.printf("   :   %u bytes\n", freeHeap);
+    Serial.printf("   :   %u bytes\n", minFreeHeap);
+    Serial.printf("  :      %.1f%%\n", 
                   (totalHeap - freeHeap) * 100.0f / totalHeap);
     
     #ifdef BOARD_HAS_PSRAM
     if (psramFound()) {
-        Serial.printf("  PSRAM 전체:  %u bytes\n", ESP.getPsramSize());
-        Serial.printf("  PSRAM 여유:  %u bytes\n", ESP.getFreePsram());
+        Serial.printf("  PSRAM :  %u bytes\n", ESP.getPsramSize());
+        Serial.printf("  PSRAM :  %u bytes\n", ESP.getFreePsram());
     }
     #endif
     
@@ -250,7 +250,7 @@ float getHeapFragmentation() {
 }
 
 // ================================================================
-// 시스템 (버퍼 기반)
+//  ( )
 // ================================================================
 
 void getChipID(char* buffer, size_t bufferSize) {
@@ -276,17 +276,14 @@ void getResetReason(char* buffer, size_t bufferSize) {
         case POWERON_RESET:
             snprintf(buffer, bufferSize, "Power On");
             break;
-        case SW_RESET:
+        case RTC_SW_CPU_RESET:
             snprintf(buffer, bufferSize, "Software Reset");
             break;
-        case OWDT_RESET:
+        case TG0WDT_CPU_RESET:
             snprintf(buffer, bufferSize, "WDT Reset");
             break;
         case DEEPSLEEP_RESET:
             snprintf(buffer, bufferSize, "Deep Sleep");
-            break;
-        case SDIO_RESET:
-            snprintf(buffer, bufferSize, "SDIO Reset");
             break;
         case TG0WDT_SYS_RESET:
             snprintf(buffer, bufferSize, "Timer Group0 WDT");
@@ -300,12 +297,12 @@ void getResetReason(char* buffer, size_t bufferSize) {
         case INTRUSION_RESET:
             snprintf(buffer, bufferSize, "Intrusion");
             break;
-        case TGWDT_CPU_RESET:
+        case TG1WDT_CPU_RESET:
             snprintf(buffer, bufferSize, "CPU WDT");
             break;
-        case SW_CPU_RESET:
-            snprintf(buffer, bufferSize, "CPU Software");
-            break;
+        // case RTC_SW_CPU_RESET:
+        //  snprintf(buffer, bufferSize, "CPU Software");
+        //  break;
         case RTCWDT_CPU_RESET:
             snprintf(buffer, bufferSize, "RTC CPU WDT");
             break;
@@ -322,13 +319,13 @@ void getResetReason(char* buffer, size_t bufferSize) {
 }
 
 void softReset() {
-    Serial.println("\n🔄 소프트웨어 재시작...\n");
+    Serial.println("\n  ...\n");
     vTaskDelay(pdMS_TO_TICKS(100));
     ESP.restart();
 }
 
 // ================================================================
-// CRC/체크섬
+// CRC/
 // ================================================================
 
 uint32_t calculateCRC32(const uint8_t* data, size_t length) {

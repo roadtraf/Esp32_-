@@ -1,7 +1,7 @@
 // ================================================================
-// UI_AccessControl.h - PIN 입력 화면 및 접근 제어 통합 헤더
-// [U2] canAccessScreen() 중복 정의 제거 → 단일 구현
-// [U4] PIN 입력 UI 신규 구현
+// UI_AccessControl.h - PIN       
+// [U2] canAccessScreen()      
+// [U4] PIN  UI  
 // ================================================================
 #pragma once
 
@@ -10,43 +10,43 @@
 #include "../include/UITheme.h"
 
 // ================================================================
-// [U2] canAccessScreen() 단일 선언 (ManagerUI.h, UI_Screens.h 중복 제거)
+// [U2] canAccessScreen()   (ManagerUI.h, UI_Screens.h  )
 // ================================================================
 bool canAccessScreen(ScreenType screen);
 
 // ================================================================
-// [U4] PIN 입력 화면
+// [U4] PIN  
 // ================================================================
 
-// PIN 입력 결과 콜백 타입
+// PIN    
 using PinResultCallback = void(*)(bool success, SystemMode targetMode);
 
-// PIN 입력 화면 표시
+// PIN   
 // targetMode: MANAGER or DEVELOPER
-// onResult  : 성공/실패 콜백
+// onResult  : / 
 void showPinInputScreen(SystemMode targetMode, PinResultCallback onResult);
 
-// PIN 입력 화면 그리기 (UIManager 내부에서 호출)
+// PIN    (UIManager  )
 void drawPinInputScreen();
 
-// PIN 입력 화면 터치 처리
+// PIN    
 void handlePinInputTouch(uint16_t x, uint16_t y);
 
-// PIN 화면 활성 여부
+// PIN   
 bool isPinScreenActive();
 
-// 키보드 입력 처리 (PIN 화면 전용)
+//    (PIN  )
 void handleKeyboardOnPinScreen(uint8_t key);
 
 // ================================================================
-// [U3] 비동기 알림 다이얼로그 (vTaskDelay 제거)
+// [U3]    (vTaskDelay )
 // ================================================================
 
-// 비동기 접근 거부 알림 (블로킹 없음)
-// 내부적으로 UIManager.showMessage() 활용
+//     ( )
+//  UIManager.showMessage() 
 void showAccessDeniedAsync(const char* screenName);
 
-// 하위 호환: 기존 showAccessDenied() → 비동기 버전으로 리디렉트
+//  :  showAccessDenied()    
 inline void showAccessDenied(const char* screenName) {
     showAccessDeniedAsync(screenName);
 }

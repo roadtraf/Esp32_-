@@ -1,5 +1,5 @@
 // ================================================================
-// UI_Screen_TrendGraph.cpp - 재설계 추세 그래프 화면
+// UI_Screen_TrendGraph.cpp -    
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
@@ -10,10 +10,10 @@ using namespace UITheme;
 void drawTrendGraphScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // ── 헤더 ──
-    drawHeader("추세 그래프");
+    //   
+    drawHeader(" ");
     
-    // ── 데이터 선택 ──
+    //    
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     
     struct DataType {
@@ -23,9 +23,9 @@ void drawTrendGraphScreen() {
     };
     
     static DataType dataTypes[] = {
-        {"압력", COLOR_PRIMARY, true},
-        {"전류", COLOR_WARNING, false},
-        {"온도", COLOR_DANGER, false}
+        {"", COLOR_PRIMARY, true},
+        {"", COLOR_WARNING, false},
+        {"", COLOR_DANGER, false}
     };
     
     int16_t btnW = (SCREEN_WIDTH - SPACING_SM * 4) / 3;
@@ -46,7 +46,7 @@ void drawTrendGraphScreen() {
         drawButton(typeBtn);
     }
     
-    // ── 그래프 영역 ──
+    //    
     int16_t graphY = startY + btnH + SPACING_SM;
     
     CardConfig graphCard = {
@@ -58,7 +58,7 @@ void drawTrendGraphScreen() {
     };
     drawCard(graphCard);
     
-    // 그래프 타이틀
+    //  
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(graphCard.x + CARD_PADDING, graphCard.y + CARD_PADDING);
@@ -66,25 +66,25 @@ void drawTrendGraphScreen() {
     for (int i = 0; i < 3; i++) {
         if (dataTypes[i].selected) {
             tft.print(dataTypes[i].label);
-            tft.print(" 추세 (최근 1분)");
+            tft.print("  ( 1)");
             break;
         }
     }
     
-    // 간단한 라인 그래프
+    //   
     int16_t plotX = graphCard.x + CARD_PADDING + 25;
     int16_t plotY = graphCard.y + CARD_PADDING + 25;
     int16_t plotW = graphCard.w - CARD_PADDING * 2 - 30;
     int16_t plotH = graphCard.h - CARD_PADDING * 2 - 30;
     
-    // 그리드
+    // 
     tft.drawRect(plotX, plotY, plotW, plotH, COLOR_DIVIDER);
     for (int i = 1; i < 4; i++) {
         int16_t y = plotY + (plotH / 4) * i;
         tft.drawFastHLine(plotX, y, plotW, COLOR_DIVIDER);
     }
     
-    // 샘플 데이터 그리기 (실제로는 센서 버퍼에서 가져와야 함)
+    //    (    )
     uint16_t lineColor = COLOR_PRIMARY;
     for (int i = 0; i < 3; i++) {
         if (dataTypes[i].selected) {
@@ -93,7 +93,7 @@ void drawTrendGraphScreen() {
         }
     }
     
-    // 간단한 사인파 샘플
+    //   
     int16_t prevX = plotX;
     int16_t prevY = plotY + plotH / 2;
     
@@ -106,7 +106,7 @@ void drawTrendGraphScreen() {
         prevY = y;
     }
     
-    // Y축 라벨
+    // Y 
     tft.setTextSize(1);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(graphCard.x + 4, plotY);
@@ -116,7 +116,7 @@ void drawTrendGraphScreen() {
     tft.setCursor(graphCard.x + 4, plotY + plotH - 8);
     tft.print("0");
     
-    // ── 통계 정보 ──
+    //    
     int16_t statsY = graphCard.y + graphCard.h + SPACING_SM;
     
     struct StatInfo {
@@ -126,9 +126,9 @@ void drawTrendGraphScreen() {
     };
     
     StatInfo stats[] = {
-        {"평균", 75.5f, "kPa"},
-        {"최소", 68.2f, "kPa"},
-        {"최대", 82.1f, "kPa"}
+        {"", 75.5f, "kPa"},
+        {"", 68.2f, "kPa"},
+        {"", 82.1f, "kPa"}
     };
     
     int16_t statW = (SCREEN_WIDTH - SPACING_SM * 4) / 3;
@@ -161,9 +161,9 @@ void drawTrendGraphScreen() {
         tft.print(stats[i].unit);
     }
     
-    // ── 하단 네비게이션 ──
+    //    
     NavButton navButtons[] = {
-        {"뒤로", BTN_OUTLINE, true}
+        {"", BTN_OUTLINE, true}
     };
     drawNavBar(navButtons, 1);
 }
@@ -172,7 +172,7 @@ void handleTrendGraphTouch(uint16_t x, uint16_t y) {
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     int16_t navY = SCREEN_HEIGHT - FOOTER_HEIGHT;
     
-    // 데이터 타입 선택 버튼
+    //    
     int16_t btnW = (SCREEN_WIDTH - SPACING_SM * 4) / 3;
     int16_t btnH = 28;
     
@@ -181,22 +181,22 @@ void handleTrendGraphTouch(uint16_t x, uint16_t y) {
             int16_t btnX = SPACING_SM + i * (btnW + SPACING_SM);
             
             if (x >= btnX && x <= btnX + btnW) {
-                // 모든 선택 해제 후 선택
-                // (실제로는 static 배열 수정 필요)
+                //     
+                // ( static   )
                 screenNeedsRedraw = true;
                 return;
             }
         }
     }
     
-    // 네비게이션
+    // 
     if (y >= navY) {
         ButtonConfig backBtn = {
             .x = SPACING_SM,
             .y = (int16_t)(navY + 2),
             .w = (int16_t)(SCREEN_WIDTH - SPACING_SM * 2),
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "뒤로",
+            .label = "",
             .style = BTN_OUTLINE,
             .enabled = true
         };

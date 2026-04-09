@@ -1,6 +1,6 @@
 #pragma once
 // ================================================================
-// ErrorHandler.h  —  에러 설정, 복구, ring-buffer 로그
+// ErrorHandler.h     , , ring-buffer 
 // ================================================================
 
 void setError(ErrorCode code, ErrorSeverity severity, const char* message);

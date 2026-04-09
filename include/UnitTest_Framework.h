@@ -1,5 +1,5 @@
 // ================================================================
-// UnitTest_Framework.h  —  v3.9 모듈화된 테스트 프레임워크
+// UnitTest_Framework.h    v3.9   
 // ================================================================
 #pragma once
 
@@ -7,9 +7,9 @@
 
 #include <Arduino.h>
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 프레임워크
-// ═══════════════════════════════════════════════════════════════
+// 
+//   
+// 
 
 class TestFramework {
 public:
@@ -17,7 +17,7 @@ public:
     static uint16_t testsFailed;
     static const char* currentModule;
     
-    // 테스트 어설션
+    //  
     static void ASSERT(bool condition, const char* testName);
     static void ASSERT_EQUAL(float expected, float actual, const char* testName, float tolerance = 0.01f);
     static void ASSERT_EQUAL_INT(int expected, int actual, const char* testName);
@@ -25,18 +25,18 @@ public:
     static void ASSERT_RANGE(float value, float min, float max, const char* testName);
     static void ASSERT_NOT_NULL(void* ptr, const char* testName);
     
-    // 테스트 모듈 관리
+    //   
     static void beginModule(const char* moduleName);
     static void endModule();
     
-    // 전체 결과
+    //  
     static void printSummary();
     static void reset();
 };
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 모듈 인터페이스
-// ═══════════════════════════════════════════════════════════════
+// 
+//    
+// 
 
 class TestModule {
 public:
@@ -44,11 +44,11 @@ public:
     virtual void runTests() = 0;
 };
 
-// ═══════════════════════════════════════════════════════════════
-//  개별 테스트 모듈 선언
-// ═══════════════════════════════════════════════════════════════
+// 
+//     
+// 
 
-// 기존 테스트
+//  
 class Test_PID : public TestModule {
 public:
     const char* getName() override { return "PID Controller"; }
@@ -79,7 +79,7 @@ public:
     void runTests() override;
 };
 
-// v3.6+ 테스트
+// v3.6+ 
 class Test_Health : public TestModule {
 public:
     const char* getName() override { return "Health Monitor"; }
@@ -92,7 +92,7 @@ public:
     void runTests() override;
 };
 
-// v3.8+ 테스트
+// v3.8+ 
 #ifdef ENABLE_DATA_LOGGING
 class Test_DataLogger : public TestModule {
 public:
@@ -117,7 +117,7 @@ public:
 };
 #endif
 
-// v3.9 테스트
+// v3.9 
 #ifdef ENABLE_VOICE_ALERTS
 class Test_VoiceAlert : public TestModule {
 public:
@@ -126,9 +126,9 @@ public:
 };
 #endif
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 러너
-// ═══════════════════════════════════════════════════════════════
+// 
+//   
+// 
 
 void runAllTests();
 

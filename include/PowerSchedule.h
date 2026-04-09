@@ -1,4 +1,4 @@
-// PowerSchedule.h (선택 사항)
+// PowerSchedule.h ( )
 #ifndef POWER_SCHEDULE_H
 #define POWER_SCHEDULE_H
 
@@ -28,8 +28,8 @@ public:
     }
     
     void update() {
-        // Get current time (RTC 또는 NTP 필요)
-        // 현재 시간에 맞는 스케줄 적용
+        // Get current time (RTC  NTP )
+        //     
         struct tm timeinfo;
         if (!getLocalTime(&timeinfo)) return;
         

@@ -1,9 +1,9 @@
 // ================================================================
-// UI_Screen_Settings.cpp - 설정 화면 개선판
-// [U10] 메뉴 데이터/터치 코드 통합 (중복 배열 제거)
-// [U11] UITheme 색상 통일 (TFT_* 직접 사용 제거)
-// [U3]  PIN 화면 연동 (관리자 전환 시 PIN 요구)
-// [U7]  textWidth() 기반 정렬
+// UI_Screen_Settings.cpp -   
+// [U10]  /   (  )
+// [U11] UITheme   (TFT_*   )
+// [U3]  PIN   (   PIN )
+// [U7]  textWidth()  
 // ================================================================
 #include "UIComponents.h"
 #include "UITheme.h"
@@ -15,7 +15,7 @@
 
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
-extern SafeVoiceAlert safeVoiceAlert;
+extern VoiceAlert voiceAlert;
 #endif
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
@@ -26,58 +26,58 @@ extern HealthMonitor healthMonitor;
 using namespace UIComponents;
 using namespace UITheme;
 
-extern LGFX             tft;
+extern TFT_GFX tft;
 extern UIManager        uiManager;
 extern SystemController systemController;
 extern Language         currentLang;
 
 // ================================================================
-// [U10] 메뉴 정의 — 단일 배열, 그리기/터치 모두 여기서 참조
+// [U10]     , /   
 // ================================================================
 struct MenuItem {
     const char*  title;
     const char*  subtitle;
     uint16_t     accentColor;
     ScreenType   screen;
-    bool         requiresManager;   // OPERATOR 접근 불가
-    bool         enabled;           // 컴파일 타임 기능 활성화 여부
+    bool         requiresManager;   // OPERATOR  
+    bool         enabled;           //     
 };
 
-// 메뉴 항목 빌드 함수 (런타임 subtitle 결정)
+//     ( subtitle )
 static void buildMenuItems(MenuItem items[], uint8_t* count) {
     uint8_t n = 0;
 
-    items[n++] = {"타이밍",   "시간 설정",     COLOR_PRIMARY,        SCREEN_TIMING_SETUP,         false, true};
-    items[n++] = {"PID",     "제어 파라미터", COLOR_ACCENT,         SCREEN_PID_SETUP,             false, true};
-    items[n++] = {"통계",     "사용 기록",     COLOR_INFO,           SCREEN_STATISTICS,            false, true};
-    items[n++] = {"추세",     "그래프",        COLOR_SUCCESS,        SCREEN_TREND_GRAPH,           false, true};
-    items[n++] = {"캘리브",   "센서 조정",     COLOR_WARNING,        SCREEN_CALIBRATION,           true,  true};
-    items[n++] = {"정보",     "시스템 정보",   COLOR_TEXT_SECONDARY, SCREEN_ABOUT,                 false, true};
-    items[n++] = {"도움말",   "사용법",        COLOR_PRIMARY,        SCREEN_HELP,                  false, true};
-    items[n++] = {"상태도",   "시스템 상태",   COLOR_ACCENT,         SCREEN_STATE_DIAGRAM,         false, true};
+    items[n++] = {"",   " ",     COLOR_PRIMARY,        SCREEN_TIMING_SETUP,         false, true};
+    items[n++] = {"PID",     " ", COLOR_ACCENT,         SCREEN_PID_SETUP,             false, true};
+    items[n++] = {"",     " ",     COLOR_INFO,           SCREEN_STATISTICS,            false, true};
+    items[n++] = {"",     "",        COLOR_SUCCESS,        SCREEN_TREND_GRAPH,           false, true};
+    items[n++] = {"",   " ",     COLOR_WARNING,        SCREEN_CALIBRATION,           true,  true};
+    items[n++] = {"",     " ",   COLOR_TEXT_SECONDARY, SCREEN_ABOUT,                 false, true};
+    items[n++] = {"",   "",        COLOR_PRIMARY,        SCREEN_HELP,                  false, true};
+    items[n++] = {"",   " ",   COLOR_ACCENT,         SCREEN_STATE_DIAGRAM,         false, true};
 
-    // 언어 토글 (subtitle 동적)
-    items[n++] = {"언어",
-                  (currentLang == LANG_KO) ? "한국어" : "English",
+    //   (subtitle )
+    items[n++] = {"",
+                  (currentLang == LANG_KO) ? "" : "English",
                   COLOR_INFO,
-                  SCREEN_SETTINGS,   // 특수 처리 (index 8)
+                  SCREEN_SETTINGS,   //   (index 8)
                   false, true};
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
-    items[n++] = {"건강도",   "예측 유지보수", COLOR_SUCCESS,        SCREEN_HEALTH,                true,  true};
+    items[n++] = {"",   " ", COLOR_SUCCESS,        SCREEN_HEALTH,                true,  true};
 #endif
 
 #ifdef ENABLE_SMART_ALERTS
-    items[n++] = {"알림",
-                  "스마트 알림",
+    items[n++] = {"",
+                  " ",
                   COLOR_MANAGER,
                   SCREEN_SMART_ALERT_CONFIG,
                   true, true};
 #endif
 
 #ifdef ENABLE_VOICE_ALERTS
-    items[n++] = {"음성",
-                  safeVoiceAlert.isOnline() ? "활성" : "비활성",
+    items[n++] = {"",
+                  voiceAlert.isOnline() ? "" : "",
                   COLOR_DEVELOPER,
                   SCREEN_VOICE_SETTINGS,
                   true, true};
@@ -87,7 +87,7 @@ static void buildMenuItems(MenuItem items[], uint8_t* count) {
 }
 
 // ================================================================
-// 레이아웃 상수
+//  
 // ================================================================
 namespace SettingsLayout {
     constexpr uint8_t  COLS      = 3;
@@ -98,11 +98,11 @@ namespace SettingsLayout {
 }
 
 // ================================================================
-// 설정 화면 그리기  [U10][U11]
+//     [U10][U11]
 // ================================================================
 void drawSettingsScreen() {
-    tft.fillScreen(COLOR_BG_DARK);   // [U11] TFT_BLACK → COLOR_BG_DARK
-    drawHeader("설정");
+    tft.fillScreen(COLOR_BG_DARK);   // [U11] TFT_BLACK  COLOR_BG_DARK
+    drawHeader("");
 
     MenuItem items[20];
     uint8_t  count = 0;
@@ -129,18 +129,18 @@ void drawSettingsScreen() {
         };
         drawCard(card);
 
-        // 상단 색상 바
+        //   
         tft.fillRect(cx + 2, cy + 2,
                      SettingsLayout::CARD_W - 4, 4,
                      accessible ? items[i].accentColor : COLOR_TEXT_DISABLED);
 
-        // 타이틀
+        // 
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(accessible ? COLOR_TEXT_PRIMARY : COLOR_TEXT_DISABLED);
         tft.setCursor(cx + 6, cy + 12);
         tft.print(items[i].title);
 
-        // 서브타이틀 (최대 9자 + "." 잘라냄)
+        //  ( 9 + "." )
         tft.setTextSize(1);
         tft.setTextColor(COLOR_TEXT_SECONDARY);    // [U11]
         tft.setCursor(cx + 6, cy + 28);
@@ -151,7 +151,7 @@ void drawSettingsScreen() {
         }
         tft.print(sub);
 
-        // 관리자 잠금 아이콘
+        //   
         if (items[i].requiresManager && !accessible) {
             tft.fillCircle(cx + SettingsLayout::CARD_W - 10,
                            cy + 10, 6, COLOR_WARNING);
@@ -162,7 +162,7 @@ void drawSettingsScreen() {
         }
     }
 
-    // 유지보수 완료 버튼 (조건부)
+    //    ()
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
     if (!systemController.isOperatorMode()) {
         MaintenanceLevel level = healthMonitor.getMaintenanceLevel();
@@ -172,7 +172,7 @@ void drawSettingsScreen() {
             ButtonConfig maintBtn = {
                 .x = SPACING_SM, .y = btnY,
                 .w = (int16_t)(SCREEN_WIDTH - SPACING_SM * 2), .h = 30,
-                .label = "✓ 유지보수 완료 처리",
+                .label = "   ",
                 .style = BTN_SUCCESS, .enabled = true
             };
             drawButton(maintBtn);
@@ -180,24 +180,24 @@ void drawSettingsScreen() {
     }
 #endif
 
-    NavButton nav[] = {{"뒤로", BTN_OUTLINE, true}};
+    NavButton nav[] = {{"", BTN_OUTLINE, true}};
     drawNavBar(nav, 1);
 }
 
 // ================================================================
-// 터치 처리  [U10] 단일 items 배열 재사용
+//    [U10]  items  
 // ================================================================
 void handleSettingsTouch(uint16_t x, uint16_t y) {
     uiManager.updateActivity();
 
-    // 뒤로 버튼
+    //  
     int16_t navY = SCREEN_HEIGHT - FOOTER_HEIGHT;
     if (y >= navY) {
         uiManager.setScreen(SCREEN_MAIN);
         return;
     }
 
-    // 유지보수 완료 버튼
+    //   
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
     if (!systemController.isOperatorMode()) {
         MenuItem items[20]; uint8_t count = 0;
@@ -209,14 +209,14 @@ void handleSettingsTouch(uint16_t x, uint16_t y) {
             x >= SPACING_SM && x <= SCREEN_WIDTH - SPACING_SM &&
             y >= btnY       && y <= btnY + 30) {
             healthMonitor.performMaintenance();
-            uiManager.showToast("유지보수 완료 처리됨", COLOR_SUCCESS);
+            uiManager.showToast("  ", COLOR_SUCCESS);
             uiManager.requestRedraw();
             return;
         }
     }
 #endif
 
-    // 메뉴 카드 터치
+    //   
     MenuItem items[20]; uint8_t count = 0;
     buildMenuItems(items, &count);
 
@@ -230,11 +230,11 @@ void handleSettingsTouch(uint16_t x, uint16_t y) {
         if (x >= cx && x <= cx + SettingsLayout::CARD_W &&
             y >= cy && y <= cy + SettingsLayout::CARD_H) {
 
-            // 접근 권한 확인
+            //   
             if (items[i].requiresManager && systemController.isOperatorMode()) {
-                // [U3] 비동기 접근 거부 + PIN 화면 제시
+                // [U3]    + PIN  
                 showAccessDeniedAsync(items[i].title);
-                // PIN 화면으로 관리자 전환 제안
+                // PIN    
                 showPinInputScreen(SystemMode::MANAGER,
                     [](bool ok, SystemMode) {
                         if (ok) uiManager.requestRedraw();
@@ -242,17 +242,17 @@ void handleSettingsTouch(uint16_t x, uint16_t y) {
                 return;
             }
 
-            // 언어 토글 (index 8, screen == SCREEN_SETTINGS)
+            //   (index 8, screen == SCREEN_SETTINGS)
             if (i == 8) {
                 currentLang = (currentLang == LANG_EN) ? LANG_KO : LANG_EN;
                 config.language = (uint8_t)currentLang;
 #ifdef ENABLE_VOICE_ALERTS
-                if (safeVoiceAlert.isOnline()) {
-                    safeVoiceAlert.setLanguage((currentLang == LANG_KO)
-                                           ? LANGUAGE_KOREAN : LANGUAGE_ENGLISH);
+                if (voiceAlert.isOnline()) {
+                    voiceAlert.setLanguage((currentLang == LANG_KO)
+                                           ? LANG_KO : LANG_EN);
                 }
 #endif
-                // saveConfig();  // 미구현
+                // saveConfig();  // 
                 uiManager.requestRedraw();
                 return;
             }

@@ -1,7 +1,7 @@
-
+﻿
 #ifdef UNIT_TEST_MODE
 
-#include "Config.h"                 // enum, struct, extern 전역변수 (pidError 등)
+#include "Config.h"                 // enum, struct, extern ?꾩뿭蹂??(pidError ??
 #include "PID_Control.h"            // updatePID(), resetPID()
 #include "../include/SD_Logger.h"   // ISO8601_BUFFER_SIZE, getCurrentTimeISO8601
 #include <cstring>                  // strlen, strchr
@@ -9,10 +9,10 @@
 #include "Sensor.h"                 // validateParameters(), checkSensorHealth()
 #include "ErrorHandler.h"           // attemptErrorRecovery()
 
-// Memory_Management.cpp 공개 API
+// Memory_Management.cpp 怨듦컻 API
 extern bool verifyMemory();
 
-// ==================== 테스트 유틸리티 ====================
+// ==================== ?뚯뒪???좏떥由ы떚 ====================
 uint16_t testsPassed = 0;
 uint16_t testsFailed = 0;
 
@@ -36,23 +36,23 @@ void TEST_ASSERT_EQUAL(float expected, float actual, const char* testName) {
   }
 }
 
-// ==================== PID 제어 테스트 ====================
+// ==================== PID ?쒖뼱 ?뚯뒪??====================
 void test_PID_Controller() {
   Serial.println("\n=== PID Controller Tests ===");
 
-  // 1. PID 리셋 테스트
+  // 1. PID 由ъ뀑 ?뚯뒪??
   resetPID();
   TEST_ASSERT_EQUAL(0.0, pidError, "PID Reset - Error");
   TEST_ASSERT_EQUAL(0.0, pidIntegral, "PID Reset - Integral");
   TEST_ASSERT_EQUAL(0.0, pidDerivative, "PID Reset - Derivative");
 
-  // 2. PID 출력 범위 테스트
+  // 2. PID 異쒕젰 踰붿쐞 ?뚯뒪??
   config.targetPressure = -80.0;
   sensorData.pressure = -50.0;
   updatePID();
   TEST_ASSERT(pidOutput >= 0.0 && pidOutput <= 100.0, "PID Output Range");
 
-  // 3. 적분 제한 테스트
+  // 3. ?곷텇 ?쒗븳 ?뚯뒪??
   for (int i = 0; i < 100; i++) {
     updatePID();
   }
@@ -61,7 +61,7 @@ void test_PID_Controller() {
   Serial.printf("PID Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 안전 인터락 테스트 ====================
+// ==================== ?덉쟾 ?명꽣???뚯뒪??====================
 void test_Safety_Interlock() {
   Serial.println("\n=== Safety Interlock Tests ===");
 
@@ -73,21 +73,21 @@ void test_Safety_Interlock() {
   Serial.printf("Safety Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 파라미터 검증 테스트 ====================
+// ==================== ?뚮씪誘명꽣 寃利??뚯뒪??====================
 void test_Parameter_Validation() {
   Serial.println("\n=== Parameter Validation Tests ===");
 
-  // 정상 값
+  // ?뺤긽 媛?
   sensorData.pressure = -80.0;
   sensorData.current = 3.5;
   TEST_ASSERT(validateParameters(), "Valid Parameters");
 
-  // NaN 테스트
+  // NaN ?뚯뒪??
   sensorData.pressure = NAN;
   TEST_ASSERT(!validateParameters(), "NaN Pressure");
   sensorData.pressure = -80.0;
 
-  // 범위 초과
+  // 踰붿쐞 珥덇낵
   sensorData.pressure = -110.0;
   TEST_ASSERT(!validateParameters(), "Out of Range Pressure (Low)");
   sensorData.pressure = 10.0;
@@ -103,43 +103,43 @@ void test_Parameter_Validation() {
   Serial.printf("Validation Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 센서 헬스 테스트 ====================
+// ==================== ?쇱꽌 ?ъ뒪 ?뚯뒪??====================
 void test_Sensor_Health() {
   Serial.println("\n=== Sensor Health Tests ===");
 
-  // 정상 센서 값
+  // ?뺤긽 ?쇱꽌 媛?
   sensorData.pressure = -80.0;
   sensorData.current = 3.5;
   checkSensorHealth();
   TEST_ASSERT(true, "Normal Sensor Values");
 
-  // 압력 센서 이상 (전압 범위 체크는 실제 하드웨어 필요)
-  // 간접 테스트: 압력 값이 유효 범위인지 확인
+  // ?뺣젰 ?쇱꽌 ?댁긽 (?꾩븬 踰붿쐞 泥댄겕???ㅼ젣 ?섎뱶?⑥뼱 ?꾩슂)
+  // 媛꾩젒 ?뚯뒪?? ?뺣젰 媛믪씠 ?좏슚 踰붿쐞?몄? ?뺤씤
   TEST_ASSERT(sensorData.pressure >= -105.0 && sensorData.pressure <= 5.0, 
     "Pressure Sensor Range");
 
-  // 전류 센서 이상
+  // ?꾨쪟 ?쇱꽌 ?댁긽
   TEST_ASSERT(sensorData.current >= 0.0 && sensorData.current <= 10.0, 
     "Current Sensor Range");
 
   Serial.printf("Sensor Health Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 에러 복구 테스트 ====================
+// ==================== ?먮윭 蹂듦뎄 ?뚯뒪??====================
 void test_Error_Recovery() {
   Serial.println("\n=== Error Recovery Tests ===");
 
-  // TEMPORARY 에러
+  // TEMPORARY ?먮윭
   currentError.severity = SEVERITY_TEMPORARY;
   currentError.retryCount = 0;
   TEST_ASSERT(attemptErrorRecovery(), "Temporary Error - First Retry");
 
-  // RECOVERABLE 에러
+  // RECOVERABLE ?먮윭
   currentError.severity = SEVERITY_RECOVERABLE;
   currentError.retryCount = 0;
   TEST_ASSERT(attemptErrorRecovery(), "Recoverable Error - First Retry");
 
-  // CRITICAL 에러
+  // CRITICAL ?먮윭
   currentError.severity = SEVERITY_CRITICAL;
   currentError.retryCount = 0;
   TEST_ASSERT(!attemptErrorRecovery(), "Critical Error - No Recovery");
@@ -147,7 +147,7 @@ void test_Error_Recovery() {
   Serial.printf("Error Recovery Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 메모리 관리 테스트 ====================
+// ==================== 硫붾え由?愿由??뚯뒪??====================
 void test_Memory_Management() {
   Serial.println("\n=== Memory Management Tests ===");
 
@@ -159,7 +159,7 @@ void test_Memory_Management() {
   Serial.printf("Memory Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 시간 동기화 테스트 ====================
+// ==================== ?쒓컙 ?숆린???뚯뒪??====================
 void test_Time_Sync() {
   Serial.println("\n=== Time Sync Tests ===");
 
@@ -177,7 +177,7 @@ void test_Time_Sync() {
   Serial.printf("Time Sync Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== Watchdog 테스트 ====================
+// ==================== Watchdog ?뚯뒪??====================
 void test_Watchdog() {
   Serial.println("\n=== Watchdog Tests ===");
 
@@ -185,17 +185,17 @@ void test_Watchdog() {
   feedWatchdog();
   TEST_ASSERT(true, "Watchdog Feed");
 
-  // Watchdog 타임아웃 테스트는 실제로 리셋이 발생하므로 생략
+  // Watchdog ??꾩븘???뚯뒪?몃뒗 ?ㅼ젣濡?由ъ뀑??諛쒖깮?섎?濡??앸왂
   TEST_ASSERT(true, "Watchdog Timeout (Skipped)");
 
   Serial.printf("Watchdog Tests: %d passed, %d failed\n\n", testsPassed, testsFailed);
 }
 
-// ==================== 전체 테스트 실행 ====================
+// ==================== ?꾩껜 ?뚯뒪???ㅽ뻾 ====================
 void runUnitTests() {
   Serial.println("\n");
   Serial.println("=====================================");
-  Serial.println("   단위 테스트 시작");
+  Serial.println("   ?⑥쐞 ?뚯뒪???쒖옉");
   Serial.println("=====================================\n");
 
   testsPassed = 0;
@@ -211,11 +211,11 @@ void runUnitTests() {
   test_Watchdog();
 
   Serial.println("=====================================");
-  Serial.printf("테스트 결과: %d passed, %d failed\n", testsPassed, testsFailed);
+  Serial.printf("?뚯뒪??寃곌낵: %d passed, %d failed\n", testsPassed, testsFailed);
   if (testsFailed == 0) {
-    Serial.println("모든 테스트 통과! ✓");
+    Serial.println("紐⑤뱺 ?뚯뒪???듦낵! ??);
   } else {
-    Serial.printf("%d개 테스트 실패 ✗\n", testsFailed);
+    Serial.printf("%d媛??뚯뒪???ㅽ뙣 ??n", testsFailed);
   }
   Serial.println("=====================================\n");
 }
@@ -225,22 +225,22 @@ void runUnitTests() {
 
 
 ============================================================
-  파일 목록 요약  (v3.3)
+  ?뚯씪 紐⑸줉 ?붿빟  (v3.3)
 ============================================================
-✅ platformio.ini              – PlatformIO 설정 (변경 없음)
-✅ partitions_16mb.csv         – 파티션 테이블   (변경 없음)
-✅ src/LovyanGFX_Config.hpp    – 디스플레이 설정  (변경 없음)
-✅ src/main.cpp                – 메인 프로그램   (①②③④⑤ 적용)
-✅ src/UI_Screens.cpp          – UI 화면        (⑥⑦ 적용)
-✅ src/USB_Keyboard.cpp        – USB 키패드     (⑧ 적용)
-✅ src/Trend_Graph.cpp         – 추세 그래프    ★ 신규 파일
-✅ src/OTA_Update.cpp          – OTA + HTTP 서버 (변경 없음)
-✅ src/Memory_Management.cpp   – 메모리 관리    (변경 없음)
-✅ src/Korean_Font.cpp         – 한글 폰트      (변경 없음)
-✅ src/Unit_Tests.cpp          – 단위 테스트    (변경 없음)
+??platformio.ini              ??PlatformIO ?ㅼ젙 (蹂寃??놁쓬)
+??partitions_16mb.csv         ???뚰떚???뚯씠釉?  (蹂寃??놁쓬)
+??src/LovyanGFX_Config.hpp    ???붿뒪?뚮젅???ㅼ젙  (蹂寃??놁쓬)
+??src/main.cpp                ??硫붿씤 ?꾨줈洹몃옩   (?졻몼?™몿???곸슜)
+??src/UI_Screens.cpp          ??UI ?붾㈃        (?β뫂 ?곸슜)
+??src/USB_Keyboard.cpp        ??USB ?ㅽ뙣??    (???곸슜)
+??src/Trend_Graph.cpp         ??異붿꽭 洹몃옒??   ???좉퇋 ?뚯씪
+??src/OTA_Update.cpp          ??OTA + HTTP ?쒕쾭 (蹂寃??놁쓬)
+??src/Memory_Management.cpp   ??硫붾え由?愿由?   (蹂寃??놁쓬)
+??src/Korean_Font.cpp         ???쒓? ?고듃      (蹂寃??놁쓬)
+??src/Unit_Tests.cpp          ???⑥쐞 ?뚯뒪??   (蹂寃??놁쓬)
 
-빌드: pio run -e esp32-s3-release
-업로드: pio run -e esp32-s3-release -t upload
+鍮뚮뱶: pio run -e esp32-s3-release
+?낅줈?? pio run -e esp32-s3-release -t upload
 ============================================================
 
 ============================================================

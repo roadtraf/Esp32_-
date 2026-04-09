@@ -1,8 +1,9 @@
 // ================================================================
-// UI_Screen_SmartAlertConfig.cpp - 재설계 스마트 알림 설정
+// UI_Screen_SmartAlertConfig.cpp -    
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
+#include "UI_AccessControl.h"
 
 #ifdef ENABLE_SMART_ALERTS
 #include "SmartAlert.h"
@@ -15,20 +16,20 @@ using namespace UITheme;
 void drawSmartAlertConfigScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // ── 헤더 ──
-    drawHeader("스마트 알림 설정");
+    //   
+    drawHeader("  ");
     
-    // 권한 확인
+    //  
     if (false && !canAccessScreen(SCREEN_SMART_ALERT_CONFIG)) {
         Serial.println("Access Denied");  // showAccessDenied
-        NavButton navButtons[] = {{"뒤로", BTN_OUTLINE, true}};
+        NavButton navButtons[] = {{"", BTN_OUTLINE, true}};
         drawNavBar(navButtons, 1);
         return;
     }
     
     #ifdef ENABLE_SMART_ALERTS
     
-    // ── 알림 활성화 상태 ──
+    //     
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     
     CardConfig statusCard = {
@@ -43,20 +44,20 @@ void drawSmartAlertConfigScreen() {
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
     tft.setCursor(statusCard.x + CARD_PADDING, statusCard.y + CARD_PADDING);
-    tft.print("스마트 알림");
+    tft.print(" ");
     
     bool alertEnabled = true  /* smartAlert.isEnabled() */;
     
     drawBadge(statusCard.x + statusCard.w - 70, statusCard.y + CARD_PADDING,
-              alertEnabled ? "활성" : "비활성",
+              alertEnabled ? "" : "",
               alertEnabled ? BADGE_SUCCESS : BADGE_DANGER);
     
     tft.setTextSize(1);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(statusCard.x + CARD_PADDING, statusCard.y + CARD_PADDING + 20);
-    tft.print("AI 기반 예측 알림 시스템");
+    tft.print("AI    ");
     
-    // 토글 버튼
+    //  
     ButtonConfig toggleBtn = {
         .x = (int16_t)(statusCard.x + statusCard.w - 70),
         .y = (int16_t)(statusCard.y + statusCard.h - 32),
@@ -68,7 +69,7 @@ void drawSmartAlertConfigScreen() {
     };
     drawButton(toggleBtn);
     
-    // ── 알림 유형 설정 ──
+    //     
     int16_t typeY = statusCard.y + statusCard.h + SPACING_SM;
     
     struct AlertType {
@@ -79,10 +80,10 @@ void drawSmartAlertConfigScreen() {
     };
     
     AlertType types[] = {
-        {"유지보수", "예측 유지보수 알림", true, COLOR_WARNING},
-        {"온도", "온도 임계값 알림", true, COLOR_DANGER},
-        {"전류", "과전류 알림", true, COLOR_WARNING},
-        {"압력", "압력 이상 알림", false, COLOR_INFO}
+        {"", "  ", true, COLOR_WARNING},
+        {"", "  ", true, COLOR_DANGER},
+        {"", " ", true, COLOR_WARNING},
+        {"", "  ", false, COLOR_INFO}
     };
     
     int16_t typeH = 48;
@@ -100,7 +101,7 @@ void drawSmartAlertConfigScreen() {
         };
         drawCard(typeCard);
         
-        // 체크박스 아이콘
+        //  
         int16_t checkX = typeCard.x + CARD_PADDING;
         int16_t checkY = typeCard.y + (typeH - 16) / 2;
         
@@ -111,13 +112,13 @@ void drawSmartAlertConfigScreen() {
             tft.drawRoundRect(checkX, checkY, 16, 16, 4, COLOR_BORDER);
         }
         
-        // 알림 이름
+        //  
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_PRIMARY);
         tft.setCursor(checkX + 24, typeCard.y + CARD_PADDING);
         tft.print(types[i].name);
         
-        // 설명
+        // 
         tft.setTextSize(1);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(checkX + 24, typeCard.y + CARD_PADDING + 18);
@@ -125,24 +126,24 @@ void drawSmartAlertConfigScreen() {
     }
     
     #else
-    // 기능 비활성화 메시지
+    //   
     int16_t msgY = SCREEN_HEIGHT / 2 - 30;
     
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(80, msgY);
-    tft.print("기능 비활성화됨");
+    tft.print(" ");
     
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setCursor(60, msgY + 25);
-    tft.print("Config.h에서 활성화하세요");
+    tft.print("Config.h ");
     #endif
     
-    // ── 하단 네비게이션 ──
+    //    
     NavButton navButtons[] = {
-        {"뒤로", BTN_OUTLINE, true},
+        {"", BTN_OUTLINE, true},
         #ifdef ENABLE_SMART_ALERTS
-        {"테스트", BTN_PRIMARY, true}
+        {"", BTN_PRIMARY, true}
         #endif
     };
     
@@ -158,7 +159,7 @@ void handleSmartAlertConfigTouch(uint16_t x, uint16_t y) {
     
     #ifdef ENABLE_SMART_ALERTS
     
-    // 토글 버튼
+    //  
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     bool alertEnabled = true  /* smartAlert.isEnabled() */;
     
@@ -182,7 +183,7 @@ void handleSmartAlertConfigTouch(uint16_t x, uint16_t y) {
         return;
     }
     
-    // 알림 유형 선택
+    //   
     int16_t typeY = startY + 55 + SPACING_SM;
     int16_t typeH = 48;
     
@@ -191,24 +192,24 @@ void handleSmartAlertConfigTouch(uint16_t x, uint16_t y) {
         
         if (x >= SPACING_SM && x <= SCREEN_WIDTH - SPACING_SM &&
             y >= cardY && y <= cardY + typeH) {
-            // 알림 유형 토글 (실제 구현 필요)
-            Serial.printf("[Alert] 알림 유형 %d 토글\n", i);
+            //    (  )
+            Serial.printf("[Alert]   %d \n", i);
             screenNeedsRedraw = true;
             return;
         }
     }
     
-    // 네비게이션
+    // 
     if (y >= navY) {
         int16_t buttonW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
         
-        // 뒤로
+        // 
         ButtonConfig backBtn = {
             .x = SPACING_SM,
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "뒤로",
+            .label = "",
             .style = BTN_OUTLINE,
             .enabled = true
         };
@@ -219,13 +220,13 @@ void handleSmartAlertConfigTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // 테스트
+        // 
         ButtonConfig testBtn = {
             .x = (int16_t)(SPACING_SM + buttonW + SPACING_SM),
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "테스트",
+            .label = "",
             .style = BTN_PRIMARY,
             .enabled = true
         };
@@ -238,7 +239,7 @@ void handleSmartAlertConfigTouch(uint16_t x, uint16_t y) {
     
     #else
     
-    // 기능 비활성화 시 뒤로만
+    //    
     if (y >= navY) {
         currentScreen = SCREEN_SETTINGS;
         screenNeedsRedraw = true;

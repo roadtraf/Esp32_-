@@ -1,4 +1,4 @@
-// MLPredictor.cpp - MLPredictor.h 인터페이스 기반 재작성
+// MLPredictor.cpp - MLPredictor.h   
 #include "MLPredictor.h"
 #include "Config.h"
 #include "SensorBuffer.h"
@@ -14,7 +14,7 @@ MLPredictor::MLPredictor()
 void MLPredictor::begin() {
     sampleCount = 0;
     lastAnomaly = ANOMALY_NONE;
-    Serial.println("[MLPredictor] 초기화 완료");
+    Serial.println("[MLPredictor]  ");
 }
 
 void MLPredictor::addSample(float vacuumPressure, float temperature, float current) {
@@ -74,10 +74,10 @@ void  MLPredictor::calculateCurrentMinMax(float& mn, float& mx) { mn = currentBu
 
 const char* MLPredictor::getAnomalyMessage(AnomalyType type) {
     switch (type) {
-        case ANOMALY_PRESSURE:    return "압력 이상 감지";
-        case ANOMALY_TEMPERATURE: return "온도 이상 감지";
-        case ANOMALY_CURRENT:     return "전류 이상 감지";
-        case ANOMALY_PATTERN:     return "패턴 이상 감지";
-        default:                  return "정상";
+        case ANOMALY_PRESSURE:    return "  ";
+        case ANOMALY_TEMPERATURE: return "  ";
+        case ANOMALY_CURRENT:     return "  ";
+        case ANOMALY_PATTERN:     return "  ";
+        default:                  return "";
     }
 }

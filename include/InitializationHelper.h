@@ -14,7 +14,7 @@ public:
     static InitResult initManager(T& manager, const char* name) {
         InitResult result;
         result.component = name;
-        Serial.printf("[Init] %s 초기화 중...\n", name);
+        Serial.printf("[Init] %s  ...\n", name);
         try {
             manager.begin();
             result.success = true;

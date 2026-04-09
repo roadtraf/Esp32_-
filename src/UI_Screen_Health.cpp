@@ -1,5 +1,5 @@
 // ================================================================
-// UI_Screen_Health.cpp - 재설계 건강도 화면
+// UI_Screen_Health.cpp -   
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
@@ -14,18 +14,18 @@ extern HealthMonitor healthMonitor;
 void drawHealthScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // ── 헤더 ──
-    drawHeader("건강도 모니터");
+    //   
+    drawHeader(" ");
     
-    // 권한 확인
+    //  
     if (false && !canAccessScreen(SCREEN_HEALTH)) {
         Serial.println("Access Denied");  // showAccessDenied
-        NavButton navButtons[] = {{"뒤로", BTN_OUTLINE, true}};
+        NavButton navButtons[] = {{"", BTN_OUTLINE, true}};
         drawNavBar(navButtons, 1);
         return;
     }
     
-    // ── 전체 건강도 카드 ──
+    //     
     int16_t startY = HEADER_HEIGHT + SPACING_MD;
     
     CardConfig healthCard = {
@@ -38,20 +38,20 @@ void drawHealthScreen() {
     };
     drawCard(healthCard);
     
-    // 건강도 점수
+    //  
     float healthScore = healthMonitor.getHealthScore();
     
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(healthCard.x + CARD_PADDING, healthCard.y + CARD_PADDING);
-    tft.print("전체 건강도");
+    tft.print(" ");
     
-    // 큰 숫자로 점수 표시
+    //    
     tft.setTextSize(4);
     uint16_t scoreColor;
     if (healthScore >= 90.0f) scoreColor = COLOR_SUCCESS;
     else if (healthScore >= 75.0f) scoreColor = COLOR_WARNING;
-    else if (healthScore >= 50.0f) scoreColor = 0xFD20; // 주황
+    else if (healthScore >= 50.0f) scoreColor = 0xFD20; // 
     else scoreColor = COLOR_DANGER;
     
     tft.setTextColor(scoreColor);
@@ -61,49 +61,49 @@ void drawHealthScreen() {
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.print("%");
     
-    // 프로그레스 바
+    //  
     int16_t barX = healthCard.x + 120;
     int16_t barY = healthCard.y + CARD_PADDING + 25;
     int16_t barW = healthCard.w - 140;
     
     drawProgressBar(barX, barY, barW, 20, healthScore, scoreColor);
     
-    // 유지보수 레벨
+    //  
     MaintenanceLevel level = healthMonitor.getMaintenanceLevel();
     const char* levelText;
     BadgeType badgeType;
     
     switch (level) {
         case MAINTENANCE_NONE:
-            levelText = "양호";
+            levelText = "";
             badgeType = BADGE_SUCCESS;
             break;
         case MAINTENANCE_SOON:
-            levelText = "주의";
+            levelText = "";
             badgeType = BADGE_WARNING;
             break;
         case MAINTENANCE_REQUIRED:
-            levelText = "필요";
+            levelText = "";
             badgeType = BADGE_DANGER;
             break;
         case MAINTENANCE_URGENT:
-            levelText = "긴급";
+            levelText = "";
             badgeType = BADGE_DANGER;
             break;
         default:
-            levelText = "알 수 없음";
+            levelText = "  ";
             badgeType = BADGE_INFO;
     }
     
     drawBadge(healthCard.x + CARD_PADDING, healthCard.y + healthCard.h - 25, 
               levelText, badgeType);
     
-    // ── 세부 항목 (2x4 그리드) ──
+    //    (2x4 ) 
     int16_t gridY = healthCard.y + healthCard.h + SPACING_SM;
     int16_t itemW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
     int16_t itemH = 38;
     
-    // 항목 데이터
+    //  
     struct HealthItem {
         const char* label;
         float value;
@@ -112,14 +112,14 @@ void drawHealthScreen() {
     };
     
     HealthItem items[] = {
-        {"가동 시간", (float)healthMonitor.getTotalRuntime() / 3600.0f, "h", COLOR_PRIMARY},
-        {"사이클", (float)stats.totalCycles, "회", COLOR_ACCENT},
-        {"평균 온도", healthMonitor.peakTemperature, "°C", COLOR_INFO},
-        {"최대 온도", healthMonitor.peakTemperature, "°C", COLOR_WARNING},
-        {"평균 전류", healthMonitor.recordCurrent, "A", COLOR_PRIMARY},
-        {"최대 전류", healthMonitor.recordCurrent, "A", COLOR_DANGER},
-        {"성공률", (stats.totalCycles > 0) ? (float)stats.successfulCycles / stats.totalCycles * 100 : 0, "%", COLOR_SUCCESS},
-        {"오류 횟수", (float)errorHistCnt, "회", COLOR_DANGER}
+        {" ", (float)healthMonitor.getTotalRuntime() / 3600.0f, "h", COLOR_PRIMARY},
+        {"", (float)stats.totalCycles, "", COLOR_ACCENT},
+        {" ", healthMonitor.getPeakTemperature(), "C", COLOR_INFO},
+        {" ", healthMonitor.getPeakTemperature(), "C", COLOR_WARNING},
+        {" ", healthMonitor.getPeakCurrent(), "A", COLOR_PRIMARY},
+        {" ", healthMonitor.getPeakCurrent(), "A", COLOR_DANGER},
+        {"", (stats.totalCycles > 0) ? (float)stats.successfulCycles / stats.totalCycles * 100 : 0, "%", COLOR_SUCCESS},
+        {" ", (float)errorHistCnt, "", COLOR_DANGER}
     };
     
     for (int row = 0; row < 4; row++) {
@@ -129,7 +129,7 @@ void drawHealthScreen() {
             int16_t x = SPACING_SM + col * (itemW + SPACING_SM);
             int16_t y = gridY + row * (itemH + 4);
             
-            // 작은 카드
+            //  
             CardConfig itemCard = {
                 .x = x,
                 .y = y,
@@ -139,13 +139,13 @@ void drawHealthScreen() {
             };
             drawCard(itemCard);
             
-            // 라벨
+            // 
             tft.setTextSize(1);
             tft.setTextColor(COLOR_TEXT_SECONDARY);
             tft.setCursor(x + 6, y + 6);
             tft.print(items[idx].label);
             
-            // 값
+            // 
             tft.setTextSize(TEXT_SIZE_SMALL);
             tft.setTextColor(items[idx].color);
             tft.setCursor(x + 6, y + 18);
@@ -153,11 +153,11 @@ void drawHealthScreen() {
         }
     }
     
-    // ── 하단 네비게이션 ──
+    //    
     NavButton navButtons[] = {
-        {"뒤로", BTN_OUTLINE, true},
-        {"추세", BTN_PRIMARY, true},
-        {"리셋", BTN_DANGER, systemController.getPermissions().canCalibrate}
+        {"", BTN_OUTLINE, true},
+        {"", BTN_PRIMARY, true},
+        {"", BTN_DANGER, systemController.getPermissions().canCalibrate}
     };
     drawNavBar(navButtons, 3);
 }
@@ -168,13 +168,13 @@ void handleHealthTouch(uint16_t x, uint16_t y) {
     if (y >= navY) {
         int16_t buttonW = (SCREEN_WIDTH - SPACING_SM * 4) / 3;
         
-        // 뒤로 버튼
+        //  
         ButtonConfig backBtn = {
             .x = SPACING_SM,
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "뒤로",
+            .label = "",
             .style = BTN_OUTLINE,
             .enabled = true
         };
@@ -185,13 +185,13 @@ void handleHealthTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // 추세 버튼
+        //  
         ButtonConfig trendBtn = {
             .x = (int16_t)(SPACING_SM + buttonW + SPACING_SM),
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "추세",
+            .label = "",
             .style = BTN_PRIMARY,
             .enabled = true
         };
@@ -202,14 +202,14 @@ void handleHealthTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // 리셋 버튼 (관리자 전용)
+        //   ( )
         if (systemController.getPermissions().canCalibrate) {
             ButtonConfig resetBtn = {
                 .x = (int16_t)(SPACING_SM + (buttonW + SPACING_SM) * 2),
                 .y = (int16_t)(navY + 2),
                 .w = buttonW,
                 .h = (int16_t)(FOOTER_HEIGHT - 4),
-                .label = "리셋",
+                .label = "",
                 .style = BTN_DANGER,
                 .enabled = true
             };

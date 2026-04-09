@@ -25,7 +25,7 @@ void WiFiPowerManager::begin(const WiFiPowerConfig& cfg) {
     config = cfg;
     currentMode = config.mode;
     
-    Serial.println("[WiFiPowerManager] 초기화 시작");
+    Serial.println("[WiFiPowerManager]  ");
     
     // Apply initial power mode
     applyPowerMode(currentMode);
@@ -33,7 +33,7 @@ void WiFiPowerManager::begin(const WiFiPowerConfig& cfg) {
     // Configure initial TX power
     setTxPower(config.maxTxPower);
     
-    Serial.printf("[WiFiPowerManager] 모드: %d, TX Power: %d dBm\n", 
+    Serial.printf("[WiFiPowerManager] : %d, TX Power: %d dBm\n", 
                   (int)currentMode, currentTxPower);
 }
 
@@ -66,7 +66,7 @@ void WiFiPowerManager::update() {
                     if (!powerSaveEnabled) {
                         configurePowerSave();
                         powerSaveEnabled = true;
-                        Serial.println("[WiFiPowerManager] 절전 모드 진입");
+                        Serial.println("[WiFiPowerManager]   ");
                     }
                 }
                 break;
@@ -84,7 +84,7 @@ void WiFiPowerManager::update() {
                 if (powerSaveEnabled) {
                     enableModemSleep(false);
                     powerSaveEnabled = false;
-                    Serial.println("[WiFiPowerManager] 성능 모드 진입");
+                    Serial.println("[WiFiPowerManager]   ");
                 }
                 break;
         }
@@ -99,7 +99,7 @@ void WiFiPowerManager::update() {
 }
 
 void WiFiPowerManager::applyPowerMode(WiFiPowerMode mode) {
-    Serial.printf("[WiFiPowerManager] 전력 모드 변경: %d -> %d\n", 
+    Serial.printf("[WiFiPowerManager]   : %d -> %d\n", 
                   (int)currentMode, (int)mode);
     
     switch (mode) {
@@ -108,7 +108,7 @@ void WiFiPowerManager::applyPowerMode(WiFiPowerMode mode) {
             enableModemSleep(false);
             enableLightSleep(false);
             setTxPower(config.maxTxPower);
-            Serial.println("[WiFiPowerManager] ALWAYS_ON 모드");
+            Serial.println("[WiFiPowerManager] ALWAYS_ON ");
             break;
             
         case WiFiPowerMode::BALANCED:
@@ -116,7 +116,7 @@ void WiFiPowerManager::applyPowerMode(WiFiPowerMode mode) {
             enableModemSleep(true);
             enableLightSleep(false);
             setTxPower((config.minTxPower + config.maxTxPower) / 2);
-            Serial.println("[WiFiPowerManager] BALANCED 모드");
+            Serial.println("[WiFiPowerManager] BALANCED ");
             break;
             
         case WiFiPowerMode::POWER_SAVE:
@@ -124,14 +124,14 @@ void WiFiPowerManager::applyPowerMode(WiFiPowerMode mode) {
             enableModemSleep(true);
             enableLightSleep(true);
             setTxPower(config.minTxPower);
-            Serial.println("[WiFiPowerManager] POWER_SAVE 모드");
+            Serial.println("[WiFiPowerManager] POWER_SAVE ");
             break;
             
         case WiFiPowerMode::DEEP_SLEEP_READY:
             // Prepare for deep sleep
             esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
             WiFi.disconnect(true);
-            Serial.println("[WiFiPowerManager] DEEP_SLEEP_READY 모드");
+            Serial.println("[WiFiPowerManager] DEEP_SLEEP_READY ");
             break;
     }
     
@@ -167,7 +167,7 @@ void WiFiPowerManager::updateActivityLevel() {
     
     if (newLevel != activityLevel) {
         activityLevel = newLevel;
-        Serial.printf("[WiFiPowerManager] 활동 레벨: %d (패킷/초: %lu)\n", 
+        Serial.printf("[WiFiPowerManager]  : %d (/: %lu)\n", 
                       (int)activityLevel, totalRate);
     }
     
@@ -188,10 +188,10 @@ void WiFiPowerManager::enableModemSleep(bool enable) {
     if (enable) {
         esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
         modemSleepCount++;
-        Serial.println("[WiFiPowerManager] Modem Sleep 활성화");
+        Serial.println("[WiFiPowerManager] Modem Sleep ");
     } else {
         esp_wifi_set_ps(WIFI_PS_NONE);
-        Serial.println("[WiFiPowerManager] Modem Sleep 비활성화");
+        Serial.println("[WiFiPowerManager] Modem Sleep ");
     }
 }
 
@@ -205,7 +205,7 @@ void WiFiPowerManager::enableLightSleep(bool enable) {
         };
         esp_pm_configure(&pm_config);
         lightSleepCount++;
-        Serial.println("[WiFiPowerManager] Light Sleep 활성화");
+        Serial.println("[WiFiPowerManager] Light Sleep ");
     } else {
         esp_pm_config_esp32s3_t pm_config = {
             .max_freq_mhz = 240,
@@ -213,12 +213,12 @@ void WiFiPowerManager::enableLightSleep(bool enable) {
             .light_sleep_enable = false
         };
         esp_pm_configure(&pm_config);
-        Serial.println("[WiFiPowerManager] Light Sleep 비활성화");
+        Serial.println("[WiFiPowerManager] Light Sleep ");
     }
 }
 
 void WiFiPowerManager::enterLightSleep(uint32_t durationMs) {
-    Serial.printf("[WiFiPowerManager] Light Sleep 진입: %lu ms\n", durationMs);
+    Serial.printf("[WiFiPowerManager] Light Sleep : %lu ms\n", durationMs);
     
     uint32_t sleepStart = millis();
     esp_sleep_enable_timer_wakeup(durationMs * 1000ULL); // Convert to microseconds
@@ -228,7 +228,7 @@ void WiFiPowerManager::enterLightSleep(uint32_t durationMs) {
     totalSleepTime += actualSleep;
     lightSleepCount++;
     
-    Serial.printf("[WiFiPowerManager] Light Sleep 복귀: %lu ms\n", actualSleep);
+    Serial.printf("[WiFiPowerManager] Light Sleep : %lu ms\n", actualSleep);
 }
 
 void WiFiPowerManager::setTxPower(int8_t dbm) {
@@ -238,9 +238,9 @@ void WiFiPowerManager::setTxPower(int8_t dbm) {
     esp_err_t err = esp_wifi_set_max_tx_power(dbm * 4); // WiFi API uses 0.25dBm units
     if (err == ESP_OK) {
         currentTxPower = dbm;
-        Serial.printf("[WiFiPowerManager] TX Power 설정: %d dBm\n", dbm);
+        Serial.printf("[WiFiPowerManager] TX Power : %d dBm\n", dbm);
     } else {
-        Serial.printf("[WiFiPowerManager] TX Power 설정 실패: %d\n", err);
+        Serial.printf("[WiFiPowerManager] TX Power  : %d\n", err);
     }
 }
 
@@ -266,7 +266,7 @@ void WiFiPowerManager::adjustTxPowerByRSSI() {
     }
     
     if (newTxPower != currentTxPower) {
-        Serial.printf("[WiFiPowerManager] RSSI: %ld dBm, TX Power 조정: %d -> %d dBm\n", 
+        Serial.printf("[WiFiPowerManager] RSSI: %ld dBm, TX Power : %d -> %d dBm\n", 
                       rssi, currentTxPower, newTxPower);
         setTxPower(newTxPower);
     }
@@ -299,10 +299,10 @@ void WiFiPowerManager::setConnected(bool connected) {
     if (connected != isConnected) {
         isConnected = connected;
         if (connected) {
-            Serial.println("[WiFiPowerManager] WiFi 연결됨");
+            Serial.println("[WiFiPowerManager] WiFi ");
             lastActivityTime = millis();
         } else {
-            Serial.println("[WiFiPowerManager] WiFi 연결 끊김");
+            Serial.println("[WiFiPowerManager] WiFi  ");
             powerSaveEnabled = false;
         }
     }
@@ -322,8 +322,8 @@ float WiFiPowerManager::getPowerSavingRatio() const {
 }
 
 void WiFiPowerManager::printStatus() const {
-    Serial.println("\n========== WiFi Power Manager 상태 ==========");
-    Serial.printf("전력 모드: ");
+    Serial.println("\n========== WiFi Power Manager  ==========");
+    Serial.printf(" : ");
     switch (currentMode) {
         case WiFiPowerMode::ALWAYS_ON: Serial.println("ALWAYS_ON"); break;
         case WiFiPowerMode::BALANCED: Serial.println("BALANCED"); break;
@@ -331,7 +331,7 @@ void WiFiPowerManager::printStatus() const {
         case WiFiPowerMode::DEEP_SLEEP_READY: Serial.println("DEEP_SLEEP_READY"); break;
     }
     
-    Serial.printf("활동 레벨: ");
+    Serial.printf(" : ");
     switch (activityLevel) {
         case WiFiActivityLevel::IDLE: Serial.println("IDLE"); break;
         case WiFiActivityLevel::WIFI_LOW: Serial.println("LOW"); break;
@@ -339,19 +339,19 @@ void WiFiPowerManager::printStatus() const {
         case WiFiActivityLevel::WIFI_HIGH: Serial.println("HIGH"); break;
     }
     
-    Serial.printf("연결 상태: %s\n", isConnected ? "연결됨" : "끊김");
+    Serial.printf(" : %s\n", isConnected ? "" : "");
     Serial.printf("TX Power: %d dBm\n", currentTxPower);
     Serial.printf("RSSI: %ld dBm\n", WiFi.RSSI());
-    Serial.printf("절전 활성화: %s\n", powerSaveEnabled ? "예" : "아니오");
-    Serial.printf("유휴 시간: %lu ms\n", getIdleTime());
+    Serial.printf(" : %s\n", powerSaveEnabled ? "" : "");
+    Serial.printf(" : %lu ms\n", getIdleTime());
     
-    Serial.println("\n통계:");
-    Serial.printf("  TX 패킷: %lu\n", txPackets);
-    Serial.printf("  RX 패킷: %lu\n", rxPackets);
-    Serial.printf("  Modem Sleep 횟수: %lu\n", modemSleepCount);
-    Serial.printf("  Light Sleep 횟수: %lu\n", lightSleepCount);
-    Serial.printf("  총 Sleep 시간: %lu ms\n", totalSleepTime);
-    Serial.printf("  절전 비율: %.2f%%\n", getPowerSavingRatio());
+    Serial.println("\n:");
+    Serial.printf("  TX : %lu\n", txPackets);
+    Serial.printf("  RX : %lu\n", rxPackets);
+    Serial.printf("  Modem Sleep : %lu\n", modemSleepCount);
+    Serial.printf("  Light Sleep : %lu\n", lightSleepCount);
+    Serial.printf("   Sleep : %lu ms\n", totalSleepTime);
+    Serial.printf("   : %.2f%%\n", getPowerSavingRatio());
     Serial.println("============================================\n");
 }
 
@@ -363,5 +363,5 @@ void WiFiPowerManager::resetStatistics() {
     modemSleepCount = 0;
     lightSleepCount = 0;
     totalSleepTime = 0;
-    Serial.println("[WiFiPowerManager] 통계 초기화");
+    Serial.println("[WiFiPowerManager]  ");
 }

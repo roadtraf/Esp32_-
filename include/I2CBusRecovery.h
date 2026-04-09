@@ -1,22 +1,22 @@
 // ================================================================
-// I2CBusRecovery.h - I2C 버스 복구 & 안전 접근 시스템
+// I2CBusRecovery.h - I2C   &   
 // v3.9.4 Hardened Edition
 // ================================================================
-// [가상 테스트 시나리오 #5]
+// [   #5]
 //
-// 재현된 장애 모드:
-//   A) 센서 전원 순간 변동 → I2C ACK 미수신 → Wire 상태 불량
-//   B) 클럭 라인 노이즈 → SCL 카운트 어긋남 → 프로토콜 데동기화
-//   C) 장치가 SDA를 LOW로 잡은 채 멈춤 (read 중 reset된 경우)
-//      → Wire.begin() 재시도해도 SDA LOW 유지 → 영구 데드락
+//   :
+//   A)      I2C ACK   Wire  
+//   B)     SCL     
+//   C)  SDA LOW    (read  reset )
+//       Wire.begin()  SDA LOW    
 //
-// 해결책:
-//   - I2C Bus Recovery (SMBus 2.0 §4.3.2 기반)
-//     : SCL 9클럭 토글 → 슬레이브 state machine 리셋
-//     : STOP condition 강제 발생
-//   - Wire.begin() 재초기화
-//   - 타임아웃 기반 endTransmission
-//   - 전원 변동 대응: 재시도 전 안정화 대기
+// :
+//   - I2C Bus Recovery (SMBus 2.0 4.3.2 )
+//     : SCL 9    state machine 
+//     : STOP condition  
+//   - Wire.begin() 
+//   -   endTransmission
+//   -   :    
 // ================================================================
 #pragma once
 
@@ -27,19 +27,19 @@
 #include <freertos/semphr.h>
 
 // ================================================================
-// I2C 오류 코드
+// I2C  
 // ================================================================
 enum I2CError {
     I2C_OK              = 0,
-    I2C_ERR_TIMEOUT     = 1,   // 타임아웃
-    I2C_ERR_NACK_ADDR   = 2,   // 주소 NACK
-    I2C_ERR_NACK_DATA   = 3,   // 데이터 NACK
-    I2C_ERR_BUS_BUSY    = 4,   // 버스 사용 중
-    I2C_ERR_RECOVERY    = 5,   // 복구 시도 중
-    I2C_ERR_FATAL       = 6,   // 복구 불가
+    I2C_ERR_TIMEOUT     = 1,   // 
+    I2C_ERR_NACK_ADDR   = 2,   //  NACK
+    I2C_ERR_NACK_DATA   = 3,   //  NACK
+    I2C_ERR_BUS_BUSY    = 4,   //   
+    I2C_ERR_RECOVERY    = 5,   //   
+    I2C_ERR_FATAL       = 6,   //  
 };
 
-// I2C endTransmission 반환값
+// I2C endTransmission 
 // 0=success, 1=data too long, 2=NACK addr, 3=NACK data, 4=other
 static const char* i2cErrorStr(uint8_t err) {
     switch (err) {
@@ -53,7 +53,7 @@ static const char* i2cErrorStr(uint8_t err) {
 }
 
 // ================================================================
-// I2C Bus Recovery 관리자
+// I2C Bus Recovery 
 // ================================================================
 class I2CBusRecovery {
 public:
@@ -62,7 +62,7 @@ public:
         return instance;
     }
 
-    // ── 초기화 ──
+    //   
     void begin(uint8_t sdaPin = I2C_SDA_PIN,
                uint8_t sclPin = I2C_SCL_PIN,
                uint32_t freq  = I2C_FREQ_HZ)
@@ -73,29 +73,29 @@ public:
 
         _mutex = xSemaphoreCreateMutex();
         if (!_mutex) {
-            Serial.println("[I2C] ❌ Mutex 생성 실패!");
+            Serial.println("[I2C]  Mutex  !");
         }
 
-        // Wire 초기화
+        // Wire 
         Wire.begin(_sdaPin, _sclPin, _freq);
         Wire.setTimeOut(I2C_TIMEOUT_MS);
 
         _recoveryCount = 0;
         _initialized   = true;
 
-        // 초기 버스 상태 확인
+        //    
         if (!isBusHealthy()) {
-            Serial.println("[I2C] ⚠️  초기 버스 상태 불량 → 복구 시도");
+            Serial.println("[I2C]         ");
             recover();
         } else {
-            Serial.println("[I2C] ✅ 버스 정상");
+            Serial.println("[I2C]   ");
         }
     }
 
-    // ── 버스 건강 확인 ──
-    // SDA/SCL 모두 HIGH여야 정상 (idle 상태)
+    //     
+    // SDA/SCL  HIGH  (idle )
     bool isBusHealthy() {
-        // 일시적으로 GPIO 입력으로 읽기
+        //  GPIO  
         pinMode(_sdaPin, INPUT_PULLUP);
         pinMode(_sclPin, INPUT_PULLUP);
         delayMicroseconds(10);
@@ -103,42 +103,42 @@ public:
         bool sdaHigh = digitalRead(_sdaPin);
         bool sclHigh = digitalRead(_sclPin);
 
-        // Wire 재설정
+        // Wire 
         Wire.begin(_sdaPin, _sclPin, _freq);
 
         if (!sdaHigh) {
-            Serial.printf("[I2C] ⚠️  SDA LOW 감지 (SCL=%d)\n", sclHigh);
+            Serial.printf("[I2C]   SDA LOW  (SCL=%d)\n", sclHigh);
             return false;
         }
         if (!sclHigh) {
-            Serial.println("[I2C] ⚠️  SCL LOW 감지 (다른 장치가 클럭 잡음)");
+            Serial.println("[I2C]   SCL LOW  (   )");
             return false;
         }
         return true;
     }
 
-    // ── 버스 복구 (SMBus 2.0 §4.3.2) ──
-    // 슬레이브가 SDA를 LOW로 잡고 있을 때 강제 해제
+    //    (SMBus 2.0 4.3.2) 
+    //  SDA LOW     
     bool recover() {
-        Serial.println("[I2C] === 버스 복구 시작 ===");
+        Serial.println("[I2C] ===    ===");
         _recoveryCount++;
 
-        // Step 1: Wire 해제
+        // Step 1: Wire 
         Wire.end();
         delayMicroseconds(100);
 
-        // Step 2: GPIO 직접 제어로 전환
+        // Step 2: GPIO   
         pinMode(_sdaPin, OUTPUT);
         pinMode(_sclPin, OUTPUT);
         digitalWrite(_sdaPin, HIGH);
         digitalWrite(_sclPin, HIGH);
         delayMicroseconds(I2C_RECOVER_DELAY_US * 10);
 
-        // Step 3: SCL 9클럭 토글
-        // 슬레이브 state machine을 어떤 상태에 있더라도 리셋
-        Serial.println("[I2C] SCL 9클럭 토글 중...");
+        // Step 3: SCL 9 
+        //  state machine    
+        Serial.println("[I2C] SCL 9  ...");
         for (int i = 0; i < I2C_RECOVER_CLOCK_COUNT; i++) {
-            // SDA 상태 확인 (중간에 HIGH가 되면 슬레이브가 해제된 것)
+            // SDA   ( HIGH    )
             pinMode(_sdaPin, INPUT_PULLUP);
             delayMicroseconds(I2C_RECOVER_DELAY_US);
 
@@ -151,13 +151,13 @@ public:
             delayMicroseconds(I2C_RECOVER_DELAY_US);
 
             if (sdaReleased) {
-                Serial.printf("[I2C] SDA 해제 확인 (%d번째 클럭)\n", i + 1);
+                Serial.printf("[I2C] SDA   (%d )\n", i + 1);
                 break;
             }
         }
 
-        // Step 4: STOP condition 강제 생성
-        // SDA LOW → SCL HIGH → SDA HIGH
+        // Step 4: STOP condition  
+        // SDA LOW  SCL HIGH  SDA HIGH
         pinMode(_sdaPin, OUTPUT);
         digitalWrite(_sdaPin, LOW);
         delayMicroseconds(I2C_RECOVER_DELAY_US);
@@ -166,24 +166,24 @@ public:
         digitalWrite(_sdaPin, HIGH);
         delayMicroseconds(I2C_RECOVER_DELAY_US);
 
-        // Step 5: Wire 재초기화
+        // Step 5: Wire 
         Wire.begin(_sdaPin, _sclPin, _freq);
         Wire.setTimeOut(I2C_TIMEOUT_MS);
-        delay(I2C_SENSOR_WARMUP_MS);  // 센서 안정화 대기
+        delay(I2C_SENSOR_WARMUP_MS);  //   
 
-        // Step 6: 복구 결과 확인
+        // Step 6:   
         bool healthy = isBusHealthy();
 
         if (healthy) {
-            Serial.println("[I2C] ✅ 복구 성공");
+            Serial.println("[I2C]   ");
         } else {
-            Serial.println("[I2C] ❌ 복구 실패 - 하드웨어 점검 필요");
+            Serial.println("[I2C]    -   ");
         }
 
         return healthy;
     }
 
-    // ── 안전한 쓰기 (재시도 포함) ──
+    //    ( ) 
     I2CError safeWrite(uint8_t addr, const uint8_t* data, size_t len,
                        bool sendStop = true)
     {
@@ -205,10 +205,10 @@ public:
                 break;
             }
 
-            Serial.printf("[I2C] 쓰기 오류 addr=0x%02X err=%s (시도 %d/%d)\n",
+            Serial.printf("[I2C]   addr=0x%02X err=%s ( %d/%d)\n",
                           addr, i2cErrorStr(err), attempt + 1, I2C_MAX_RETRY);
 
-            // NACK 발생 시 버스 복구 시도
+            // NACK     
             if (err == 2 || err == 3 || err == 4) {
                 xSemaphoreGive(_mutex);
                 delay(I2C_SENSOR_WARMUP_MS);
@@ -227,7 +227,7 @@ public:
         return result;
     }
 
-    // ── 안전한 읽기 ──
+    //    
     I2CError safeRead(uint8_t addr, uint8_t* buffer, size_t len)
     {
         if (!_initialized) return I2C_ERR_FATAL;
@@ -249,7 +249,7 @@ public:
                 break;
             }
 
-            Serial.printf("[I2C] 읽기 오류 addr=0x%02X recv=%d (시도 %d/%d)\n",
+            Serial.printf("[I2C]   addr=0x%02X recv=%d ( %d/%d)\n",
                           addr, received, attempt + 1, I2C_MAX_RETRY);
 
             xSemaphoreGive(_mutex);
@@ -266,21 +266,21 @@ public:
         return result;
     }
 
-    // ── 디바이스 스캔 ──
+    //    
     void scan() {
-        Serial.println("[I2C] === 디바이스 스캔 ===");
+        Serial.println("[I2C] ===   ===");
         int found = 0;
         for (uint8_t addr = 8; addr < 127; addr++) {
             Wire.beginTransmission(addr);
             if (Wire.endTransmission() == 0) {
-                Serial.printf("[I2C] 발견: 0x%02X\n", addr);
+                Serial.printf("[I2C] : 0x%02X\n", addr);
                 found++;
             }
         }
-        Serial.printf("[I2C] 총 %d개 발견\n", found);
+        Serial.printf("[I2C]  %d \n", found);
     }
 
-    // ── 통계 ──
+    //   
     uint32_t getRecoveryCount() const { return _recoveryCount; }
 
 private:
@@ -297,7 +297,7 @@ private:
 };
 
 // ================================================================
-// 편의 매크로
+//  
 // ================================================================
 #define I2C_BUS     I2CBusRecovery::getInstance()
 #define I2C_RECOVER() I2CBusRecovery::getInstance().recover()

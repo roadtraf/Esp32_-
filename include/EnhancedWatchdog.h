@@ -1,5 +1,5 @@
 // ================================================================
-// EnhancedWatchdog.h - 향상된 Watchdog 시스템 (Phase 3-1)
+// EnhancedWatchdog.h -  Watchdog  (Phase 3-1)
 // ================================================================
 #pragma once
 
@@ -7,53 +7,53 @@
 #include <esp_task_wdt.h>
 
 // ================================================================
-// Watchdog 설정
+// Watchdog 
 // ================================================================
-#define WDT_TIMEOUT_SECONDS     10      // Watchdog 타임아웃 (초)
-#define TASK_CHECK_INTERVAL     1000    // 태스크 체크 간격 (ms)
-#define MAX_TASK_MONITORS       8       // 최대 모니터링 태스크 수
-#define DEADLOCK_THRESHOLD      3       // 데드락 판정 임계값 (연속 미응답 횟수)
+#define WDT_TIMEOUT_SECONDS     10      // Watchdog  ()
+#define TASK_CHECK_INTERVAL     1000    //    (ms)
+#define MAX_TASK_MONITORS       8       //    
+#define DEADLOCK_THRESHOLD      3       //    (  )
 
 // ================================================================
-// 태스크 상태
+//  
 // ================================================================
 enum TaskStatus {
-    TASK_HEALTHY,           // 정상
-    TASK_SLOW,              // 느림 (경고)
-    TASK_STALLED,           // 정지됨 (위험)
-    TASK_DEADLOCK,          // 데드락
-    TASK_NOT_MONITORED      // 모니터링 안 됨
+    TASK_HEALTHY,           // 
+    TASK_SLOW,              //  ()
+    TASK_STALLED,           //  ()
+    TASK_DEADLOCK,          // 
+    TASK_NOT_MONITORED      //   
 };
 
 // ================================================================
-// 태스크 정보
+//  
 // ================================================================
 struct TaskInfo {
-    char name[24];              // 태스크 이름
-    uint32_t lastCheckIn;       // 마지막 체크인 시간
-    uint32_t checkInInterval;   // 예상 체크인 간격 (ms)
-    uint32_t missedCheckins;    // 연속 미응답 횟수
-    uint32_t totalCheckins;     // 총 체크인 횟수
-    TaskStatus status;          // 현재 상태
-    bool enabled;               // 모니터링 활성화 여부
+    char name[24];              //  
+    uint32_t lastCheckIn;       //   
+    uint32_t checkInInterval;   //    (ms)
+    uint32_t missedCheckins;    //   
+    uint32_t totalCheckins;     //   
+    TaskStatus status;          //  
+    bool enabled;               //   
 };
 
 // ================================================================
-// 재시작 원인
+//  
 // ================================================================
 enum RestartReason {
     RESTART_NONE,
-    RESTART_WATCHDOG,           // Watchdog 타임아웃
-    RESTART_DEADLOCK,           // 데드락 감지
-    RESTART_TASK_STALLED,       // 태스크 정지
-    RESTART_MANUAL,             // 수동 재시작
-    RESTART_OTA,                // OTA 업데이트
-    RESTART_POWER_ON,           // 전원 켜짐
-    RESTART_UNKNOWN             // 알 수 없음
+    RESTART_WATCHDOG,           // Watchdog 
+    RESTART_DEADLOCK,           //  
+    RESTART_TASK_STALLED,       //  
+    RESTART_MANUAL,             //  
+    RESTART_OTA,                // OTA 
+    RESTART_POWER_ON,           //  
+    RESTART_UNKNOWN             //   
 };
 
 // ================================================================
-// 재시작 정보 (RTC 메모리 저장용)
+//   (RTC  )
 // ================================================================
 struct RestartInfo {
     RestartReason reason;
@@ -63,41 +63,41 @@ struct RestartInfo {
 };
 
 // ================================================================
-// Enhanced Watchdog 클래스
+// Enhanced Watchdog 
 // ================================================================
 class EnhancedWatchdog {
 public:
-    // ── 초기화 ──
+    //   
     void begin(uint32_t timeout = WDT_TIMEOUT_SECONDS);
     
-    // ── 태스크 등록 ──
+    //    
     bool registerTask(const char* name, uint32_t checkInInterval);
     void unregisterTask(const char* name);
     
-    // ── 태스크 체크인 ──
+    //    
     void checkIn(const char* name);
     
-    // ── 모니터링 ──
-    void update();  // 주기적으로 호출 (loop에서)
+    //   
+    void update();  //   (loop)
     
-    // ── 상태 조회 ──
+    //    
     TaskStatus getTaskStatus(const char* name);
     TaskInfo* getTaskInfo(const char* name);
     uint8_t getRegisteredTaskCount();
     bool isHealthy();
     
-    // ── 통계 ──
+    //   
     uint32_t getUptimeSeconds();
     uint32_t getTotalRestarts();
     RestartInfo getLastRestartInfo();
     
-    // ── 제어 ──
+    //   
     void enable();
     void disable();
-    void feed();  // 하드웨어 watchdog feed
+    void feed();  //  watchdog feed
     void forceRestart(RestartReason reason, const char* taskName = nullptr);
     
-    // ── 진단 ──
+    //   
     void printStatus();
     void printTaskDetails(const char* name);
     void printRestartHistory();
@@ -109,10 +109,10 @@ private:
     uint32_t startTime;
     uint32_t lastUpdateTime;
     
-    // RTC 메모리 (재부팅 후에도 유지)
+    // RTC  (  )
     RestartInfo rtcRestartInfo;
     
-    // ── 내부 메서드 ──
+    //    
     int8_t findTask(const char* name);
     void checkTasks();
     void handleStalledTask(TaskInfo* task);
@@ -121,12 +121,12 @@ private:
 };
 
 // ================================================================
-// 전역 인스턴스
+//  
 // ================================================================
 extern EnhancedWatchdog enhancedWatchdog;
 
 // ================================================================
-// 편의 매크로
+//  
 // ================================================================
 #define WDT_CHECKIN(taskName) enhancedWatchdog.checkIn(taskName)
 #define WDT_FEED() enhancedWatchdog.feed()

@@ -1,5 +1,5 @@
 // ================================================================
-// UI_Screen_AdvancedAnalysis.cpp - 재설계 고급 분석 화면
+// UI_Screen_AdvancedAnalysis.cpp -    
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
@@ -11,18 +11,18 @@ using namespace UITheme;
 void drawAdvancedAnalysisScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // ── 헤더 ──
-    drawHeader("고급 분석");
+    //   
+    drawHeader(" ");
     
-    // 권한 확인
+    //  
     if (!systemController.getPermissions().canAccessAdvanced) {
-        showAccessDenied("고급 분석");
-        NavButton navButtons[] = {{"뒤로", BTN_OUTLINE, true}};
+        showAccessDenied(" ");
+        NavButton navButtons[] = {{"", BTN_OUTLINE, true}};
         drawNavBar(navButtons, 1);
         return;
     }
     
-    // ── 시스템 성능 ──
+    //    
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     
     CardConfig perfCard = {
@@ -37,19 +37,19 @@ void drawAdvancedAnalysisScreen() {
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
     tft.setCursor(perfCard.x + CARD_PADDING, perfCard.y + CARD_PADDING);
-    tft.print("시스템 성능");
+    tft.print(" ");
     
-    // CPU 사용률 (샘플)
+    // CPU  ()
     float cpuUsage = 45.2f;
     drawProgressBar(perfCard.x + CARD_PADDING, perfCard.y + CARD_PADDING + 20,
                     perfCard.w - CARD_PADDING * 2, 18, cpuUsage, COLOR_PRIMARY);
     
-    // ── 메모리 분석 ──
+    //    
     int16_t memY = perfCard.y + perfCard.h + SPACING_SM;
     int16_t cardW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
     int16_t cardH = 65;
     
-    // Heap 메모리
+    // Heap 
     CardConfig heapCard = {
         .x = SPACING_SM,
         .y = memY,
@@ -65,7 +65,7 @@ void drawAdvancedAnalysisScreen() {
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(heapCard.x + CARD_PADDING, heapCard.y + CARD_PADDING);
-    tft.print("Heap 메모리");
+    tft.print("Heap ");
     
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.setTextColor(COLOR_SUCCESS);
@@ -80,7 +80,7 @@ void drawAdvancedAnalysisScreen() {
     tft.setCursor(heapCard.x + CARD_PADDING, heapCard.y + cardH - 14);
     tft.printf("Min: %lu KB", minFreeHeap / 1024);
     
-    // 스택 메모리
+    //  
     CardConfig stackCard = {
         .x = (int16_t)(SPACING_SM + cardW + SPACING_SM),
         .y = memY,
@@ -93,7 +93,7 @@ void drawAdvancedAnalysisScreen() {
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(stackCard.x + CARD_PADDING, stackCard.y + CARD_PADDING);
-    tft.print("버퍼 사용");
+    tft.print(" ");
     
     uint32_t bufferUsed = temperatureBuffer.size();
     uint32_t bufferMax = TEMP_BUFFER_SIZE;
@@ -111,9 +111,9 @@ void drawAdvancedAnalysisScreen() {
     tft.setTextSize(1);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(stackCard.x + CARD_PADDING, stackCard.y + cardH - 14);
-    tft.printf("%.1f%% 사용 중", bufferPercent);
+    tft.printf("%.1f%%  ", bufferPercent);
     
-    // ── RTOS 태스크 분석 ──
+    //  RTOS   
     int16_t taskY = memY + cardH + SPACING_SM;
     
     CardConfig taskCard = {
@@ -128,9 +128,9 @@ void drawAdvancedAnalysisScreen() {
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
     tft.setCursor(taskCard.x + CARD_PADDING, taskCard.y + CARD_PADDING);
-    tft.print("RTOS 태스크 (8개 실행 중)");
+    tft.print("RTOS  (8  )");
     
-    // 태스크 목록 (샘플)
+    //   ()
     struct TaskInfo {
         const char* name;
         uint8_t priority;
@@ -163,10 +163,10 @@ void drawAdvancedAnalysisScreen() {
         lineY += 14;
     }
     
-    // ── 하단 네비게이션 ──
+    //    
     NavButton navButtons[] = {
-        {"뒤로", BTN_OUTLINE, true},
-        {"새로고침", BTN_PRIMARY, true}
+        {"", BTN_OUTLINE, true},
+        {"", BTN_PRIMARY, true}
     };
     drawNavBar(navButtons, 2);
 }
@@ -177,13 +177,13 @@ void handleAdvancedAnalysisTouch(uint16_t x, uint16_t y) {
     if (y >= navY) {
         int16_t buttonW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
         
-        // 뒤로
+        // 
         ButtonConfig backBtn = {
             .x = SPACING_SM,
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "뒤로",
+            .label = "",
             .style = BTN_OUTLINE,
             .enabled = true
         };
@@ -194,13 +194,13 @@ void handleAdvancedAnalysisTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // 새로고침
+        // 
         ButtonConfig refreshBtn = {
             .x = (int16_t)(SPACING_SM + buttonW + SPACING_SM),
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "새로고침",
+            .label = "",
             .style = BTN_PRIMARY,
             .enabled = true
         };

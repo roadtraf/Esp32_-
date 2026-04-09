@@ -1,22 +1,22 @@
 // ================================================================
-// ErrorHandler.cpp  —  에러 관리 v3.9 (음성 알림 통합)
+// ErrorHandler.cpp      v3.9 (  )
 // ================================================================
 #include "Config.h"
 #include "ErrorHandler.h"
 #include "StateMachine.h"  // changeState, previousState
 #include "SD_Logger.h"     // logError(ErrorInfo&)
 
-// v3.9: 음성 알림
+// v3.9:  
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay )
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-extern SafeVoiceAlert safeVoiceAlert;
+extern VoiceAlert voiceAlert;
 #endif
 
-// ─────────────────── 에러 설정 ──────────────────────────────
+//    
 void setError(ErrorCode code, ErrorSeverity severity, const char* message) {
   currentError.code       = code;
   currentError.severity   = severity;
@@ -27,30 +27,30 @@ void setError(ErrorCode code, ErrorSeverity severity, const char* message) {
   errorActive = true;
   stats.totalErrors++;
 
-  Serial.printf("[에러] %s (심각도: %d)\n", message, severity);
+  Serial.printf("[] %s (: %d)\n", message, severity);
 
-  // v3.9: 음성 알림 - 에러 발생 시 자동 재생
+  // v3.9:   -     
   #ifdef ENABLE_VOICE_ALERTS
-  if (safeVoiceAlert.isOnline()) {
-    // safeVoiceAlert.playErrorMessage(code);  // 미지원 메서드
+  if (voiceAlert.isOnline()) {
+    // voiceAlert.playErrorMessage(code);  //  
     
-    // 치명적 에러는 볼륨 증가
+    //    
     if (severity == SEVERITY_CRITICAL) {
-      safeVoiceAlert.setVolume(25);  // 에러 시 볼륨 증가
+      voiceAlert.setVolume(25);  //    
     }
   }
   #endif
 
-  // SD 로그 저장
+  // SD  
   logError(currentError);
 
-  // ★ ring buffer 저장
+  //  ring buffer 
   errorHistory[errorHistIdx] = currentError;
   errorHistIdx = (errorHistIdx + 1) % ERROR_HIST_MAX;
   if (errorHistCnt < ERROR_HIST_MAX) errorHistCnt++;
 }
 
-// ─────────────────── 에러 해제 ──────────────────────────────
+//    
 void clearError() {
   currentError.code       = ERROR_NONE;
   currentError.retryCount = 0;
@@ -59,17 +59,17 @@ void clearError() {
   digitalWrite(PIN_LED_RED, LOW);
   digitalWrite(PIN_BUZZER,  LOW);
 
-  Serial.println("[에러] 해제됨");
+  Serial.println("[] ");
   
-  // v3.9: 음성 알림 - 시스템 복구 안내
+  // v3.9:   -   
   #ifdef ENABLE_VOICE_ALERTS
-  if (safeVoiceAlert.isOnline()) {
-    safeVoiceAlert.enqueue(1, 1);  // 준비 완료
+  if (voiceAlert.isOnline()) {
+    voiceAlert.enqueue(1, 1);  //  
   }
   #endif
 }
 
-// ─────────────────── 에러 처리 루프 ─────────────────────────
+//     
 void handleError() {
   if (!errorActive) return;
 
@@ -79,22 +79,22 @@ void handleError() {
   }
 }
 
-// ─────────────────── 복구 시도 ──────────────────────────────
+//    
 bool attemptErrorRecovery() {
   switch (currentError.severity) {
-    case SEVERITY_INFO:  // SEVERITY_TEMPORARY → SEVERITY_INFO
-      // 3회까지 재시도, 30초 간격
+    case SEVERITY_INFO:  // SEVERITY_TEMPORARY  SEVERITY_INFO
+      // 3 , 30 
       if (currentError.retryCount < 3) {
         static uint32_t lastRetryTime = 0;
         if (millis() - lastRetryTime >= 30000) {
           currentError.retryCount++;
           lastRetryTime = millis();
-          Serial.printf("[복구] 재시도 %d/3\n", currentError.retryCount);
+          Serial.printf("[]  %d/3\n", currentError.retryCount);
           
-          // v3.9: 음성 안내
+          // v3.9:  
           #ifdef ENABLE_VOICE_ALERTS
-          if (safeVoiceAlert.isOnline()) {
-            safeVoiceAlert.enqueue(1, 2);  // 잠시 기다려주세요
+          if (voiceAlert.isOnline()) {
+            voiceAlert.enqueue(1, 2);  //  
           }
           #endif
           
@@ -104,15 +104,15 @@ bool attemptErrorRecovery() {
       break;
 
     case SEVERITY_RECOVERABLE:
-      // 2회까지 재시도
+      // 2 
       if (currentError.retryCount < 2) {
         currentError.retryCount++;
-        Serial.printf("[복구] 재시도 %d/2\n", currentError.retryCount);
+        Serial.printf("[]  %d/2\n", currentError.retryCount);
         
-        // v3.9: 음성 안내
+        // v3.9:  
         #ifdef ENABLE_VOICE_ALERTS
-        if (safeVoiceAlert.isOnline()) {
-          safeVoiceAlert.enqueue(1, 3);  // 시스템 점검
+        if (voiceAlert.isOnline()) {
+          voiceAlert.enqueue(1, 3);  //  
         }
         #endif
         
@@ -122,18 +122,18 @@ bool attemptErrorRecovery() {
       break;
 
     case SEVERITY_CRITICAL:
-      // 복구 불가 — 수동 개입 필요
-      Serial.println("[복구] 불가 - 수동 개입 필요");
+      //      
+      Serial.println("[]  -   ");
       
-      // v3.9: 음성 알림 - 치명적 에러는 반복 재생
+      // v3.9:   -    
       #ifdef ENABLE_VOICE_ALERTS
       static uint32_t lastCriticalAlert = 0;
-      if (safeVoiceAlert.isOnline() && millis() - lastCriticalAlert >= 60000) {
-        // 1분마다 반복
-        safeVoiceAlert.setVolume(VOICE_VOLUME_EMERGENCY);
-        // safeVoiceAlert.playErrorMessage(currentError.code);
-        // safeVoiceAlert.enableRepeat(true);  // 미지원
-        // safeVoiceAlert.setRepeatCount(3);  // 미지원
+      if (voiceAlert.isOnline() && millis() - lastCriticalAlert >= 60000) {
+        // 1 
+        voiceAlert.setVolume(VOICE_VOLUME_EMERGENCY);
+        // voiceAlert.playErrorMessage(currentError.code);
+        // voiceAlert.enableRepeat(true);  // 
+        // voiceAlert.setRepeatCount(3);  // 
         lastCriticalAlert = millis();
       }
       #endif
@@ -144,7 +144,7 @@ bool attemptErrorRecovery() {
   return false;
 }
 
-// ─────────────────── 에러 코드 → 문자열 변환 ─────────────────
+//       
 const char* getErrorCodeString(ErrorCode code) {
   switch (code) {
     case ERROR_NONE:              return "NONE";
@@ -161,10 +161,10 @@ const char* getErrorCodeString(ErrorCode code) {
   }
 }
 
-// ─────────────────── 에러 심각도 → 문자열 변환 ───────────────
+//       
 const char* getErrorSeverityString(ErrorSeverity severity) {
   switch (severity) {
-    case SEVERITY_INFO:  // SEVERITY_TEMPORARY → SEVERITY_INFO   return "TEMPORARY";
+    case SEVERITY_INFO:  // SEVERITY_TEMPORARY  SEVERITY_INFO   return "TEMPORARY";
     case SEVERITY_RECOVERABLE: return "RECOVERABLE";
     case SEVERITY_CRITICAL:    return "CRITICAL";
     default:                   return "UNKNOWN";

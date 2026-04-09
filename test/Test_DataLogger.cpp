@@ -1,5 +1,5 @@
-// ================================================================
-// Test_DataLogger.cpp  —  DataLogger 단위 테스트
+﻿// ================================================================
+// Test_DataLogger.cpp  ?? DataLogger ?⑥쐞 ?뚯뒪??
 // ================================================================
 
 #if defined(UNIT_TEST_MODE) && defined(ENABLE_DATA_LOGGING)
@@ -14,13 +14,13 @@ extern HealthMonitor healthMonitor;
 void Test_DataLogger::runTests() {
     TestFramework::beginModule(getName());
     
-    // ──── 초기화 테스트 ────
+    // ???? 珥덇린???뚯뒪??????
     TestFramework::ASSERT(
-        true,  // dataLogger.begin()은 setup()에서 이미 호출됨
+        true,  // dataLogger.begin()? setup()?먯꽌 ?대? ?몄텧??
         "DataLogger initialized"
     );
     
-    // ──── 로그 파일 존재 테스트 ────
+    // ???? 濡쒓렇 ?뚯씪 議댁옱 ?뚯뒪??????
     #ifdef ENABLE_SD_CARD
     File healthLog = SD.open("/logs/health_log.csv", FILE_READ);
     TestFramework::ASSERT(
@@ -37,7 +37,7 @@ void Test_DataLogger::runTests() {
     if (maintLog) maintLog.close();
     #endif
     
-    // ──── 로그 카운트 테스트 ────
+    // ???? 濡쒓렇 移댁슫???뚯뒪??????
     uint32_t logCount = dataLogger.getLogCount();
     TestFramework::ASSERT(
         logCount >= 0,
@@ -45,7 +45,7 @@ void Test_DataLogger::runTests() {
     );
     Serial.printf("    (Current log count: %lu)\n", logCount);
     
-    // ──── 로그 크기 테스트 ────
+    // ???? 濡쒓렇 ?ш린 ?뚯뒪??????
     uint32_t logSize = dataLogger.getLogSize();
     TestFramework::ASSERT(
         logSize >= 0,
@@ -53,7 +53,7 @@ void Test_DataLogger::runTests() {
     );
     Serial.printf("    (Current log size: %lu bytes)\n", logSize);
     
-    // ──── 추세 계산 테스트 ────
+    // ???? 異붿꽭 怨꾩궛 ?뚯뒪??????
     TrendStatistics trend = dataLogger.getDailyTrend();
     TestFramework::ASSERT_RANGE(
         trend.avg_24h,
@@ -71,7 +71,7 @@ void Test_DataLogger::runTests() {
     );
     Serial.printf("    (Volatility: %.2f)\n", trend.volatility);
     
-    // ──── 예측 테스트 ────
+    // ???? ?덉륫 ?뚯뒪??????
     float pred24h = dataLogger.predictHealthScore(24);
     TestFramework::ASSERT_RANGE(
         pred24h,
@@ -81,7 +81,7 @@ void Test_DataLogger::runTests() {
     );
     Serial.printf("    (24h prediction: %.1f%%)\n", pred24h);
     
-    // ──── 유지보수 예상 일수 테스트 ────
+    // ???? ?좎?蹂댁닔 ?덉긽 ?쇱닔 ?뚯뒪??????
     uint32_t days = dataLogger.estimateDaysToMaintenance();
     TestFramework::ASSERT(
         days >= 0,
@@ -93,7 +93,7 @@ void Test_DataLogger::runTests() {
         Serial.println("    (Maintenance not needed soon)");
     }
     
-    // ──── 수동 로깅 테스트 ────
+    // ???? ?섎룞 濡쒓퉭 ?뚯뒪??????
     float testHealth = 95.5f;
     dataLogger.logHealthDataDetailed(
         testHealth,
@@ -108,7 +108,7 @@ void Test_DataLogger::runTests() {
         "Manual health data logging"
     );
     
-    // ──── CSV 내보내기 테스트 ────
+    // ???? CSV ?대낫?닿린 ?뚯뒪??????
     #ifdef ENABLE_SD_CARD
     bool exported = dataLogger.exportHealthToCSV("test_export.csv");
     TestFramework::ASSERT(

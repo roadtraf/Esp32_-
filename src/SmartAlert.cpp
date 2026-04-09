@@ -1,5 +1,5 @@
 // ================================================================
-// SmartAlert.cpp  —  v3.8.2 스마트 알림 시스템
+// SmartAlert.cpp    v3.8.2   
 // ================================================================
 #include "SmartAlert.h"
 #include "Config.h"
@@ -8,16 +8,16 @@
 #include <time.h>
 #include <base64.h>
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay )
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "SensorManager.h"  // SensorManager 통합
+#include "SensorManager.h"  // SensorManager 
 
-// 전역 인스턴스
+//  
 SmartAlert smartAlert;
 
-// ─────────────────── 생성자 ─────────────────────────────────
-// SensorManager 외부 참조
+//   
+// SensorManager  
 extern SensorManager sensorManager;
 
 SmartAlert::SmartAlert() {
@@ -31,7 +31,7 @@ SmartAlert::SmartAlert() {
     memset(lastAlertTime, 0, sizeof(lastAlertTime));
     memset(history, 0, sizeof(history));
     
-    // 기본 설정
+    //  
     config.timeFilterEnabled = true;
     config.startHour = DEFAULT_START_HOUR;
     config.endHour = DEFAULT_END_HOUR;
@@ -47,15 +47,15 @@ SmartAlert::SmartAlert() {
     config.smtpPort = 587;
 }
 
-// ─────────────────── 초기화 ─────────────────────────────────
+//   
 void SmartAlert::begin() {
     loadConfig();
     initialized = true;
-    Serial.println("[SmartAlert] 초기화 완료");
+    Serial.println("[SmartAlert]  ");
 }
 
 void SmartAlert::loadConfig() {
-    // Preferences에서 설정 로드
+    // Preferences  
     preferences.begin("smartalert", true);
     
     config.timeFilterEnabled = preferences.getBool("time_filter", true);
@@ -76,7 +76,7 @@ void SmartAlert::loadConfig() {
     
     preferences.end();
     
-    Serial.println("[SmartAlert] 설정 로드 완료");
+    Serial.println("[SmartAlert]   ");
 }
 
 void SmartAlert::saveConfig() {
@@ -100,7 +100,7 @@ void SmartAlert::saveConfig() {
     
     preferences.end();
     
-    Serial.println("[SmartAlert] 설정 저장 완료");
+    Serial.println("[SmartAlert]   ");
 }
 
 void SmartAlert::setConfig(const AlertConfig& cfg) {
@@ -108,11 +108,11 @@ void SmartAlert::setConfig(const AlertConfig& cfg) {
     saveConfig();
 }
 
-// ─────────────────── 알림 체크 ──────────────────────────────
+//    
 bool SmartAlert::shouldAlert(MaintenanceLevel level, ErrorCode error) {
     if (!initialized) return false;
     
-    // URGENT나 CRITICAL은 항상 알림 (설정에 따라)
+    // URGENT CRITICAL   ( )
     if (level == MAINTENANCE_URGENT && config.urgentAlways) {
         return canSendAlert(level);
     }
@@ -123,15 +123,15 @@ bool SmartAlert::shouldAlert(MaintenanceLevel level, ErrorCode error) {
         return true;
     }
     
-    // 시간 필터 체크
+    //   
     if (config.timeFilterEnabled) {
         if (!isWorkingHours()) {
-            Serial.println("[SmartAlert] 작업 시간 외 - 알림 억제");
+            Serial.println("[SmartAlert]    -  ");
             return false;
         }
         
         if (!config.weekendAlert && isWeekend()) {
-            Serial.println("[SmartAlert] 주말 - 알림 억제");
+            Serial.println("[SmartAlert]  -  ");
             return false;
         }
     }
@@ -140,13 +140,13 @@ bool SmartAlert::shouldAlert(MaintenanceLevel level, ErrorCode error) {
 }
 
 bool SmartAlert::canSendAlert(MaintenanceLevel level) {
-    // 최소 간격 체크
+    //   
     uint32_t now = millis();
     uint8_t idx = (uint8_t)level;
     
     if (idx < 5 && lastAlertTime[idx] > 0) {
         if (now - lastAlertTime[idx] < config.minAlertInterval) {
-            Serial.println("[SmartAlert] 최소 간격 미달 - 알림 억제");
+            Serial.println("[SmartAlert]    -  ");
             return false;
         }
     }
@@ -154,23 +154,23 @@ bool SmartAlert::canSendAlert(MaintenanceLevel level) {
     return true;
 }
 
-// ─────────────────── 알림 발송 ──────────────────────────────
+//    
 void SmartAlert::sendAlert(MaintenanceLevel level, float healthScore, const char* message) {
     if (!initialized) return;
     
-    Serial.printf("[SmartAlert] 알림 발송: Level=%d, Health=%.1f%%\n", level, healthScore);
+    Serial.printf("[SmartAlert]  : Level=%d, Health=%.1f%%\n", level, healthScore);
     
-    // 부저
+    // 
     if (config.buzzerEnabled) {
         sendBuzzerAlert(level);
     }
     
-    // 화면 팝업
+    //  
     if (config.displayEnabled) {
         sendDisplayAlert(level, healthScore, message);
     }
     
-    // 이메일
+    // 
     if (config.emailEnabled && strlen(config.emailTo) > 0) {
         char subject[64];
         snprintf(subject, sizeof(subject), "[ESP32] Maintenance Alert - Level %d", level);
@@ -183,7 +183,7 @@ void SmartAlert::sendAlert(MaintenanceLevel level, float healthScore, const char
         }
     }
     
-    // SMS (선택)
+    // SMS ()
     if (config.smsEnabled && strlen(config.phoneNumber) > 0) {
         char smsBody[160];
         formatSmsMessage(smsBody, sizeof(smsBody), level, healthScore);
@@ -193,32 +193,32 @@ void SmartAlert::sendAlert(MaintenanceLevel level, float healthScore, const char
         }
     }
     
-    // 통계 업데이트
+    //  
     totalAlerts++;
     lastAlertTime[(uint8_t)level] = millis();
     
-    // 이력 추가
+    //  
     addToHistory(level, ERROR_NONE, message);
 }
 
 void SmartAlert::sendErrorAlert(ErrorCode error, const char* message) {
     if (!initialized) return;
     
-    Serial.printf("[SmartAlert] 에러 알림: Code=%d\n", error);
+    Serial.printf("[SmartAlert]  : Code=%d\n", error);
     
-    // 부저 (긴급)
+    //  ()
     if (config.buzzerEnabled) {
         digitalWrite(PIN_BUZZER, HIGH);
         vTaskDelay(pdMS_TO_TICKS(1000));
         digitalWrite(PIN_BUZZER, LOW);
     }
     
-    // 이메일
+    // 
     if (config.emailEnabled && strlen(config.emailTo) > 0) {
         char subject[64];
         snprintf(subject, sizeof(subject), "[ESP32] ERROR - Code %d", error);
         
-        // 타임스탬프 생성 (미정의 변수 timeStr 수정)
+        //   (  timeStr )
         time_t errNow = time(nullptr);
         struct tm errTm;
         localtime_r(&errNow, &errTm);
@@ -244,16 +244,16 @@ void SmartAlert::sendErrorAlert(ErrorCode error, const char* message) {
         sendEmail(subject, emailBody);
     }
     
-    // 이력 추가
+    //  
     addToHistory(MAINTENANCE_NONE, error, message);
 }
 
-// ─────────────────── 개별 알림 채널 ─────────────────────────
+//     
 void SmartAlert::sendBuzzerAlert(MaintenanceLevel level) {
-    // 레벨에 따라 다른 패턴
+    //    
     switch (level) {
         case MAINTENANCE_REQUIRED:
-            // 짧은 삐 2번
+            //   2
             digitalWrite(PIN_BUZZER, HIGH);
             vTaskDelay(pdMS_TO_TICKS(100));
             digitalWrite(PIN_BUZZER, LOW);
@@ -264,7 +264,7 @@ void SmartAlert::sendBuzzerAlert(MaintenanceLevel level) {
             break;
             
         case MAINTENANCE_URGENT:
-            // 긴 삐 3번
+            //   3
             for (int i = 0; i < 3; i++) {
                 digitalWrite(PIN_BUZZER, HIGH);
                 vTaskDelay(pdMS_TO_TICKS(300));
@@ -281,32 +281,32 @@ void SmartAlert::sendBuzzerAlert(MaintenanceLevel level) {
 void SmartAlert::sendDisplayAlert(MaintenanceLevel level,
                                    float healthScore,
                                    const char* message) {
-    // 실제 팝업은 UI_Screen_Health.cpp의 showMaintenanceAlert()에서 처리
-    // [R3] 현재 보고 있는 화면이 관련 있을 때만 redraw 트리거
+    //   UI_Screen_Health.cpp showMaintenanceAlert() 
+    // [R3]        redraw 
     if (currentScreen == SCREEN_HEALTH ||
         currentScreen == SCREEN_MAIN) {
         screenNeedsRedraw = true;
     }
-    // 그 외 화면: 화면 전환 시 최신값 자동 반영되므로 즉시 redraw 불필요
+    //   :        redraw 
 }
 
-// ─────────────────── 이메일 전송 ────────────────────────────
+//    
 bool SmartAlert::sendEmail(const char* subject, const char* body) {
     if (!wifiConnected) {
-        Serial.println("[SmartAlert] WiFi 미연결 - 이메일 전송 실패");
+        Serial.println("[SmartAlert] WiFi  -   ");
         return false;
     }
     
-    Serial.printf("[SmartAlert] 이메일 전송: %s\n", subject);
+    Serial.printf("[SmartAlert]  : %s\n", subject);
     
     WiFiClientSecure client;
-    client.setInsecure();  // SSL 검증 스킵 (간단한 구현)
+    client.setInsecure();  // SSL   ( )
     
     if (!connectToSMTP(client)) {
         return false;
     }
     
-    // SMTP 명령 전송
+    // SMTP  
     if (!sendSMTPCommand(client, "", "220")) return false;
     
     char cmd[256];
@@ -318,8 +318,8 @@ bool SmartAlert::sendEmail(const char* subject, const char* body) {
     // AUTH LOGIN
     if (!sendSMTPCommand(client, "AUTH LOGIN\r\n", "334")) return false;
     
-    // Username (Base64) - String 없이 char 버퍼 사용
-    String _u64 = base64::encode(config.emailFrom);   // base64 라이브러리는 String 반환
+    // Username (Base64) - String  char  
+    String _u64 = base64::encode(config.emailFrom);   // base64  String 
     char user64[128];
     snprintf(user64, sizeof(user64), "%s\r\n", _u64.c_str());
     if (!sendSMTPCommand(client, user64, "334")) return false;
@@ -341,7 +341,7 @@ bool SmartAlert::sendEmail(const char* subject, const char* body) {
     // DATA
     if (!sendSMTPCommand(client, "DATA\r\n", "354")) return false;
     
-    // 헤더
+    // 
     snprintf(cmd, sizeof(cmd), "From: <%s>\r\n", config.emailFrom);
     client.print(cmd);
     
@@ -354,11 +354,11 @@ bool SmartAlert::sendEmail(const char* subject, const char* body) {
     client.print("Content-Type: text/plain; charset=UTF-8\r\n");
     client.print("\r\n");
     
-    // 본문
+    // 
     client.print(body);
     client.print("\r\n.\r\n");
     
-    // 응답 대기
+    //  
     vTaskDelay(pdMS_TO_TICKS(2000));
     
     // QUIT
@@ -367,19 +367,19 @@ bool SmartAlert::sendEmail(const char* subject, const char* body) {
     
     client.stop();
     
-    Serial.println("[SmartAlert] 이메일 전송 완료");
+    Serial.println("[SmartAlert]   ");
     return true;
 }
 
 bool SmartAlert::connectToSMTP(WiFiClientSecure& client) {
-    Serial.printf("[SmartAlert] SMTP 연결: %s:%d\n", config.smtpServer, config.smtpPort);
+    Serial.printf("[SmartAlert] SMTP : %s:%d\n", config.smtpServer, config.smtpPort);
     
     if (!client.connect(config.smtpServer, config.smtpPort)) {
-        Serial.println("[SmartAlert] SMTP 연결 실패");
+        Serial.println("[SmartAlert] SMTP  ");
         return false;
     }
     
-    Serial.println("[SmartAlert] SMTP 연결 성공");
+    Serial.println("[SmartAlert] SMTP  ");
     return true;
 }
 
@@ -401,18 +401,18 @@ bool SmartAlert::sendSMTPCommand(WiFiClientSecure& client, const char* command, 
         return true;
     }
 
-    Serial.printf("[SmartAlert] SMTP 명령 실패: %s\n", response);
+    Serial.printf("[SmartAlert] SMTP  : %s\n", response);
     return false;
 }
 
-// ─────────────────── SMS 전송 (선택) ────────────────────────
+//  SMS  () 
 bool SmartAlert::sendSMS(const char* message) {
-    // TODO: SMS API 구현 (Twilio, AWS SNS 등)
-    Serial.printf("[SmartAlert] SMS 전송 (미구현): %s\n", message);
+    // TODO: SMS API  (Twilio, AWS SNS )
+    Serial.printf("[SmartAlert] SMS  (): %s\n", message);
     return false;
 }
 
-// ─────────────────── 시간 체크 ──────────────────────────────
+//    
 bool SmartAlert::isWorkingHours() {
     time_t now;
     struct tm timeinfo;
@@ -430,12 +430,12 @@ bool SmartAlert::isWeekend() {
     time(&now);
     localtime_r(&now, &timeinfo);
     
-    int wday = timeinfo.tm_wday;  // 0=일요일, 6=토요일
+    int wday = timeinfo.tm_wday;  // 0=, 6=
     
     return (wday == 0 || wday == 6);
 }
 
-// ─────────────────── 이력 관리 ──────────────────────────────
+//    
 void SmartAlert::addToHistory(MaintenanceLevel level, ErrorCode error, const char* message) {
     AlertHistory& entry = history[historyIndex];
     
@@ -468,7 +468,7 @@ void SmartAlert::clearHistory() {
     memset(history, 0, sizeof(history));
 }
 
-// ─────────────────── 통계 ───────────────────────────────────
+//   
 uint32_t SmartAlert::getTotalAlertsSent() {
     return totalAlerts;
 }
@@ -491,7 +491,7 @@ uint32_t SmartAlert::getLastAlertTime() {
     return latest;
 }
 
-// ─────────────────── 포맷 헬퍼 ──────────────────────────────
+//    
 void SmartAlert::formatEmailBody(char* buffer, size_t size, 
                                   MaintenanceLevel level, 
                                   float healthScore, 
@@ -500,12 +500,12 @@ void SmartAlert::formatEmailBody(char* buffer, size_t size,
     
     int pos = 0;
     
-    // 제목
+    // 
     pos += snprintf(buffer + pos, size - pos,
         "ESP32 Vacuum Control System Alert\n\n");
     if (pos >= size - 1) return;
     
-    // 시간
+    // 
     time_t now = time(nullptr);
     char timeStr[64];
     struct tm timeinfo;
@@ -516,7 +516,7 @@ void SmartAlert::formatEmailBody(char* buffer, size_t size,
         "Time: %s\n\n", timeStr);
     if (pos >= size - 1) return;
     
-    // 유지보수 레벨
+    //  
     const char* levelStr;
     switch (level) {
         case MAINTENANCE_REQUIRED:
@@ -534,30 +534,30 @@ void SmartAlert::formatEmailBody(char* buffer, size_t size,
         "Maintenance Level: %s\n", levelStr);
     if (pos >= size - 1) return;
     
-    // 건강도
+    // 
     pos += snprintf(buffer + pos, size - pos,
         "Health Score: %.1f%%\n\n", healthScore);
     if (pos >= size - 1) return;
     
-    // 메시지
+    // 
     if (message) {
         pos += snprintf(buffer + pos, size - pos,
             "Message: %s\n\n", message);
         if (pos >= size - 1) return;
     }
     
-    // 센서 데이터
+    //  
     pos += snprintf(buffer + pos, size - pos,
         "Sensor Data:\n"
         "  Pressure: %.2f kPa\n"
-        "  Temperature: %.1f °C\n"
+        "  Temperature: %.1f C\n"
         "  Current: %.2f A\n\n",
         sensorManager.getPressure(),
         sensorManager.getTemperature(),
         sensorManager.getCurrent());
     if (pos >= size - 1) return;
     
-    // 마무리
+    // 
     pos += snprintf(buffer + pos, size - pos,
         "Please check the system and perform maintenance if needed.\n");
 }

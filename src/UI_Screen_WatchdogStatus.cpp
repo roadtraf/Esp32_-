@@ -10,12 +10,12 @@ using namespace UITheme;
 void drawWatchdogStatusScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // 헤더
-    drawHeader("시스템 모니터");
+    // 
+    drawHeader(" ");
     
     int16_t y = HEADER_HEIGHT + SPACING_MD;
     
-    // 전체 상태 카드
+    //   
     CardConfig statusCard = {
         .x = SPACING_SM,
         .y = y,
@@ -28,15 +28,15 @@ void drawWatchdogStatusScreen() {
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
     tft.setCursor(statusCard.x + CARD_PADDING, statusCard.y + CARD_PADDING);
-    tft.print(enhancedWatchdog.isHealthy() ? "정상" : "경고");
+    tft.print(enhancedWatchdog.isHealthy() ? "" : "");
     
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setCursor(statusCard.x + CARD_PADDING, statusCard.y + CARD_PADDING + 22);
-    tft.printf("가동: %lu초", enhancedWatchdog.getUptimeSeconds());
+    tft.printf(": %lu", enhancedWatchdog.getUptimeSeconds());
     
     y += statusCard.h + SPACING_SM;
     
-    // 태스크 상태 목록
+    //   
     const char* taskNames[] = {"VacuumCtrl", "SensorRead", "UIUpdate", "WiFiMgr"};
     
     for (int i = 0; i < 4; i++) {
@@ -52,31 +52,31 @@ void drawWatchdogStatusScreen() {
         };
         drawCard(taskCard);
         
-        // 태스크 이름
+        //  
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_PRIMARY);
         tft.setCursor(taskCard.x + CARD_PADDING, taskCard.y + CARD_PADDING);
         tft.print(task->name);
         
-        // 상태 배지
+        //  
         const char* statusText;
         BadgeType badgeType;
         
         switch (task->status) {
             case TASK_HEALTHY:
-                statusText = "정상";
+                statusText = "";
                 badgeType = BADGE_SUCCESS;
                 break;
             case TASK_SLOW:
-                statusText = "느림";
+                statusText = "";
                 badgeType = BADGE_WARNING;
                 break;
             case TASK_STALLED:
-                statusText = "정지";
+                statusText = "";
                 badgeType = BADGE_DANGER;
                 break;
             default:
-                statusText = "미확인";
+                statusText = "";
                 badgeType = BADGE_INFO;
                 break;
         }
@@ -87,9 +87,9 @@ void drawWatchdogStatusScreen() {
         y += taskCard.h + 4;
     }
     
-    // 네비게이션
+    // 
     NavButton navButtons[] = {
-        {"뒤로", BTN_OUTLINE, true}
+        {"", BTN_OUTLINE, true}
     };
     drawNavBar(navButtons, 1);
 }

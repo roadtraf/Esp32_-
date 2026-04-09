@@ -1,25 +1,25 @@
 // ================================================================
-// SensorManager.cpp - 센서 관리 모듈 구현 (v3.9.2 Phase 3-1 - 개선)
+// SensorManager.cpp -     (v3.9.2 Phase 3-1 - )
 // ================================================================
 
 #include "SensorManager.h"
 #include "Config.h"
-#include "Sensor.h"  // 기존 센서 함수들
+#include "Sensor.h"  //   
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay )
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-// 전역 인스턴스 정의
+//   
 SensorManager sensorManager;
 
 // ================================================================
-// 초기화
+// 
 // ================================================================
 void SensorManager::begin() {
-    Serial.println("[SensorManager] 초기화 시작...");
+    Serial.println("[SensorManager]  ...");
     
-    // 센서 데이터 초기화
+    //   
     sensorData.pressure = 0.0f;
     sensorData.current = 0.0f;
     sensorData.temperature = 0.0f;
@@ -28,26 +28,26 @@ void SensorManager::begin() {
     sensorData.emergencyStop = false;
     sensorData.timestamp = millis();
     
-    // 버퍼 초기화
+    //  
     pressureBuffer.reserve(100);
     temperatureBuffer.reserve(100);
     currentBuffer.reserve(100);
     
-    // 오프셋 초기화
+    //  
     pressureOffset = 0.0f;
     currentOffset = 0.0f;
     
-    // 기존 센서 초기화 함수 호출
+    //     
     initSensors();
     
-    Serial.println("[SensorManager] 초기화 완료");
+    Serial.println("[SensorManager]  ");
 }
 
 // ================================================================
-// 센서 읽기
+//  
 // ================================================================
 void SensorManager::readAllSensors() {
-    // 개별 센서 읽기
+    //   
     sensorData.pressure = readPressureSensor();
     sensorData.current = readCurrentSensor();
     sensorData.temperature = readTemperatureSensor();
@@ -58,10 +58,10 @@ void SensorManager::readAllSensors() {
 }
 
 // ================================================================
-// 내부 센서 읽기 함수들
+//    
 // ================================================================
 float SensorManager::readPressureSensor() {
-    // 기존 함수 호출
+    //   
     float raw = readPressure();
     return raw - pressureOffset;
 }
@@ -88,7 +88,7 @@ bool SensorManager::readEmergencyStopInput() {
 }
 
 // ================================================================
-// 버퍼 관리
+//  
 // ================================================================
 void SensorManager::updateBuffers() {
     addToBuffer(pressureBuffer, sensorData.pressure, 100);
@@ -110,12 +110,12 @@ void SensorManager::addToBuffer(std::vector<float>& buffer, float value, size_t 
 }
 
 // ================================================================
-// 캘리브레이션
+// 
 // ================================================================
 void SensorManager::calibratePressure() {
-    Serial.println("[SensorManager] 압력 센서 캘리브레이션...");
+    Serial.println("[SensorManager]   ...");
     
-    // 여러 번 읽어서 평균
+    //    
     float sum = 0.0f;
     const int samples = 10;
     
@@ -126,12 +126,12 @@ void SensorManager::calibratePressure() {
     
     pressureOffset = sum / samples;
     
-    Serial.printf("[SensorManager] 압력 오프셋: %.2f\n", pressureOffset);
-    Serial.println("[SensorManager] 압력 캘리브레이션 완료");
+    Serial.printf("[SensorManager]  : %.2f\n", pressureOffset);
+    Serial.println("[SensorManager]   ");
 }
 
 void SensorManager::calibrateCurrent() {
-    Serial.println("[SensorManager] 전류 센서 캘리브레이션...");
+    Serial.println("[SensorManager]   ...");
     
     float sum = 0.0f;
     const int samples = 10;
@@ -143,31 +143,31 @@ void SensorManager::calibrateCurrent() {
     
     currentOffset = sum / samples;
     
-    Serial.printf("[SensorManager] 전류 오프셋: %.2f\n", currentOffset);
-    Serial.println("[SensorManager] 전류 캘리브레이션 완료");
+    Serial.printf("[SensorManager]  : %.2f\n", currentOffset);
+    Serial.println("[SensorManager]   ");
 }
 
 // ================================================================
-// 센서 건강 체크
+//   
 // ================================================================
 bool SensorManager::checkSensorHealth() {
     bool healthy = true;
     
-    // 압력 센서 체크
+    //   
     if (isnan(sensorData.pressure) || sensorData.pressure < -200.0f || sensorData.pressure > 200.0f) {
-        Serial.println("[SensorManager] 압력 센서 이상");
+        Serial.println("[SensorManager]   ");
         healthy = false;
     }
     
-    // 전류 센서 체크
+    //   
     if (isnan(sensorData.current) || sensorData.current < 0.0f || sensorData.current > 10.0f) {
-        Serial.println("[SensorManager] 전류 센서 이상");
+        Serial.println("[SensorManager]   ");
         healthy = false;
     }
     
-    // 온도 센서 체크
+    //   
     if (isnan(sensorData.temperature) || sensorData.temperature < -50.0f || sensorData.temperature > 100.0f) {
-        Serial.println("[SensorManager] 온도 센서 이상");
+        Serial.println("[SensorManager]   ");
         healthy = false;
     }
     
@@ -175,7 +175,7 @@ bool SensorManager::checkSensorHealth() {
 }
 
 // ================================================================
-// 통계 계산
+//  
 // ================================================================
 float SensorManager::calculateAverage(const std::vector<float>& buffer, uint8_t samples) {
     if (buffer.empty()) return 0.0f;
@@ -183,7 +183,7 @@ float SensorManager::calculateAverage(const std::vector<float>& buffer, uint8_t 
     size_t count = min((size_t)samples, buffer.size());
     float sum = 0.0f;
     
-    // 최근 N개 샘플의 평균
+    //  N  
     for (size_t i = buffer.size() - count; i < buffer.size(); i++) {
         sum += buffer[i];
     }
@@ -204,16 +204,16 @@ float SensorManager::getCurrentAverage(uint8_t samples) {
 }
 
 // ================================================================
-// 상태 출력
+//  
 // ================================================================
 void SensorManager::printStatus() const {
-    Serial.println("\n=== 센서 상태 ===");
-    Serial.printf("압력:     %.2f kPa\n", sensorData.pressure);
-    Serial.printf("전류:     %.2f A\n", sensorData.current);
-    Serial.printf("온도:     %.2f °C\n", sensorData.temperature);
-    Serial.printf("리밋SW:   %s\n", sensorData.limitSwitch ? "ON" : "OFF");
-    Serial.printf("광센서:   %s\n", sensorData.photoSensor ? "감지" : "없음");
-    Serial.printf("비상정지: %s\n", sensorData.emergencyStop ? "눌림" : "정상");
-    Serial.printf("타임스탬프: %lu ms\n", sensorData.timestamp);
+    Serial.println("\n===   ===");
+    Serial.printf(":     %.2f kPa\n", sensorData.pressure);
+    Serial.printf(":     %.2f A\n", sensorData.current);
+    Serial.printf(":     %.2f C\n", sensorData.temperature);
+    Serial.printf("SW:   %s\n", sensorData.limitSwitch ? "ON" : "OFF");
+    Serial.printf(":   %s\n", sensorData.photoSensor ? "" : "");
+    Serial.printf(": %s\n", sensorData.emergencyStop ? "" : "");
+    Serial.printf(": %lu ms\n", sensorData.timestamp);
     Serial.println("==================\n");
 }

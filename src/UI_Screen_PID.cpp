@@ -1,5 +1,5 @@
 // ================================================================
-// UI_Screen_PID.cpp - 재설계 PID 설정 화면
+// UI_Screen_PID.cpp -  PID  
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
@@ -10,16 +10,16 @@ extern float pidError;
 using namespace UIComponents;
 using namespace UITheme;
 
-// 선택된 PID 파라미터
+//  PID 
 static int8_t selectedPIDParam = -1;
 
 void drawPIDScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // ── 헤더 ──
-    drawHeader("PID 제어 설정");
+    //   
+    drawHeader("PID  ");
     
-    // ── PID 파라미터 카드들 ──
+    //  PID   
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     int16_t cardH = 70;
     
@@ -34,9 +34,9 @@ void drawPIDScreen() {
     };
     
     PIDParam params[] = {
-        {"Kp (비례)", "비례 게인", &config.pidKp, 0.0f, 10.0f, 0.1f, COLOR_PRIMARY},
-        {"Ki (적분)", "적분 게인", &config.pidKi, 0.0f, 5.0f, 0.05f, COLOR_ACCENT},
-        {"Kd (미분)", "미분 게인", &config.pidKd, 0.0f, 5.0f, 0.1f, COLOR_INFO}
+        {"Kp ()", " ", &config.pidKp, 0.0f, 10.0f, 0.1f, COLOR_PRIMARY},
+        {"Ki ()", " ", &config.pidKi, 0.0f, 5.0f, 0.05f, COLOR_ACCENT},
+        {"Kd ()", " ", &config.pidKd, 0.0f, 5.0f, 0.1f, COLOR_INFO}
     };
     
     for (int i = 0; i < 3; i++) {
@@ -53,32 +53,32 @@ void drawPIDScreen() {
         };
         drawCard(paramCard);
         
-        // 파라미터 이름
+        //  
         tft.setTextSize(TEXT_SIZE_MEDIUM);
         tft.setTextColor(params[i].color);
         tft.setCursor(paramCard.x + CARD_PADDING, paramCard.y + CARD_PADDING);
         tft.print(params[i].label);
         
-        // 설명
+        // 
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(paramCard.x + CARD_PADDING, paramCard.y + CARD_PADDING + 20);
         tft.print(params[i].description);
         
-        // 현재 값
+        //  
         tft.setTextSize(3);
         tft.setTextColor(COLOR_TEXT_PRIMARY);
         tft.setCursor(paramCard.x + CARD_PADDING, paramCard.y + CARD_PADDING + 35);
         tft.printf("%.2f", *params[i].value);
         
-        // 편집 버튼
+        //  
         if (!isSelected) {
             ButtonConfig editBtn = {
                 .x = (int16_t)(paramCard.x + paramCard.w - 70),
                 .y = (int16_t)(paramCard.y + CARD_PADDING + 20),
                 .w = 60,
                 .h = 28,
-                .label = "편집",
+                .label = "",
                 .style = BTN_SECONDARY,
                 .enabled = true
             };
@@ -86,7 +86,7 @@ void drawPIDScreen() {
         }
     }
     
-    // 편집 모드일 때 조절 패널
+    //     
     if (selectedPIDParam >= 0) {
         int16_t panelY = startY + 3 * (cardH + SPACING_SM) + SPACING_SM;
         
@@ -100,7 +100,7 @@ void drawPIDScreen() {
         };
         drawCard(editPanel);
         
-        // 큰 감소 버튼
+        //   
         ButtonConfig minus10Btn = {
             .x = (int16_t)(editPanel.x + SPACING_SM),
             .y = (int16_t)(panelY + 8),
@@ -112,7 +112,7 @@ void drawPIDScreen() {
         };
         drawButton(minus10Btn);
         
-        // 작은 감소 버튼
+        //   
         ButtonConfig minus1Btn = {
             .x = (int16_t)(editPanel.x + SPACING_SM + 55),
             .y = (int16_t)(panelY + 8),
@@ -124,7 +124,7 @@ void drawPIDScreen() {
         };
         drawButton(minus1Btn);
         
-        // 현재 값 표시
+        //   
         tft.setTextSize(TEXT_SIZE_MEDIUM);
         tft.setTextColor(COLOR_TEXT_PRIMARY);
         char valueStr[16];
@@ -133,7 +133,7 @@ void drawPIDScreen() {
         tft.setCursor(editPanel.x + (editPanel.w - textW) / 2, panelY + 20);
         tft.print(valueStr);
         
-        // 작은 증가 버튼
+        //   
         ButtonConfig plus1Btn = {
             .x = (int16_t)(editPanel.x + editPanel.w - 110),
             .y = (int16_t)(panelY + 8),
@@ -145,7 +145,7 @@ void drawPIDScreen() {
         };
         drawButton(plus1Btn);
         
-        // 큰 증가 버튼
+        //   
         ButtonConfig plus10Btn = {
             .x = (int16_t)(editPanel.x + editPanel.w - 55),
             .y = (int16_t)(panelY + 8),
@@ -158,25 +158,25 @@ void drawPIDScreen() {
         drawButton(plus10Btn);
     }
     
-    // 현재 PID 출력 미리보기
+    //  PID  
     if (selectedPIDParam < 0) {
         int16_t previewY = startY + 3 * (cardH + SPACING_SM) + SPACING_SM;
         
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(SPACING_SM + 4, previewY);
-        tft.print("현재 PID 출력:");
+        tft.print(" PID :");
         
         tft.setTextSize(TEXT_SIZE_MEDIUM);
         tft.setTextColor(COLOR_ACCENT);
         tft.setCursor(SPACING_SM + 4, previewY + 16);
         tft.printf("%.2f", pidOutput);
         
-        // PID 오류값
+        // PID 
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(SCREEN_WIDTH / 2, previewY);
-        tft.print("오차:");
+        tft.print(":");
         
         tft.setTextSize(TEXT_SIZE_MEDIUM);
         tft.setTextColor(pidError > 0 ? COLOR_WARNING : COLOR_SUCCESS);
@@ -184,18 +184,18 @@ void drawPIDScreen() {
         tft.printf("%.1f kPa", pidError);
     }
     
-    // ── 하단 네비게이션 ──
+    //    
     if (selectedPIDParam >= 0) {
         NavButton navButtons[] = {
-            {"취소", BTN_DANGER, true},
-            {"저장", BTN_SUCCESS, true}
+            {"", BTN_DANGER, true},
+            {"", BTN_SUCCESS, true}
         };
         drawNavBar(navButtons, 2);
     } else {
         NavButton navButtons[] = {
-            {"뒤로", BTN_OUTLINE, true},
-            {"기본값", BTN_SECONDARY, systemController.getPermissions().canChangeSettings},
-            {"Auto", BTN_PRIMARY, false} // 향후 자동 튜닝 기능
+            {"", BTN_OUTLINE, true},
+            {"", BTN_SECONDARY, systemController.getPermissions().canChangeSettings},
+            {"Auto", BTN_PRIMARY, false} //    
         };
         drawNavBar(navButtons, 3);
     }
@@ -219,11 +219,11 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
         {&config.pidKd, 0.0f, 5.0f, 0.1f}
     };
     
-    // 편집 모드일 때
+    //   
     if (selectedPIDParam >= 0) {
         int16_t panelY = startY + 3 * (cardH + SPACING_SM) + SPACING_SM;
         
-        // -- 버튼 (큰 감소)
+        // --  ( )
         ButtonConfig minus10Btn = {
             .x = (int16_t)(SPACING_SM + SPACING_SM),
             .y = (int16_t)(panelY + 8),
@@ -243,7 +243,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // - 버튼 (작은 감소)
+        // -  ( )
         ButtonConfig minus1Btn = {
             .x = (int16_t)(SPACING_SM + SPACING_SM + 55),
             .y = (int16_t)(panelY + 8),
@@ -263,7 +263,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // + 버튼 (작은 증가)
+        // +  ( )
         ButtonConfig plus1Btn = {
             .x = (int16_t)(SCREEN_WIDTH - SPACING_SM - 110),
             .y = (int16_t)(panelY + 8),
@@ -283,7 +283,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // ++ 버튼 (큰 증가)
+        // ++  ( )
         ButtonConfig plus10Btn = {
             .x = (int16_t)(SCREEN_WIDTH - SPACING_SM - 55),
             .y = (int16_t)(panelY + 8),
@@ -303,50 +303,50 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             return;
         }
         
-        // 네비게이션 (저장/취소)
+        //  (/)
         if (y >= navY) {
             int16_t buttonW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
             
-            // 취소
+            // 
             ButtonConfig cancelBtn = {
                 .x = SPACING_SM,
                 .y = (int16_t)(navY + 2),
                 .w = buttonW,
                 .h = (int16_t)(FOOTER_HEIGHT - 4),
-                .label = "취소",
+                .label = "",
                 .style = BTN_DANGER,
                 .enabled = true
             };
             
             if (isButtonPressed(cancelBtn, x, y)) {
-                // loadConfig();  // 미구현
+                // loadConfig();  // 
                 selectedPIDParam = -1;
                 screenNeedsRedraw = true;
                 return;
             }
             
-            // 저장
+            // 
             ButtonConfig saveBtn = {
                 .x = (int16_t)(SPACING_SM + buttonW + SPACING_SM),
                 .y = (int16_t)(navY + 2),
                 .w = buttonW,
                 .h = (int16_t)(FOOTER_HEIGHT - 4),
-                .label = "저장",
+                .label = "",
                 .style = BTN_SUCCESS,
                 .enabled = true
             };
             
             if (isButtonPressed(saveBtn, x, y)) {
-                // saveConfig();  // 미구현
+                // saveConfig();  // 
                 selectedPIDParam = -1;
                 screenNeedsRedraw = true;
                 return;
             }
         }
     }
-    // 일반 모드일 때
+    //   
     else {
-        // 파라미터 카드의 편집 버튼 클릭
+        //     
         for (int i = 0; i < 3; i++) {
             int16_t cardY = startY + i * (cardH + SPACING_SM);
             
@@ -355,7 +355,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
                 .y = (int16_t)(cardY + CARD_PADDING + 20),
                 .w = 60,
                 .h = 28,
-                .label = "편집",
+                .label = "",
                 .style = BTN_SECONDARY,
                 .enabled = true
             };
@@ -367,17 +367,17 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
             }
         }
         
-        // 네비게이션
+        // 
         if (y >= navY) {
             int16_t buttonW = (SCREEN_WIDTH - SPACING_SM * 4) / 3;
             
-            // 뒤로
+            // 
             ButtonConfig backBtn = {
                 .x = SPACING_SM,
                 .y = (int16_t)(navY + 2),
                 .w = buttonW,
                 .h = (int16_t)(FOOTER_HEIGHT - 4),
-                .label = "뒤로",
+                .label = "",
                 .style = BTN_OUTLINE,
                 .enabled = true
             };
@@ -388,14 +388,14 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
                 return;
             }
             
-            // 기본값
+            // 
             if (systemController.getPermissions().canChangeSettings) {
                 ButtonConfig defaultBtn = {
                     .x = (int16_t)(SPACING_SM + buttonW + SPACING_SM),
                     .y = (int16_t)(navY + 2),
                     .w = buttonW,
                     .h = (int16_t)(FOOTER_HEIGHT - 4),
-                    .label = "기본값",
+                    .label = "",
                     .style = BTN_SECONDARY,
                     .enabled = true
                 };
@@ -404,7 +404,7 @@ void handlePIDTouch(uint16_t x, uint16_t y) {
                     config.pidKp = PID_KP;
                     config.pidKi = PID_KI;
                     config.pidKd = PID_KD;
-                    // saveConfig();  // 미구현
+                    // saveConfig();  // 
                     screenNeedsRedraw = true;
                     return;
                 }

@@ -1,5 +1,5 @@
 // ================================================================
-// SafeMode.h - 안전 모드 시스템 (Phase 3-1)
+// SafeMode.h -    (Phase 3-1)
 // ================================================================
 #pragma once
 
@@ -7,14 +7,14 @@
 #include <Preferences.h>
 
 // ================================================================
-// 안전 모드 설정
+//   
 // ================================================================
-#define SAFE_MODE_MAX_BOOT_FAILURES    3    // 최대 부팅 실패 허용 횟수
-#define SAFE_MODE_BOOT_TIMEOUT         30   // 부팅 완료 판정 시간 (초)
+#define SAFE_MODE_MAX_BOOT_FAILURES    3    //     
+#define SAFE_MODE_BOOT_TIMEOUT         30   //     ()
 #define SAFE_MODE_PREFERENCE_KEY       "safemode"
 
 // ================================================================
-// 부팅 실패 원인
+//   
 // ================================================================
 enum BootFailureReason {
     BOOT_SUCCESS,
@@ -28,64 +28,64 @@ enum BootFailureReason {
 };
 
 // ================================================================
-// 안전 모드 옵션
+//   
 // ================================================================
 enum SafeModeOption {
-    SAFE_RESTORE_BACKUP,        // 백업에서 복원
-    SAFE_FACTORY_RESET,         // 공장 초기화
-    SAFE_DIAGNOSTIC_MODE,       // 진단 모드
-    SAFE_CONTINUE_ANYWAY,       // 계속 진행
-    SAFE_REBOOT                 // 재부팅
+    SAFE_RESTORE_BACKUP,        //  
+    SAFE_FACTORY_RESET,         //  
+    SAFE_DIAGNOSTIC_MODE,       //  
+    SAFE_CONTINUE_ANYWAY,       //  
+    SAFE_REBOOT                 // 
 };
 
 // ================================================================
-// 부팅 정보
+//  
 // ================================================================
 struct BootInfo {
-    uint32_t bootCount;            // 총 부팅 횟수
-    uint32_t successfulBoots;      // 성공한 부팅 횟수
-    uint32_t failedBoots;          // 실패한 부팅 횟수
-    uint32_t consecutiveFailures;  // 연속 실패 횟수
-    BootFailureReason lastFailure; // 마지막 실패 원인
-    uint32_t lastBootTime;         // 마지막 부팅 시각
+    uint32_t bootCount;            //   
+    uint32_t successfulBoots;      //   
+    uint32_t failedBoots;          //   
+    uint32_t consecutiveFailures;  //   
+    BootFailureReason lastFailure; //   
+    uint32_t lastBootTime;         //   
 };
 
 // ================================================================
-// 안전 모드 관리자 클래스
+//    
 // ================================================================
 class SafeMode {
 public:
-    // ── 초기화 ──
+    //   
     void begin();
     
-    // ── 부팅 관리 ──
-    bool checkBootStatus();           // 부팅 상태 체크
-    void markBootStart();             // 부팅 시작 표시
-    void markBootSuccess();           // 부팅 성공 표시
-    void markBootFailure(BootFailureReason reason);  // 부팅 실패 기록
+    //    
+    bool checkBootStatus();           //   
+    void markBootStart();             //   
+    void markBootSuccess();           //   
+    void markBootFailure(BootFailureReason reason);  //   
     
-    // ── 안전 모드 ──
-    bool isInSafeMode();              // 안전 모드 여부
-    void enterSafeMode(BootFailureReason reason);    // 안전 모드 진입
-    void exitSafeMode();              // 안전 모드 해제
+    //    
+    bool isInSafeMode();              //   
+    void enterSafeMode(BootFailureReason reason);    //   
+    void exitSafeMode();              //   
     
-    // ── 복구 옵션 ──
-    bool restoreFromBackup();         // 백업 복원
-    bool factoryReset();              // 공장 초기화
-    bool diagnosticMode();            // 진단 모드 진입
+    //    
+    bool restoreFromBackup();         //  
+    bool factoryReset();              //  
+    bool diagnosticMode();            //   
     
-    // ── 상태 조회 ──
+    //    
     BootInfo getBootInfo();
     uint32_t getConsecutiveFailures();
     BootFailureReason getLastFailureReason();
     bool shouldEnterSafeMode();
     
-    // ── 통계 ──
+    //   
     void resetBootStats();
     void printBootInfo();
     void printSafeModeStatus();
     
-    // ── UI 지원 ──
+    //  UI  
     void drawSafeModeScreen();
     SafeModeOption handleSafeModeTouch(uint16_t x, uint16_t y);
 
@@ -95,10 +95,10 @@ private:
     bool bootSuccessMarked;
     uint32_t bootStartTime;
     
-    // Preferences 객체
+    // Preferences 
     Preferences prefs;
     
-    // ── 내부 메서드 ──
+    //    
     void loadBootInfo();
     void saveBootInfo();
     void incrementBootCount();
@@ -107,12 +107,12 @@ private:
 };
 
 // ================================================================
-// 전역 인스턴스
+//  
 // ================================================================
 extern SafeMode safeMode;
 
 // ================================================================
-// 편의 매크로
+//  
 // ================================================================
 #define SAFE_MODE_CHECK() safeMode.checkBootStatus()
 #define SAFE_MODE_SUCCESS() safeMode.markBootSuccess()

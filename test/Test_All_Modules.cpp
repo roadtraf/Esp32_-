@@ -1,5 +1,5 @@
-// ================================================================
-// Test_All_Modules.cpp  —  모든 테스트 모듈 구현
+﻿// ================================================================
+// Test_All_Modules.cpp  ?? 紐⑤뱺 ?뚯뒪??紐⑤뱢 援ы쁽
 // ================================================================
 
 #ifdef UNIT_TEST_MODE
@@ -13,54 +13,54 @@
 #include "../include/HealthMonitor.h"
 #include "../include/MLPredictor.h"
 
-// 외부 변수
+// ?몃? 蹂??
 extern bool verifyMemory();
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_PID
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 void Test_PID::runTests() {
     TestFramework::beginModule(getName());
     
-    // PID 리셋
+    // PID 由ъ뀑
     resetPID();
     TestFramework::ASSERT_EQUAL(0.0f, pidError, "PID Reset - Error");
     TestFramework::ASSERT_EQUAL(0.0f, pidIntegral, "PID Reset - Integral");
     TestFramework::ASSERT_EQUAL(0.0f, pidDerivative, "PID Reset - Derivative");
     
-    // PID 출력 범위
+    // PID 異쒕젰 踰붿쐞
     config.targetPressure = -80.0f;
     sensorData.pressure = -50.0f;
     updatePID();
     TestFramework::ASSERT_RANGE(pidOutput, 0.0f, 100.0f, "PID Output Range");
     
-    // 적분 제한
+    // ?곷텇 ?쒗븳
     for (int i = 0; i < 100; i++) {
         updatePID();
     }
     TestFramework::ASSERT(abs(pidIntegral) <= 50.0f, "PID Integral Limit");
     
-    // PID 게인 테스트
+    // PID 寃뚯씤 ?뚯뒪??
     config.pidKp = 1.0f;
     config.pidKi = 0.1f;
     config.pidKd = 0.05f;
     resetPID();
-    sensorData.pressure = -70.0f;  // 10kPa 에러
+    sensorData.pressure = -70.0f;  // 10kPa ?먮윭
     updatePID();
     TestFramework::ASSERT(pidOutput > 0.0f, "PID Output with Error");
     
     TestFramework::endModule();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_Safety
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 void Test_Safety::runTests() {
     TestFramework::beginModule(getName());
     
-    // 안전 인터락 테스트
+    // ?덉쟾 ?명꽣???뚯뒪??
     TestFramework::ASSERT(
         checkSafetyInterlock(true, false),
         "Pump Only - Allowed"
@@ -81,7 +81,7 @@ void Test_Safety::runTests() {
         "Both Off - Allowed"
     );
     
-    // 온도 안전 범위
+    // ?⑤룄 ?덉쟾 踰붿쐞
     sensorData.temperature = 45.0f;
     TestFramework::ASSERT(
         sensorData.temperature < TEMP_THRESHOLD_CRITICAL,
@@ -94,7 +94,7 @@ void Test_Safety::runTests() {
         "Temperature Critical"
     );
     
-    // 전류 안전 범위
+    // ?꾨쪟 ?덉쟾 踰붿쐞
     sensorData.current = 4.0f;
     TestFramework::ASSERT(
         sensorData.current < CURRENT_THRESHOLD_CRITICAL,
@@ -110,25 +110,25 @@ void Test_Safety::runTests() {
     TestFramework::endModule();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_Sensor
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 void Test_Sensor::runTests() {
     TestFramework::beginModule(getName());
     
-    // 정상 값
+    // ?뺤긽 媛?
     sensorData.pressure = -80.0f;
     sensorData.temperature = 35.0f;
     sensorData.current = 3.5f;
     TestFramework::ASSERT(validateParameters(), "Valid Parameters");
     
-    // NaN 테스트
+    // NaN ?뚯뒪??
     sensorData.pressure = NAN;
     TestFramework::ASSERT(!validateParameters(), "NaN Pressure");
     sensorData.pressure = -80.0f;
     
-    // 압력 범위
+    // ?뺣젰 踰붿쐞
     sensorData.pressure = -110.0f;
     TestFramework::ASSERT(!validateParameters(), "Pressure Too Low");
     
@@ -136,7 +136,7 @@ void Test_Sensor::runTests() {
     TestFramework::ASSERT(!validateParameters(), "Pressure Too High");
     sensorData.pressure = -80.0f;
     
-    // 온도 범위
+    // ?⑤룄 踰붿쐞
     sensorData.temperature = -10.0f;
     TestFramework::ASSERT(!validateParameters(), "Temperature Too Low");
     
@@ -144,7 +144,7 @@ void Test_Sensor::runTests() {
     TestFramework::ASSERT(!validateParameters(), "Temperature Too High");
     sensorData.temperature = 35.0f;
     
-    // 전류 범위
+    // ?꾨쪟 踰붿쐞
     sensorData.current = -1.0f;
     TestFramework::ASSERT(!validateParameters(), "Current Negative");
     
@@ -152,21 +152,21 @@ void Test_Sensor::runTests() {
     TestFramework::ASSERT(!validateParameters(), "Current Too High");
     sensorData.current = 3.5f;
     
-    // 센서 헬스 체크
+    // ?쇱꽌 ?ъ뒪 泥댄겕
     checkSensorHealth();
     TestFramework::ASSERT(true, "Sensor Health Check Complete");
     
     TestFramework::endModule();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_Error
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 void Test_Error::runTests() {
     TestFramework::beginModule(getName());
     
-    // TEMPORARY 에러 복구
+    // TEMPORARY ?먮윭 蹂듦뎄
     currentError.severity = SEVERITY_TEMPORARY;
     currentError.retryCount = 0;
     TestFramework::ASSERT(
@@ -174,7 +174,7 @@ void Test_Error::runTests() {
         "Temporary Error - First Retry"
     );
     
-    // RECOVERABLE 에러 복구
+    // RECOVERABLE ?먮윭 蹂듦뎄
     currentError.severity = SEVERITY_RECOVERABLE;
     currentError.retryCount = 0;
     TestFramework::ASSERT(
@@ -182,7 +182,7 @@ void Test_Error::runTests() {
         "Recoverable Error - First Retry"
     );
     
-    // CRITICAL 에러 (복구 불가)
+    // CRITICAL ?먮윭 (蹂듦뎄 遺덇?)
     currentError.severity = SEVERITY_CRITICAL;
     currentError.retryCount = 0;
     TestFramework::ASSERT(
@@ -190,7 +190,7 @@ void Test_Error::runTests() {
         "Critical Error - No Recovery"
     );
     
-    // 최대 재시도 초과
+    // 理쒕? ?ъ떆??珥덇낵
     currentError.severity = SEVERITY_TEMPORARY;
     currentError.retryCount = 5;
     TestFramework::ASSERT(
@@ -198,7 +198,7 @@ void Test_Error::runTests() {
         "Max Retry Exceeded"
     );
     
-    // 에러 코드 확인
+    // ?먮윭 肄붾뱶 ?뺤씤
     handleError(ERROR_OVERHEAT, SEVERITY_WARNING, "Test overheat");
     TestFramework::ASSERT_EQUAL_INT(
         (int)ERROR_OVERHEAT,
@@ -209,14 +209,14 @@ void Test_Error::runTests() {
     TestFramework::endModule();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_Memory
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 void Test_Memory::runTests() {
     TestFramework::beginModule(getName());
     
-    // 메모리 검증
+    // 硫붾え由?寃利?
     TestFramework::ASSERT(verifyMemory(), "Memory Verification");
     
     // Free Heap
@@ -229,7 +229,7 @@ void Test_Memory::runTests() {
     TestFramework::ASSERT(freePsram > 1000000, "Sufficient Free PSRAM");
     Serial.printf("    (Free PSRAM: %lu bytes)\n", freePsram);
     
-    // PSRAM 크기
+    // PSRAM ?ш린
     uint32_t psramSize = ESP.getPsramSize();
     TestFramework::ASSERT_EQUAL_INT(
         8 * 1024 * 1024,
@@ -237,7 +237,7 @@ void Test_Memory::runTests() {
         "PSRAM Size (8MB)"
     );
     
-    // 메모리 단편화 확인
+    // 硫붾え由??⑦렪???뺤씤
     uint32_t maxBlock = ESP.getMaxAllocHeap();
     float fragmentation = 100.0f * (1.0f - (float)maxBlock / freeHeap);
     TestFramework::ASSERT(fragmentation < 30.0f, "Low Memory Fragmentation");
@@ -246,9 +246,9 @@ void Test_Memory::runTests() {
     TestFramework::endModule();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_Health (v3.6)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
 
@@ -257,19 +257,19 @@ extern HealthMonitor healthMonitor;
 void Test_Health::runTests() {
     TestFramework::beginModule(getName());
     
-    // 건강도 계산
+    // 嫄닿컯??怨꾩궛
     float health = healthMonitor.calculateHealthScore(
         -80.0f,  // pressure
         -80.0f,  // target
         35.0f,   // temperature
         3.5f,    // current
-        10000    // uptime (초)
+        10000    // uptime (珥?
     );
     
     TestFramework::ASSERT_RANGE(health, 0.0f, 100.0f, "Health Score Range");
     Serial.printf("    (Health Score: %.1f%%)\n", health);
     
-    // 건강도 요소 확인
+    // 嫄닿컯???붿냼 ?뺤씤
     const HealthFactors& factors = healthMonitor.getHealthFactors();
     TestFramework::ASSERT_RANGE(
         factors.pumpEfficiency,
@@ -292,30 +292,30 @@ void Test_Health::runTests() {
         "Runtime Health Range"
     );
     
-    // 유지보수 레벨
+    // ?좎?蹂댁닔 ?덈꺼
     MaintenanceLevel level = healthMonitor.getMaintenanceLevel();
     TestFramework::ASSERT(
         level >= MAINTENANCE_NONE && level <= MAINTENANCE_URGENT,
         "Maintenance Level Valid"
     );
     
-    // 유지보수 메시지
+    // ?좎?蹂댁닔 硫붿떆吏
     const char* message = healthMonitor.getMaintenanceMessage();
     TestFramework::ASSERT(message != nullptr && strlen(message) > 0, "Maintenance Message Not Empty");
     
     TestFramework::endModule();
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_MLPredictor (v3.6)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 extern MLPredictor mlPredictor;
 
 void Test_MLPredictor::runTests() {
     TestFramework::beginModule(getName());
     
-    // 이상 감지 (정상)
+    // ?댁긽 媛먯? (?뺤긽)
     AnomalyType anomaly = mlPredictor.detectAnomaly(-80.0f, 35.0f, 3.5f);
     TestFramework::ASSERT_EQUAL_INT(
         (int)ANOMALY_NONE,
@@ -323,7 +323,7 @@ void Test_MLPredictor::runTests() {
         "No Anomaly Detected (Normal)"
     );
     
-    // 이상 감지 (고온)
+    // ?댁긽 媛먯? (怨좎삩)
     anomaly = mlPredictor.detectAnomaly(-80.0f, 65.0f, 3.5f);
     TestFramework::ASSERT_EQUAL_INT(
         (int)ANOMALY_TEMPERATURE,
@@ -331,7 +331,7 @@ void Test_MLPredictor::runTests() {
         "Temperature Anomaly"
     );
     
-    // 이상 감지 (과전류)
+    // ?댁긽 媛먯? (怨쇱쟾瑜?
     anomaly = mlPredictor.detectAnomaly(-80.0f, 35.0f, 7.0f);
     TestFramework::ASSERT_EQUAL_INT(
         (int)ANOMALY_CURRENT,
@@ -339,7 +339,7 @@ void Test_MLPredictor::runTests() {
         "Current Anomaly"
     );
     
-    // 이상 감지 (진공 실패)
+    // ?댁긽 媛먯? (吏꾧났 ?ㅽ뙣)
     anomaly = mlPredictor.detectAnomaly(-40.0f, 35.0f, 3.5f);
     TestFramework::ASSERT_EQUAL_INT(
         (int)ANOMALY_VACUUM,
@@ -347,7 +347,7 @@ void Test_MLPredictor::runTests() {
         "Vacuum Anomaly"
     );
     
-    // 메시지 확인
+    // 硫붿떆吏 ?뺤씤
     const char* message = mlPredictor.getAnomalyMessage(ANOMALY_TEMPERATURE);
     TestFramework::ASSERT(message != nullptr && strlen(message) > 0, "Anomaly Message Not Empty");
     
@@ -356,9 +356,9 @@ void Test_MLPredictor::runTests() {
 
 #endif // ENABLE_PREDICTIVE_MAINTENANCE
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_SmartAlert (v3.8)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 #ifdef ENABLE_SMART_ALERTS
 
@@ -368,10 +368,10 @@ extern SmartAlert smartAlert;
 void Test_SmartAlert::runTests() {
     TestFramework::beginModule(getName());
     
-    // 초기화 확인
+    // 珥덇린???뺤씤
     TestFramework::ASSERT(true, "SmartAlert initialized");
     
-    // 설정 가져오기
+    // ?ㅼ젙 媛?몄삤湲?
     AlertConfig cfg = smartAlert.getConfig();
     TestFramework::ASSERT(
         cfg.startHour >= 0 && cfg.startHour <= 23,
@@ -382,23 +382,23 @@ void Test_SmartAlert::runTests() {
         "End Hour Valid"
     );
     
-    // 작업 시간 체크
+    // ?묒뾽 ?쒓컙 泥댄겕
     bool isWorking = smartAlert.isWorkingHours();
     TestFramework::ASSERT(true, "Working Hours Check");
     Serial.printf("    (Currently %s working hours)\n",
                  isWorking ? "in" : "outside");
     
-    // 주말 체크
+    // 二쇰쭚 泥댄겕
     bool isWeekend = smartAlert.isWeekend();
     TestFramework::ASSERT(true, "Weekend Check");
     Serial.printf("    (Today is %s)\n",
                  isWeekend ? "weekend" : "weekday");
     
-    // 알림 발송 여부 체크
+    // ?뚮┝ 諛쒖넚 ?щ? 泥댄겕
     bool should = smartAlert.shouldAlert(MAINTENANCE_REQUIRED);
     TestFramework::ASSERT(true, "Should Alert Check");
     
-    // 통계 확인
+    // ?듦퀎 ?뺤씤
     uint32_t total = smartAlert.getTotalAlertsSent();
     TestFramework::ASSERT(total >= 0, "Total Alerts Valid");
     Serial.printf("    (Total alerts sent: %lu)\n", total);
@@ -408,9 +408,9 @@ void Test_SmartAlert::runTests() {
 
 #endif // ENABLE_SMART_ALERTS
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_AdvancedAnalyzer (v3.8)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 #ifdef ENABLE_ADVANCED_ANALYSIS
 
@@ -420,7 +420,7 @@ extern AdvancedAnalyzer advancedAnalyzer;
 void Test_AdvancedAnalyzer::runTests() {
     TestFramework::beginModule(getName());
     
-    // 고장 예측
+    // 怨좎옣 ?덉륫
     FailurePrediction pred = advancedAnalyzer.predictFailure();
     TestFramework::ASSERT_RANGE(
         pred.confidence,
@@ -431,7 +431,7 @@ void Test_AdvancedAnalyzer::runTests() {
                  getFailureTypeName(pred.type),
                  pred.confidence);
     
-    // 부품 수명 분석
+    // 遺???섎챸 遺꾩꽍
     ComponentLife comps[5];
     uint8_t count;
     advancedAnalyzer.analyzeComponentLife(comps, count);
@@ -445,12 +445,12 @@ void Test_AdvancedAnalyzer::runTests() {
         );
     }
     
-    // 저하율 계산
+    // ??섏쑉 怨꾩궛
     float rate = advancedAnalyzer.calculateDegradationRate();
     TestFramework::ASSERT(true, "Degradation Rate Calculated");
     Serial.printf("    (Degradation rate: %.4f%%/hour)\n", rate);
     
-    // 최적화 제안
+    // 理쒖쟻???쒖븞
     OptimizationSuggestion sugs[5];
     uint8_t sugCount;
     advancedAnalyzer.generateOptimizationSuggestions(sugs, sugCount);
@@ -462,15 +462,15 @@ void Test_AdvancedAnalyzer::runTests() {
 
 #endif // ENABLE_ADVANCED_ANALYSIS
 
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 //  Test_VoiceAlert (v3.9)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 #ifdef ENABLE_VOICE_ALERTS
 
 #include "../include/VoiceAlert.h"
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay 媛쒖꽑)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 extern VoiceAlert voiceAlert;
@@ -478,42 +478,42 @@ extern VoiceAlert voiceAlert;
 void Test_VoiceAlert::runTests() {
     TestFramework::beginModule(getName());
     
-    // 온라인 확인
+    // ?⑤씪???뺤씤
     bool online = voiceAlert.isOnline();
     TestFramework::ASSERT(true, "VoiceAlert Online Check");
     Serial.printf("    (Status: %s)\n", online ? "Online" : "Offline");
     
     if (!online) {
-        Serial.println("    ⚠️  VoiceAlert offline - skipping tests");
+        Serial.println("    ?좑툘  VoiceAlert offline - skipping tests");
         TestFramework::endModule();
         return;
     }
     
-    // 볼륨 테스트
+    // 蹂쇰ⅷ ?뚯뒪??
     uint8_t volume = voiceAlert.getVolume();
     TestFramework::ASSERT(volume >= 0 && volume <= 30, "Volume Range");
     Serial.printf("    (Current volume: %d/30)\n", volume);
     
-    // 볼륨 변경
+    // 蹂쇰ⅷ 蹂寃?
     voiceAlert.setVolume(15);
     TestFramework::ASSERT_EQUAL_INT(15, voiceAlert.getVolume(), "Volume Set");
-    voiceAlert.setVolume(volume);  // 원래대로
+    voiceAlert.setVolume(volume);  // ?먮옒?濡?
     
-    // 자동 음성 체크
+    // ?먮룞 ?뚯꽦 泥댄겕
     bool autoEnabled = voiceAlert.isAutoVoiceEnabled();
     TestFramework::ASSERT(true, "Auto Voice Check");
     Serial.printf("    (Auto voice: %s)\n", autoEnabled ? "Enabled" : "Disabled");
     
-    // 통계 확인
+    // ?듦퀎 ?뺤씤
     uint32_t totalPlayed = voiceAlert.getTotalPlayed();
     TestFramework::ASSERT(totalPlayed >= 0, "Total Played Valid");
     Serial.printf("    (Total played: %lu)\n", totalPlayed);
     
-    // 큐 크기 확인
+    // ???ш린 ?뺤씤
     uint8_t queueSize = voiceAlert.getQueueSize();
     TestFramework::ASSERT(queueSize >= 0 && queueSize <= 10, "Queue Size");
     
-    // 테스트 재생 (선택)
+    // ?뚯뒪???ъ깮 (?좏깮)
     Serial.println("    Playing test message...");
     voiceAlert.playSystem(VOICE_READY);
     vTaskDelay(pdMS_TO_TICKS(2000));

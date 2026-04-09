@@ -1,7 +1,7 @@
 // ================================================================
-// UI_Screen_Main.cpp - 메인 화면 완전 재작성
-// [U1] UITheme / UIComponents 전면 적용
-// [U8] screenNeedsRedraw / currentScreen 직접 접근 → UIManager 경유
+// UI_Screen_Main.cpp -    
+// [U1] UITheme / UIComponents  
+// [U8] screenNeedsRedraw / currentScreen    UIManager 
 // ================================================================
 #include "UIComponents.h"
 #include "UITheme.h"
@@ -15,45 +15,45 @@
 using namespace UIComponents;
 using namespace UITheme;
 
-extern LGFX            tft;
+extern TFT_GFX tft;
 extern SensorManager   sensorManager;
 extern SystemController systemController;
 extern UIManager       uiManager;
 extern bool            errorActive;
 extern ErrorInfo       currentError;
-
+bool canAccessScreen(int screenId);
 // ================================================================
-// 내부 레이아웃 상수 (매직넘버 제거)
+//    ( )
 // ================================================================
 namespace MainLayout {
-    // 상태바 (헤더 아래)
+    //  ( )
     constexpr int16_t STATUS_BAR_Y  = HEADER_HEIGHT;
     constexpr int16_t STATUS_BAR_H  = 24;
 
-    // 센서 카드 영역
+    //   
     constexpr int16_t CARD_ROW1_Y   = STATUS_BAR_Y + STATUS_BAR_H + SPACING_SM;
     constexpr int16_t CARD_H        = 80;
-    constexpr int16_t CARD_W        = (SCREEN_WIDTH - SPACING_SM * 3) / 2;  // 2열
+    constexpr int16_t CARD_W        = (SCREEN_WIDTH - SPACING_SM * 3) / 2;  // 2
     constexpr int16_t CARD_COL1_X   = SPACING_SM;
     constexpr int16_t CARD_COL2_X   = SPACING_SM * 2 + CARD_W;
 
-    // 펌프 상태 카드 (전체 너비)
+    //    ( )
     constexpr int16_t PUMP_CARD_Y   = CARD_ROW1_Y + CARD_H + SPACING_SM;
     constexpr int16_t PUMP_CARD_H   = 56;
     constexpr int16_t PUMP_CARD_W   = SCREEN_WIDTH - SPACING_SM * 2;
 
-    // 하단 조작 버튼 영역
+    //    
     constexpr int16_t BTN_ROW_Y     = PUMP_CARD_Y + PUMP_CARD_H + SPACING_SM;
     constexpr int16_t BTN_H         = 44;
     constexpr int16_t BTN_W_LARGE   = 140;
     constexpr int16_t BTN_W_SMALL   = 80;
 
-    // 최근 이벤트 줄 (Footer 바로 위)
+    //    (Footer  )
     constexpr int16_t EVENT_ROW_Y   = SCREEN_HEIGHT - FOOTER_HEIGHT - 22;
 }
 
 // ================================================================
-// 내부 헬퍼: 압력값 → 상태 색상
+//  :    
 // ================================================================
 static uint16_t pressureColor(float kpa) {
     if (kpa <= PRESSURE_TRIP_KPA)   return COLOR_DANGER;
@@ -62,7 +62,7 @@ static uint16_t pressureColor(float kpa) {
 }
 
 // ================================================================
-// 내부 헬퍼: 온도값 → 상태 색상
+//  :    
 // ================================================================
 static uint16_t tempColor(float c) {
     if (c >= TEMP_TRIP_C)   return COLOR_DANGER;
@@ -71,7 +71,7 @@ static uint16_t tempColor(float c) {
 }
 
 // ================================================================
-// 내부 헬퍼: tft.textWidth() 기반 중앙 정렬 X 계산  [U7]
+//  : tft.textWidth()    X   [U7]
 // ================================================================
 static int16_t centeredX(const char* text, uint8_t textSize,
                           int16_t areaX, int16_t areaW) {
@@ -81,7 +81,7 @@ static int16_t centeredX(const char* text, uint8_t textSize,
 }
 
 // ================================================================
-// 상태바 그리기 (WiFi / MQTT / NTP / E-Stop 표시)
+//   (WiFi / MQTT / NTP / E-Stop )
 // ================================================================
 static void drawStatusBar() {
     int16_t y = MainLayout::STATUS_BAR_Y;
@@ -90,30 +90,30 @@ static void drawStatusBar() {
     tft.fillRect(0, y, SCREEN_WIDTH, h, COLOR_BG_CARD);
     tft.drawFastHLine(0, y + h - 1, SCREEN_WIDTH, COLOR_DIVIDER);
 
-    // WiFi 상태
+    // WiFi 
     bool wifiOk = (WiFi.status() == WL_CONNECTED);
     drawBadge(SPACING_SM, y + 4,
               wifiOk ? "WiFi" : "NoNet",
               wifiOk ? BADGE_SUCCESS : BADGE_DANGER);
 
-    // MQTT 상태 (extern 변수 사용)
+    // MQTT  (extern  )
     extern bool mqttConnected;
     drawBadge(SPACING_SM + 52, y + 4,
               mqttConnected ? "MQTT" : "MQTT?",
               mqttConnected ? BADGE_SUCCESS : BADGE_WARNING);
 
-    // E-Stop 활성 시 경고 배지
+    // E-Stop    
     if (errorActive) {
-        int16_t bx = centeredX("! 경  보  발  생  !", TEXT_SIZE_SMALL,
+        int16_t bx = centeredX("!         !", TEXT_SIZE_SMALL,
                                 SPACING_SM + 110,
                                 SCREEN_WIDTH - 200);
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_DANGER);
         tft.setCursor(bx, y + 6);
-        tft.print("! 경  보  발  생  !");
+        tft.print("!         !");
     }
 
-    // 시각 (NTP 동기화 시)
+    //  (NTP  )
     extern bool ntpSynced;
     if (ntpSynced) {
         extern NTPClient ntpClient;
@@ -127,14 +127,14 @@ static void drawStatusBar() {
 }
 
 // ================================================================
-// 센서 카드 그리기 (압력 / 온도)
+//    ( / )
 // ================================================================
 static void drawSensorCards() {
     float pressure = sensorManager.getPressure();
     float temp     = sensorManager.getTemperature();
     float current  = sensorManager.getCurrent();
 
-    // ── 압력 카드 ──
+    //    
     {
         CardConfig card = {
             .x = MainLayout::CARD_COL1_X,
@@ -147,13 +147,13 @@ static void drawSensorCards() {
         };
         drawCard(card);
 
-        // 라벨
+        // 
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(card.x + CARD_PADDING, card.y + CARD_PADDING);
-        tft.print("압력");
+        tft.print("");
 
-        // 값 (큰 폰트)
+        //  ( )
         char buf[16];
         snprintf(buf, sizeof(buf), "%.1f", pressure);
         tft.setTextSize(3);
@@ -162,14 +162,14 @@ static void drawSensorCards() {
                       card.y + CARD_PADDING + 14);
         tft.print(buf);
 
-        // 단위
+        // 
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(card.x + CARD_PADDING,
                       card.y + MainLayout::CARD_H - CARD_PADDING - 12);
         tft.print("kPa");
 
-        // 설정값 대비 프로그레스바
+        //   
         float pct = constrain(
             (pressure - PRESSURE_MIN_KPA) /
             (PRESSURE_MAX_KPA - PRESSURE_MIN_KPA) * 100.0f,
@@ -180,7 +180,7 @@ static void drawSensorCards() {
                         pct, pressureColor(pressure));
     }
 
-    // ── 온도 카드 ──
+    //    
     {
         CardConfig card = {
             .x = MainLayout::CARD_COL2_X,
@@ -196,7 +196,7 @@ static void drawSensorCards() {
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(card.x + CARD_PADDING, card.y + CARD_PADDING);
-        tft.print("온도");
+        tft.print("");
 
         char buf[16];
         snprintf(buf, sizeof(buf), "%.1f", temp);
@@ -210,9 +210,9 @@ static void drawSensorCards() {
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(card.x + CARD_PADDING,
                       card.y + MainLayout::CARD_H - CARD_PADDING - 12);
-        tft.print("\xB0""C");  // °C (멀티바이트 회피)
+        tft.print("\xB0""C");  // C ( )
 
-        // 전류 보조 표시
+        //   
         char cBuf[16];
         snprintf(cBuf, sizeof(cBuf), "%.2fA", current);
         tft.setTextSize(1);
@@ -224,7 +224,7 @@ static void drawSensorCards() {
 }
 
 // ================================================================
-// 펌프 상태 카드 (전체 너비)
+//    ( )
 // ================================================================
 static void drawPumpCard() {
     extern float pumpDutyCycle;
@@ -241,18 +241,18 @@ static void drawPumpCard() {
     };
     drawCard(card);
 
-    // 라벨
+    // 
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(card.x + CARD_PADDING, card.y + CARD_PADDING);
-    tft.print("펌프");
+    tft.print("");
 
-    // 상태 배지
+    //  
     drawBadge(card.x + CARD_PADDING + 36, card.y + CARD_PADDING - 2,
-              pumpRunning ? "운전" : "정지",
+              pumpRunning ? "" : "",
               pumpRunning ? BADGE_SUCCESS : BADGE_INFO);
 
-    // 듀티 값
+    //  
     char dutyBuf[16];
     snprintf(dutyBuf, sizeof(dutyBuf), "%.0f%%", pumpDutyCycle);
     tft.setTextSize(TEXT_SIZE_MEDIUM);
@@ -261,14 +261,14 @@ static void drawPumpCard() {
                   card.y + CARD_PADDING + 16);
     tft.print(dutyBuf);
 
-    // 프로그레스바
+    // 
     drawProgressBar(card.x + CARD_PADDING,
                     card.y + MainLayout::PUMP_CARD_H - 12,
                     card.w - CARD_PADDING * 2, 8,
                     pumpDutyCycle,
                     pumpRunning ? COLOR_PRIMARY : COLOR_TEXT_DISABLED);
 
-    // 밸브 상태 (우측)
+    //   ()
     extern bool valveState[3];
     const char* vLabels[] = {"V1", "V2", "V3"};
     for (uint8_t i = 0; i < 3; i++) {
@@ -280,7 +280,7 @@ static void drawPumpCard() {
 }
 
 // ================================================================
-// 조작 버튼 행
+//   
 // ================================================================
 static void drawControlButtons() {
     int16_t y    = MainLayout::BTN_ROW_Y;
@@ -289,50 +289,50 @@ static void drawControlButtons() {
 
     SystemPermissions perms = systemController.getPermissions();
 
-    // 시작 버튼
+    //  
     ButtonConfig startBtn = {
         .x = SPACING_SM,
         .y = y,
         .w = MainLayout::BTN_W_LARGE,
         .h = h,
-        .label = "▶ 시  작",
+        .label = "   ",
         .style = BTN_SUCCESS,
         .enabled = perms.canStart
     };
     drawButton(startBtn);
 
-    // 정지 버튼
+    //  
     ButtonConfig stopBtn = {
         .x = (int16_t)(SPACING_SM + MainLayout::BTN_W_LARGE + gap),
         .y = y,
         .w = MainLayout::BTN_W_LARGE,
         .h = h,
-        .label = "■ 정  지",
+        .label = "   ",
         .style = BTN_DANGER,
         .enabled = perms.canStop
     };
     drawButton(stopBtn);
 
-    // 설정 버튼
+    //  
     ButtonConfig settingsBtn = {
         .x = (int16_t)(SPACING_SM + (MainLayout::BTN_W_LARGE + gap) * 2),
         .y = y,
         .w = MainLayout::BTN_W_SMALL,
         .h = h,
-        .label = "설정",
+        .label = "",
         .style = BTN_OUTLINE,
         .enabled = true
     };
     drawButton(settingsBtn);
 
-    // 알람 버튼 (에러 활성 시 강조)
+    //   (   )
     ButtonConfig alarmBtn = {
         .x = (int16_t)(SPACING_SM + (MainLayout::BTN_W_LARGE + gap) * 2
                        + MainLayout::BTN_W_SMALL + gap),
         .y = y,
         .w = MainLayout::BTN_W_SMALL,
         .h = h,
-        .label = errorActive ? "!알람" : "알람",
+        .label = errorActive ? "!" : "",
         .style = errorActive ? BTN_DANGER : BTN_OUTLINE,
         .enabled = true
     };
@@ -340,7 +340,7 @@ static void drawControlButtons() {
 }
 
 // ================================================================
-// 최근 이벤트 줄
+//   
 // ================================================================
 static void drawEventRow() {
     int16_t y = MainLayout::EVENT_ROW_Y;
@@ -350,41 +350,41 @@ static void drawEventRow() {
     if (errorActive) {
         tft.setTextColor(COLOR_WARNING);
         tft.setCursor(SPACING_SM, y + 4);
-        tft.printf("최근 이벤트: %s", currentError.message);
+        tft.printf(" : %s", currentError.message);
     } else {
         tft.setTextColor(COLOR_TEXT_DISABLED);
         tft.setCursor(SPACING_SM, y + 4);
-        tft.print("최근 이벤트: 정상 운전 중");
+        tft.print(" :   ");
     }
 }
 
 // ================================================================
-// 메인 화면 전체 그리기  [U1]
+//      [U1]
 // ================================================================
 void drawMainScreen() {
     tft.fillScreen(COLOR_BG_DARK);
 
-    drawHeader("진공 제어 시스템");
+    drawHeader("  ");
     drawStatusBar();
     drawSensorCards();
     drawPumpCard();
     drawControlButtons();
     drawEventRow();
 
-    // 하단 네비게이션 (설정 / 알람 빠른 접근)
+    //   ( /   )
     NavButton nav[] = {
-        {"메인", BTN_PRIMARY,   true},
-        {"그래프", BTN_OUTLINE, true},
-        {"이력", BTN_OUTLINE,   true}
+        {"", BTN_PRIMARY,   true},
+        {"", BTN_OUTLINE, true},
+        {"", BTN_OUTLINE,   true}
     };
     drawNavBar(nav, 3);
 }
 
 // ================================================================
-// 터치 처리  [U8] currentScreen 직접 대입 → uiManager.setScreen()
+//    [U8] currentScreen    uiManager.setScreen()
 // ================================================================
 void handleMainTouch(uint16_t x, uint16_t y) {
-    uiManager.updateActivity();  // 자동 로그아웃 타이머 리셋
+    uiManager.updateActivity();  //    
 
     int16_t btnY = MainLayout::BTN_ROW_Y;
     int16_t btnH = MainLayout::BTN_H;
@@ -392,7 +392,7 @@ void handleMainTouch(uint16_t x, uint16_t y) {
 
     SystemPermissions perms = systemController.getPermissions();
 
-    // ── 시작 버튼 ──
+    //    
     if (perms.canStart) {
         ButtonConfig startBtn = {
             .x = SPACING_SM, .y = btnY,
@@ -402,13 +402,13 @@ void handleMainTouch(uint16_t x, uint16_t y) {
         if (isButtonPressed(startBtn, x, y)) {
             extern void startVacuumCycle();
             startVacuumCycle();
-            uiManager.showToast("진공 시작", COLOR_SUCCESS);
+            uiManager.showToast(" ", COLOR_SUCCESS);
             uiManager.requestRedraw();
             return;
         }
     }
 
-    // ── 정지 버튼 ──
+    //    
     if (perms.canStop) {
         ButtonConfig stopBtn = {
             .x = (int16_t)(SPACING_SM + MainLayout::BTN_W_LARGE + gap),
@@ -419,13 +419,13 @@ void handleMainTouch(uint16_t x, uint16_t y) {
         if (isButtonPressed(stopBtn, x, y)) {
             extern void stopVacuumCycle();
             stopVacuumCycle();
-            uiManager.showToast("정지됨", COLOR_DANGER);
+            uiManager.showToast("", COLOR_DANGER);
             uiManager.requestRedraw();
             return;
         }
     }
 
-    // ── 설정 버튼 ──
+    //    
     {
         ButtonConfig settingsBtn = {
             .x = (int16_t)(SPACING_SM + (MainLayout::BTN_W_LARGE + gap) * 2),
@@ -439,7 +439,7 @@ void handleMainTouch(uint16_t x, uint16_t y) {
         }
     }
 
-    // ── 알람 버튼 ──
+    //    
     {
         ButtonConfig alarmBtn = {
             .x = (int16_t)(SPACING_SM + (MainLayout::BTN_W_LARGE + gap) * 2
@@ -454,7 +454,7 @@ void handleMainTouch(uint16_t x, uint16_t y) {
         }
     }
 
-    // ── NavBar ──
+    //  NavBar 
     int16_t navY = SCREEN_HEIGHT - FOOTER_HEIGHT;
     if (y >= navY) {
         int16_t bw = (SCREEN_WIDTH - SPACING_SM * 4) / 3;
@@ -466,7 +466,7 @@ void handleMainTouch(uint16_t x, uint16_t y) {
         return;
     }
 
-    // ── 헤더 건강도 아이콘 터치 → Health 화면 ──
+    //       Health  
     if (y < HEADER_HEIGHT &&
         x >= HEALTH_ICON_X && x <= HEALTH_ICON_X + HEALTH_ICON_W) {
         if (true || canAccessScreen(SCREEN_HEALTH)) {

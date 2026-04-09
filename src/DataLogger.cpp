@@ -1,4 +1,4 @@
-// DataLogger.cpp - 재작성 (DataLogger.h 인터페이스 기반)
+// DataLogger.cpp -  (DataLogger.h  )
 #include "DataLogger.h"
 #include "Config.h"
 
@@ -12,7 +12,7 @@ DataLogger::DataLogger() : initialized(false), lastLogTime(0), logInterval(36000
 
 void DataLogger::begin() {
     initialized = true;
-    Serial.println("[DataLogger] 초기화 완료");
+    Serial.println("[DataLogger]  ");
 }
 
 void DataLogger::logHealthData(const HealthMonitor& hm) {}

@@ -1,6 +1,6 @@
-/*
+﻿/*
  * AdvancedAnalyzer_Test.cpp
- * v3.8.3 고급 분석 시스템 테스트
+ * v3.8.3 怨좉툒 遺꾩꽍 ?쒖뒪???뚯뒪??
  */
 
 #include "../include/Config.h"
@@ -10,7 +10,7 @@
 #include "../include/AdvancedAnalyzer.h"
 #include "../include/HealthMonitor.h"
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay 媛쒖꽑)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -20,9 +20,9 @@ extern Statistics stats;
 extern SensorData sensorData;
 extern SystemConfig config;
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 유틸리티
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪???좏떥由ы떚
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 
 void printTestHeader(const char* testName) {
     Serial.println("\n========================================");
@@ -32,48 +32,48 @@ void printTestHeader(const char* testName) {
 
 void printTestResult(bool passed, const char* testName) {
     if (passed) {
-        Serial.printf("[✓] PASSED: %s\n", testName);
+        Serial.printf("[?? PASSED: %s\n", testName);
     } else {
-        Serial.printf("[✗] FAILED: %s\n", testName);
+        Serial.printf("[?? FAILED: %s\n", testName);
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 1: 초기화 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??1: 珥덇린???뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_Initialization() {
     printTestHeader("Initialization Test");
     
     advancedAnalyzer.begin();
     
-    // 기준선이 설정되었는지 확인
+    // 湲곗??좎씠 ?ㅼ젙?섏뿀?붿? ?뺤씤
     float baseline = advancedAnalyzer.compareWithBaseline();
     
-    bool passed = (baseline == 0.0f);  // 초기에는 차이가 0
+    bool passed = (baseline == 0.0f);  // 珥덇린?먮뒗 李⑥씠媛 0
     
     printTestResult(passed, "Initialization");
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 2: 고장 예측 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??2: 怨좎옣 ?덉륫 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_FailurePrediction() {
     printTestHeader("Failure Prediction Test");
     
-    // 테스트 데이터 설정
-    sensorData.pressure = -80.0f;  // 목표보다 낮음
-    sensorData.temperature = 55.0f;  // 높은 온도
-    sensorData.current = 5.0f;  // 높은 전류
+    // ?뚯뒪???곗씠???ㅼ젙
+    sensorData.pressure = -80.0f;  // 紐⑺몴蹂대떎 ??쓬
+    sensorData.temperature = 55.0f;  // ?믪? ?⑤룄
+    sensorData.current = 5.0f;  // ?믪? ?꾨쪟
     config.targetPressure = -90.0f;
     
     FailurePrediction pred = advancedAnalyzer.predictFailure();
     
-    Serial.printf("예측 고장: %s\n", getFailureTypeName(pred.type));
-    Serial.printf("신뢰도: %.1f%%\n", pred.confidence);
-    Serial.printf("예상 발생: %lu일 후\n", pred.estimatedDays);
-    Serial.printf("설명: %s\n", pred.description);
-    Serial.printf("권장사항: %s\n", pred.recommendation);
+    Serial.printf("?덉륫 怨좎옣: %s\n", getFailureTypeName(pred.type));
+    Serial.printf("?좊ː?? %.1f%%\n", pred.confidence);
+    Serial.printf("?덉긽 諛쒖깮: %lu????n", pred.estimatedDays);
+    Serial.printf("?ㅻ챸: %s\n", pred.description);
+    Serial.printf("沅뚯옣?ы빆: %s\n", pred.recommendation);
     
     bool passed = (pred.type != FAILURE_NONE && pred.confidence > 0.0f);
     
@@ -81,9 +81,9 @@ bool test_FailurePrediction() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 3: 다중 고장 예측 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??3: ?ㅼ쨷 怨좎옣 ?덉륫 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_MultipleFailurePredictions() {
     printTestHeader("Multiple Failure Predictions Test");
     
@@ -92,13 +92,13 @@ bool test_MultipleFailurePredictions() {
     
     advancedAnalyzer.predictMultipleFailures(predictions, 3, count);
     
-    Serial.printf("예측된 고장 수: %d\n", count);
+    Serial.printf("?덉륫??怨좎옣 ?? %d\n", count);
     
     for (uint8_t i = 0; i < count; i++) {
-        Serial.printf("\n예측 %d:\n", i+1);
-        Serial.printf("  유형: %s\n", getFailureTypeName(predictions[i].type));
-        Serial.printf("  신뢰도: %.1f%%\n", predictions[i].confidence);
-        Serial.printf("  예상: %lu일 후\n", predictions[i].estimatedDays);
+        Serial.printf("\n?덉륫 %d:\n", i+1);
+        Serial.printf("  ?좏삎: %s\n", getFailureTypeName(predictions[i].type));
+        Serial.printf("  ?좊ː?? %.1f%%\n", predictions[i].confidence);
+        Serial.printf("  ?덉긽: %lu????n", predictions[i].estimatedDays);
     }
     
     bool passed = (count > 0 && count <= 3);
@@ -107,13 +107,13 @@ bool test_MultipleFailurePredictions() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 4: 부품 수명 분석 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??4: 遺???섎챸 遺꾩꽍 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_ComponentLifeAnalysis() {
     printTestHeader("Component Life Analysis Test");
     
-    // 테스트 데이터 설정 (1000시간 작동)
+    // ?뚯뒪???곗씠???ㅼ젙 (1000?쒓컙 ?묐룞)
     stats.uptime = 1000 * 3600;
     
     ComponentLife components[5];
@@ -121,16 +121,16 @@ bool test_ComponentLifeAnalysis() {
     
     advancedAnalyzer.analyzeComponentLife(components, count);
     
-    Serial.printf("분석된 부품 수: %d\n", count);
+    Serial.printf("遺꾩꽍??遺???? %d\n", count);
     
     for (uint8_t i = 0; i < count; i++) {
-        Serial.printf("\n부품 %d: %s\n", i+1, components[i].name);
-        Serial.printf("  총 작동시간: %lu / %lu 시간\n", 
+        Serial.printf("\n遺??%d: %s\n", i+1, components[i].name);
+        Serial.printf("  珥??묐룞?쒓컙: %lu / %lu ?쒓컙\n", 
                      components[i].totalHours, 
                      components[i].ratedLifeHours);
-        Serial.printf("  잔여 수명: %.1f%%\n", components[i].remainingLife);
-        Serial.printf("  건강도: %.1f%%\n", components[i].healthScore);
-        Serial.printf("  교체까지: %lu일\n", components[i].daysToReplacement);
+        Serial.printf("  ?붿뿬 ?섎챸: %.1f%%\n", components[i].remainingLife);
+        Serial.printf("  嫄닿컯?? %.1f%%\n", components[i].healthScore);
+        Serial.printf("  援먯껜源뚯?: %lu??n", components[i].daysToReplacement);
     }
     
     bool passed = (count == 5);
@@ -139,9 +139,9 @@ bool test_ComponentLifeAnalysis() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 5: 개별 부품 분석 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??5: 媛쒕퀎 遺??遺꾩꽍 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_IndividualComponentAnalysis() {
     printTestHeader("Individual Component Analysis Test");
     
@@ -151,11 +151,11 @@ bool test_IndividualComponentAnalysis() {
     ComponentLife valve = advancedAnalyzer.analyzeValve();
     ComponentLife sensor = advancedAnalyzer.analyzeSensor();
     
-    Serial.printf("펌프 건강도: %.1f%%\n", pump.healthScore);
-    Serial.printf("모터 건강도: %.1f%%\n", motor.healthScore);
-    Serial.printf("씰 건강도: %.1f%%\n", seal.healthScore);
-    Serial.printf("밸브 건강도: %.1f%%\n", valve.healthScore);
-    Serial.printf("센서 건강도: %.1f%%\n", sensor.healthScore);
+    Serial.printf("?뚰봽 嫄닿컯?? %.1f%%\n", pump.healthScore);
+    Serial.printf("紐⑦꽣 嫄닿컯?? %.1f%%\n", motor.healthScore);
+    Serial.printf("??嫄닿컯?? %.1f%%\n", seal.healthScore);
+    Serial.printf("諛몃툕 嫄닿컯?? %.1f%%\n", valve.healthScore);
+    Serial.printf("?쇱꽌 嫄닿컯?? %.1f%%\n", sensor.healthScore);
     
     bool passed = (pump.healthScore >= 0.0f && pump.healthScore <= 100.0f &&
                    motor.healthScore >= 0.0f && motor.healthScore <= 100.0f);
@@ -164,29 +164,29 @@ bool test_IndividualComponentAnalysis() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 6: 최적화 제안 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??6: 理쒖쟻???쒖븞 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_OptimizationSuggestions() {
     printTestHeader("Optimization Suggestions Test");
     
-    // 최적화가 필요한 상황 설정
-    stats.averageCycleTime = 65.0f;  // 높은 사이클 시간
-    stats.averageCurrent = 4.8f;  // 높은 전류
+    // 理쒖쟻?붽? ?꾩슂???곹솴 ?ㅼ젙
+    stats.averageCycleTime = 65.0f;  // ?믪? ?ъ씠???쒓컙
+    stats.averageCurrent = 4.8f;  // ?믪? ?꾨쪟
     
     OptimizationSuggestion suggestions[5];
     uint8_t count = 0;
     
     advancedAnalyzer.generateOptimizationSuggestions(suggestions, count);
     
-    Serial.printf("제안 수: %d\n", count);
+    Serial.printf("?쒖븞 ?? %d\n", count);
     
     for (uint8_t i = 0; i < count; i++) {
-        Serial.printf("\n제안 %d:\n", i+1);
-        Serial.printf("  제목: %s\n", suggestions[i].title);
-        Serial.printf("  설명: %s\n", suggestions[i].description);
-        Serial.printf("  예상 개선: %.1f%%\n", suggestions[i].estimatedImprovement);
-        Serial.printf("  우선순위: %d\n", suggestions[i].priority);
+        Serial.printf("\n?쒖븞 %d:\n", i+1);
+        Serial.printf("  ?쒕ぉ: %s\n", suggestions[i].title);
+        Serial.printf("  ?ㅻ챸: %s\n", suggestions[i].description);
+        Serial.printf("  ?덉긽 媛쒖꽑: %.1f%%\n", suggestions[i].estimatedImprovement);
+        Serial.printf("  ?곗꽑?쒖쐞: %d\n", suggestions[i].priority);
     }
     
     bool passed = (count > 0 && count <= 5);
@@ -195,21 +195,21 @@ bool test_OptimizationSuggestions() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 7: 종합 리포트 생성 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??7: 醫낇빀 由ы룷???앹꽦 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_ComprehensiveReport() {
     printTestHeader("Comprehensive Report Test");
     
     AnalysisReport report = advancedAnalyzer.generateComprehensiveReport();
     
-    Serial.printf("타임스탬프: %lu\n", report.timestamp);
-    Serial.printf("현재 건강도: %.1f%%\n", report.currentHealth);
-    Serial.printf("7일 예측: %.1f%%\n", report.predictedHealth7d);
-    Serial.printf("30일 예측: %.1f%%\n", report.predictedHealth30d);
-    Serial.printf("고장 예측 수: %d\n", report.predictionCount);
-    Serial.printf("부품 수: %d\n", report.componentCount);
-    Serial.printf("최적화 제안 수: %d\n", report.suggestionCount);
+    Serial.printf("??꾩뒪?ы봽: %lu\n", report.timestamp);
+    Serial.printf("?꾩옱 嫄닿컯?? %.1f%%\n", report.currentHealth);
+    Serial.printf("7???덉륫: %.1f%%\n", report.predictedHealth7d);
+    Serial.printf("30???덉륫: %.1f%%\n", report.predictedHealth30d);
+    Serial.printf("怨좎옣 ?덉륫 ?? %d\n", report.predictionCount);
+    Serial.printf("遺???? %d\n", report.componentCount);
+    Serial.printf("理쒖쟻???쒖븞 ?? %d\n", report.suggestionCount);
     
     bool passed = (report.predictionCount >= 0 && 
                    report.componentCount == 5 &&
@@ -219,28 +219,28 @@ bool test_ComprehensiveReport() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 8: 패턴 감지 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??8: ?⑦꽩 媛먯? ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_PatternDetection() {
     printTestHeader("Pattern Detection Test");
     
-    // 압력 강하 패턴
-    sensorData.pressure = -50.0f;  // 낮은 압력
+    // ?뺣젰 媛뺥븯 ?⑦꽩
+    sensorData.pressure = -50.0f;  // ??? ?뺣젰
     config.targetPressure = -90.0f;
     
     bool pressureDrop = advancedAnalyzer.detectAbnormalPattern("pressure_drop");
-    Serial.printf("압력 강하 패턴: %s\n", pressureDrop ? "감지됨" : "없음");
+    Serial.printf("?뺣젰 媛뺥븯 ?⑦꽩: %s\n", pressureDrop ? "媛먯??? : "?놁쓬");
     
-    // 온도 상승 패턴
+    // ?⑤룄 ?곸듅 ?⑦꽩
     sensorData.temperature = 55.0f;
     bool tempRise = advancedAnalyzer.detectAbnormalPattern("temp_rise");
-    Serial.printf("온도 상승 패턴: %s\n", tempRise ? "감지됨" : "없음");
+    Serial.printf("?⑤룄 ?곸듅 ?⑦꽩: %s\n", tempRise ? "媛먯??? : "?놁쓬");
     
-    // 전류 스파이크 패턴
+    // ?꾨쪟 ?ㅽ뙆?댄겕 ?⑦꽩
     sensorData.current = 5.2f;
     bool currentSpike = advancedAnalyzer.detectAbnormalPattern("current_spike");
-    Serial.printf("전류 스파이크 패턴: %s\n", currentSpike ? "감지됨" : "없음");
+    Serial.printf("?꾨쪟 ?ㅽ뙆?댄겕 ?⑦꽩: %s\n", currentSpike ? "媛먯??? : "?놁쓬");
     
     bool passed = (pressureDrop || tempRise || currentSpike);
     
@@ -248,43 +248,43 @@ bool test_PatternDetection() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 9: 건강도 저하율 계산 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??9: 嫄닿컯????섏쑉 怨꾩궛 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_DegradationRate() {
     printTestHeader("Degradation Rate Test");
     
-    // 기준선 설정
+    // 湲곗????ㅼ젙
     advancedAnalyzer.setBaseline();
     
-    // 시간 경과 시뮬레이션 (실제로는 시간이 필요하므로 계산만 확인)
+    // ?쒓컙 寃쎄낵 ?쒕??덉씠??(?ㅼ젣濡쒕뒗 ?쒓컙???꾩슂?섎?濡?怨꾩궛留??뺤씤)
     float rate = advancedAnalyzer.calculateDegradationRate();
     
-    Serial.printf("건강도 저하율: %.4f%%/hour\n", rate);
+    Serial.printf("嫄닿컯????섏쑉: %.4f%%/hour\n", rate);
     
-    bool passed = (rate >= 0.0f);  // 음수가 아니어야 함
+    bool passed = (rate >= 0.0f);  // ?뚯닔媛 ?꾨땲?댁빞 ??
     
     printTestResult(passed, "Degradation Rate");
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 10: 비용 분석 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??10: 鍮꾩슜 遺꾩꽍 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_CostAnalysis() {
     printTestHeader("Cost Analysis Test");
     
     float maintCost = advancedAnalyzer.estimateMaintenanceCost();
-    Serial.printf("예상 유지보수 비용: $%.2f\n", maintCost);
+    Serial.printf("?덉긽 ?좎?蹂댁닔 鍮꾩슜: $%.2f\n", maintCost);
     
     float downtimeCost = advancedAnalyzer.estimateDowntimeCost(8);
-    Serial.printf("가동 중단 비용 (8시간): $%.2f\n", downtimeCost);
+    Serial.printf("媛??以묐떒 鍮꾩슜 (8?쒓컙): $%.2f\n", downtimeCost);
     
     float timingROI = advancedAnalyzer.calculateROI("timing_optimization");
-    Serial.printf("타이밍 최적화 ROI: %.1f%%\n", timingROI);
+    Serial.printf("??대컢 理쒖쟻??ROI: %.1f%%\n", timingROI);
     
     float powerROI = advancedAnalyzer.calculateROI("power_reduction");
-    Serial.printf("전력 절감 ROI: %.1f%%\n", powerROI);
+    Serial.printf("?꾨젰 ?덇컧 ROI: %.1f%%\n", powerROI);
     
     bool passed = (maintCost > 0.0f && downtimeCost > 0.0f);
     
@@ -292,30 +292,30 @@ bool test_CostAnalysis() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 11: SD 리포트 저장 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??11: SD 由ы룷??????뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_SDReportExport() {
     printTestHeader("SD Report Export Test");
     
     if (!sdReady) {
-        Serial.println("[SKIP] SD 카드 없음");
-        return true;  // 스킵은 통과로 처리
+        Serial.println("[SKIP] SD 移대뱶 ?놁쓬");
+        return true;  // ?ㅽ궢? ?듦낵濡?泥섎━
     }
     
-    // 테스트 파일명
+    // ?뚯뒪???뚯씪紐?
     advancedAnalyzer.exportReportToSD("test_report.txt");
     
-    // 파일 존재 확인
+    // ?뚯씪 議댁옱 ?뺤씤
     bool fileExists = SD.exists("/reports/test_report.txt");
     
     if (fileExists) {
-        Serial.println("리포트 파일 생성 성공");
+        Serial.println("由ы룷???뚯씪 ?앹꽦 ?깃났");
         
-        // 파일 내용 미리보기
+        // ?뚯씪 ?댁슜 誘몃━蹂닿린
         File file = SD.open("/reports/test_report.txt", FILE_READ);
         if (file) {
-            Serial.println("\n--- 리포트 미리보기 (처음 10줄) ---");
+            Serial.println("\n--- 由ы룷??誘몃━蹂닿린 (泥섏쓬 10以? ---");
             int lineCount = 0;
             while (file.available() && lineCount < 10) {
                 char lineBuf[256];
@@ -329,11 +329,11 @@ bool test_SDReportExport() {
                 Serial.println(lineBuf);
                 lineCount++;
             }
-            Serial.println("--- 미리보기 끝 ---\n");
+            Serial.println("--- 誘몃━蹂닿린 ??---\n");
             file.close();
         }
     } else {
-        Serial.println("리포트 파일 생성 실패");
+        Serial.println("由ы룷???뚯씪 ?앹꽦 ?ㅽ뙣");
     }
     
     bool passed = fileExists;
@@ -342,44 +342,44 @@ bool test_SDReportExport() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 12: 벤치마킹 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??12: 踰ㅼ튂留덊궧 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_Benchmarking() {
     printTestHeader("Benchmarking Test");
     
-    // 기준선 설정
+    // 湲곗????ㅼ젙
     advancedAnalyzer.setBaseline();
     
-    // 건강도 변화 시뮬레이션 (테스트용)
-    // 실제로는 시간이 지나야 하지만, 바로 비교
+    // 嫄닿컯??蹂???쒕??덉씠??(?뚯뒪?몄슜)
+    // ?ㅼ젣濡쒕뒗 ?쒓컙??吏?섏빞 ?섏?留? 諛붾줈 鍮꾧탳
     float difference = advancedAnalyzer.compareWithBaseline();
     
-    Serial.printf("기준선 대비 차이: %.1f%%\n", difference);
+    Serial.printf("湲곗????鍮?李⑥씠: %.1f%%\n", difference);
     
-    bool passed = true;  // 항상 성공 (값만 확인)
+    bool passed = true;  // ??긽 ?깃났 (媛믩쭔 ?뺤씤)
     
     printTestResult(passed, "Benchmarking");
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 13: 통계 함수 테스트
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??13: ?듦퀎 ?⑥닔 ?뚯뒪??
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_StatisticalFunctions() {
     printTestHeader("Statistical Functions Test");
     
-    // 테스트 데이터
+    // ?뚯뒪???곗씠??
     float data1[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
     float data2[] = {2.0f, 4.0f, 6.0f, 8.0f, 10.0f};
     
-    // 추세 기울기 (상승 추세)
+    // 異붿꽭 湲곗슱湲?(?곸듅 異붿꽭)
     float slope = advancedAnalyzer.calculateTrendSlope(data1, 5);
-    Serial.printf("추세 기울기: %.2f\n", slope);
+    Serial.printf("異붿꽭 湲곗슱湲? %.2f\n", slope);
     
-    // 상관계수 (완벽한 양의 상관)
+    // ?곴?怨꾩닔 (?꾨꼍???묒쓽 ?곴?)
     float correlation = advancedAnalyzer.calculateCorrelation(data1, data2, 5);
-    Serial.printf("상관계수: %.2f\n", correlation);
+    Serial.printf("?곴?怨꾩닔: %.2f\n", correlation);
     
     bool passed = (slope > 0.9f && correlation > 0.9f);
     
@@ -387,47 +387,47 @@ bool test_StatisticalFunctions() {
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  테스트 14: 스트레스 테스트 (극한 값)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?뚯뒪??14: ?ㅽ듃?덉뒪 ?뚯뒪??(洹뱁븳 媛?
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 bool test_StressTest() {
     printTestHeader("Stress Test (Extreme Values)");
     
-    // 극한 값 설정
-    sensorData.pressure = -120.0f;  // 범위 밖
-    sensorData.temperature = 100.0f;  // 매우 높음
-    sensorData.current = 10.0f;  // 매우 높음
-    stats.uptime = 50000 * 3600;  // 50,000시간
+    // 洹뱁븳 媛??ㅼ젙
+    sensorData.pressure = -120.0f;  // 踰붿쐞 諛?
+    sensorData.temperature = 100.0f;  // 留ㅼ슦 ?믪쓬
+    sensorData.current = 10.0f;  // 留ㅼ슦 ?믪쓬
+    stats.uptime = 50000 * 3600;  // 50,000?쒓컙
     
-    // 크래시 없이 실행되는지 확인
+    // ?щ옒???놁씠 ?ㅽ뻾?섎뒗吏 ?뺤씤
     FailurePrediction pred = advancedAnalyzer.predictFailure();
     ComponentLife pump = advancedAnalyzer.analyzePump();
     float rate = advancedAnalyzer.calculateDegradationRate();
     
-    Serial.printf("극한 상황 예측: %s\n", getFailureTypeName(pred.type));
-    Serial.printf("극한 상황 펌프 건강도: %.1f%%\n", pump.healthScore);
-    Serial.printf("극한 상황 저하율: %.4f%%/hour\n", rate);
+    Serial.printf("洹뱁븳 ?곹솴 ?덉륫: %s\n", getFailureTypeName(pred.type));
+    Serial.printf("洹뱁븳 ?곹솴 ?뚰봽 嫄닿컯?? %.1f%%\n", pump.healthScore);
+    Serial.printf("洹뱁븳 ?곹솴 ??섏쑉: %.4f%%/hour\n", rate);
     
-    bool passed = true;  // 크래시 없이 완료되면 통과
+    bool passed = true;  // ?щ옒???놁씠 ?꾨즺?섎㈃ ?듦낵
     
     printTestResult(passed, "Stress Test");
     return passed;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  전체 테스트 실행
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  ?꾩껜 ?뚯뒪???ㅽ뻾
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 void runAdvancedAnalyzerTests() {
     Serial.println("\n");
-    Serial.println("╔════════════════════════════════════════╗");
-    Serial.println("║  AdvancedAnalyzer Test Suite v3.8.3   ║");
-    Serial.println("╚════════════════════════════════════════╝");
+    Serial.println("?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮");
+    Serial.println("?? AdvancedAnalyzer Test Suite v3.8.3   ??);
+    Serial.println("?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴");
     Serial.println();
     
     int passedTests = 0;
     int totalTests = 14;
     
-    // 테스트 실행
+    // ?뚯뒪???ㅽ뻾
     if (test_Initialization()) passedTests++;
     vTaskDelay(pdMS_TO_TICKS(100));
     
@@ -470,7 +470,7 @@ void runAdvancedAnalyzerTests() {
     if (test_StressTest()) passedTests++;
     vTaskDelay(pdMS_TO_TICKS(100));
     
-    // 결과 요약
+    // 寃곌낵 ?붿빟
     Serial.println("\n========================================");
     Serial.println("TEST SUMMARY");
     Serial.println("========================================");
@@ -481,15 +481,15 @@ void runAdvancedAnalyzerTests() {
     Serial.println("========================================\n");
     
     if (passedTests == totalTests) {
-        Serial.println("✓ ALL TESTS PASSED!");
+        Serial.println("??ALL TESTS PASSED!");
     } else {
-        Serial.println("✗ SOME TESTS FAILED");
+        Serial.println("??SOME TESTS FAILED");
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  개별 테스트 실행 함수 (시리얼 명령어용)
-// ═══════════════════════════════════════════════════════════════
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+//  媛쒕퀎 ?뚯뒪???ㅽ뻾 ?⑥닔 (?쒕━??紐낅졊?댁슜)
+// ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
 void runSingleTest(const char* testName) {
     if (strcmp(testName, "init") == 0) {
         test_Initialization();
@@ -537,8 +537,8 @@ void runSingleTest(const char* testName) {
         runAdvancedAnalyzerTests();
     }
     else {
-        Serial.println("알 수 없는 테스트 이름");
-        Serial.println("사용 가능한 테스트:");
+        Serial.println("?????녿뒗 ?뚯뒪???대쫫");
+        Serial.println("?ъ슜 媛?ν븳 ?뚯뒪??");
         Serial.println("  init, failure, multiple, component, individual");
         Serial.println("  optimization, report, pattern, degradation, cost");
         Serial.println("  sd, benchmark, stats, stress, all");
@@ -548,26 +548,26 @@ void runSingleTest(const char* testName) {
 #endif // ENABLE_ADVANCED_ANALYSIS
 
 /*
- * ═══════════════════════════════════════════════════════════════
- * 사용 방법
- * ═══════════════════════════════════════════════════════════════
+ * ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
+ * ?ъ슜 諛⑸쾿
+ * ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
  * 
- * 1. setup()에서 호출:
+ * 1. setup()?먯꽌 ?몄텧:
  *    #ifdef ENABLE_ADVANCED_ANALYSIS
  *    runAdvancedAnalyzerTests();
  *    #endif
  * 
- * 2. 시리얼 명령어로 실행:
- *    test:all         - 모든 테스트 실행
- *    test:failure     - 고장 예측 테스트만
- *    test:component   - 부품 수명 테스트만
- *    ... 등
+ * 2. ?쒕━??紐낅졊?대줈 ?ㅽ뻾:
+ *    test:all         - 紐⑤뱺 ?뚯뒪???ㅽ뻾
+ *    test:failure     - 怨좎옣 ?덉륫 ?뚯뒪?몃쭔
+ *    test:component   - 遺???섎챸 ?뚯뒪?몃쭔
+ *    ... ??
  * 
- * 3. main.cpp의 handleSerialCommand()에 추가:
+ * 3. main.cpp??handleSerialCommand()??異붽?:
  *    else if (cmd.startsWith("test:")) {
  *      String testName = cmd.substring(5);
  *      runSingleTest(testName.c_str());
  *    }
  * 
- * ═══════════════════════════════════════════════════════════════
+ * ?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧??
  */

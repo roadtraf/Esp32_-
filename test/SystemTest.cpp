@@ -1,9 +1,9 @@
-// SystemTest.cpp
+﻿// SystemTest.cpp
 #include "SystemTest.h"
 #include <esp_heap_caps.h>
 #include <esp_task_wdt.h>
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay 媛쒖꽑)
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -21,37 +21,37 @@ SystemTest::SystemTest()
 
 void SystemTest::runAllTests() {
     Serial.println("\n");
-    Serial.println("╔════════════════════════════════════════════════════════╗");
-    Serial.println("║     ESP32-S3 Phase 2 통합 테스트 시작                ║");
-    Serial.println("╚════════════════════════════════════════════════════════╝");
+    Serial.println("?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮");
+    Serial.println("??    ESP32-S3 Phase 2 ?듯빀 ?뚯뒪???쒖옉                ??);
+    Serial.println("?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴");
     
     testRunning = true;
     testStartTime = millis();
     resultCount = 0;
     
     // Establish baseline
-    Serial.println("\n[1/6] 베이스라인 수립 중...");
+    Serial.println("\n[1/6] 踰좎씠?ㅻ씪???섎┰ 以?..");
     establishBaseline();
     vTaskDelay(pdMS_TO_TICKS(1000));
     
     // Test categories
-    Serial.println("\n[2/6] 메모리 최적화 테스트...");
+    Serial.println("\n[2/6] 硫붾え由?理쒖쟻???뚯뒪??..");
     runMemoryTests();
     vTaskDelay(pdMS_TO_TICKS(1000));
     
-    Serial.println("\n[3/6] RTOS 태스크 테스트...");
+    Serial.println("\n[3/6] RTOS ?쒖뒪???뚯뒪??..");
     testRTOSTasks();
     vTaskDelay(pdMS_TO_TICKS(1000));
     
-    Serial.println("\n[4/6] 센서 버퍼 테스트...");
+    Serial.println("\n[4/6] ?쇱꽌 踰꾪띁 ?뚯뒪??..");
     testSensorBuffers();
     vTaskDelay(pdMS_TO_TICKS(1000));
     
-    Serial.println("\n[5/6] WiFi 전력 관리 테스트...");
+    Serial.println("\n[5/6] WiFi ?꾨젰 愿由??뚯뒪??..");
     testWiFiPowerManagement();
     vTaskDelay(pdMS_TO_TICKS(1000));
     
-    Serial.println("\n[6/6] 시스템 안정성 테스트...");
+    Serial.println("\n[6/6] ?쒖뒪???덉젙???뚯뒪??..");
     testSystemStability();
     
     testRunning = false;
@@ -61,20 +61,20 @@ void SystemTest::runAllTests() {
     printFullReport();
     
     uint32_t totalTime = millis() - testStartTime;
-    Serial.printf("\n총 테스트 시간: %lu ms (%.2f초)\n", totalTime, totalTime / 1000.0f);
+    Serial.printf("\n珥??뚯뒪???쒓컙: %lu ms (%.2f珥?\n", totalTime, totalTime / 1000.0f);
 }
 
 void SystemTest::establishBaseline() {
-    Serial.println("  • 메모리 베이스라인 캡처 중...");
+    Serial.println("  ??硫붾え由?踰좎씠?ㅻ씪??罹≪쿂 以?..");
     captureMemoryMetrics(baselineMemory);
     
-    Serial.println("  • 성능 베이스라인 캡처 중...");
+    Serial.println("  ???깅뒫 踰좎씠?ㅻ씪??罹≪쿂 以?..");
     capturePerformanceMetrics();
     
-    Serial.println("  • 전력 베이스라인 캡처 중...");
+    Serial.println("  ???꾨젰 踰좎씠?ㅻ씪??罹≪쿂 以?..");
     capturePowerMetrics();
     
-    Serial.println("  ✓ 베이스라인 수립 완료");
+    Serial.println("  ??踰좎씠?ㅻ씪???섎┰ ?꾨즺");
 }
 
 void SystemTest::captureMemoryMetrics(MemoryMetrics& metrics) {
@@ -163,11 +163,11 @@ void SystemTest::runMemoryTests() {
     uint32_t duration = millis() - testStart;
     
     addTestResult("Memory Optimization", passed, duration, 
-                  passed ? "메모리 최적화 목표 달성" : "메모리 최적화 미달");
+                  passed ? "硫붾え由?理쒖쟻??紐⑺몴 ?ъ꽦" : "硫붾え由?理쒖쟻??誘몃떖");
 }
 
 bool SystemTest::testMemoryOptimization() {
-    Serial.println("\n  --- 메모리 최적화 테스트 ---");
+    Serial.println("\n  --- 硫붾え由?理쒖쟻???뚯뒪??---");
     
     captureMemoryMetrics(currentMemory);
     
@@ -176,27 +176,27 @@ bool SystemTest::testMemoryOptimization() {
     uint32_t currentUsed = currentMemory.totalHeap - currentMemory.freeHeap;
     float heapImprovement = (float)(baselineUsed - currentUsed) / baselineUsed * 100.0f;
     
-    Serial.printf("  • Heap 사용량: %lu -> %lu bytes (%.1f%% 개선)\n", 
+    Serial.printf("  ??Heap ?ъ슜?? %lu -> %lu bytes (%.1f%% 媛쒖꽑)\n", 
                   baselineUsed, currentUsed, heapImprovement);
     
     // Test 2: Fragmentation
-    Serial.printf("  • Heap 단편화: %.1f%% -> %.1f%%\n", 
+    Serial.printf("  ??Heap ?⑦렪?? %.1f%% -> %.1f%%\n", 
                   baselineMemory.heapFragmentation, 
                   currentMemory.heapFragmentation);
     
     bool fragmentationOK = currentMemory.heapFragmentation < 20.0f; // Target < 20%
     
     // Test 3: Minimum free heap
-    Serial.printf("  • 최소 Free Heap: %lu bytes\n", currentMemory.minFreeHeap);
+    Serial.printf("  ??理쒖냼 Free Heap: %lu bytes\n", currentMemory.minFreeHeap);
     bool minHeapOK = currentMemory.minFreeHeap > 50000; // Target > 50KB
     
     // Memory pool test
-    Serial.println("\n  • 메모리 풀 상태:");
-    Serial.printf("    Small Pool: %zu/%d 사용중\n", 
+    Serial.println("\n  ??硫붾え由?? ?곹깭:");
+    Serial.printf("    Small Pool: %zu/%d ?ъ슜以?n", 
                   smallPool.getUsedBlocks(), 8);
-    Serial.printf("    Medium Pool: %zu/%d 사용중\n", 
+    Serial.printf("    Medium Pool: %zu/%d ?ъ슜以?n", 
                   mediumPool.getUsedBlocks(), 4);
-    Serial.printf("    Large Pool: %zu/%d 사용중\n", 
+    Serial.printf("    Large Pool: %zu/%d ?ъ슜以?n", 
                   largePool.getUsedBlocks(), 2);
     
     bool poolsOK = (smallPool.getAvailableBlocks() > 0) &&
@@ -205,21 +205,21 @@ bool SystemTest::testMemoryOptimization() {
     
     bool testPassed = fragmentationOK && minHeapOK && poolsOK;
     
-    Serial.printf("\n  결과: %s\n", testPassed ? "✓ 통과" : "✗ 실패");
+    Serial.printf("\n  寃곌낵: %s\n", testPassed ? "???듦낵" : "???ㅽ뙣");
     
     return testPassed;
 }
 
 bool SystemTest::testRTOSTasks() {
-    Serial.println("\n  --- RTOS 태스크 테스트 ---");
+    Serial.println("\n  --- RTOS ?쒖뒪???뚯뒪??---");
     uint32_t testStart = millis();
     
     captureMemoryMetrics(currentMemory);
     
     bool allTasksOK = true;
     
-    Serial.println("\n  태스크 스택 사용률:");
-    Serial.println("  태스크명          스택크기  워터마크  사용률");
+    Serial.println("\n  ?쒖뒪???ㅽ깮 ?ъ슜瑜?");
+    Serial.println("  ?쒖뒪?щ챸          ?ㅽ깮?ш린  ?뚰꽣留덊겕  ?ъ슜瑜?);
     Serial.println("  ------------------------------------------------");
     
     for (uint8_t i = 0; i < currentMemory.taskCount; i++) {
@@ -233,50 +233,50 @@ bool SystemTest::testRTOSTasks() {
                       task.stackSize,
                       task.stackHighWaterMark * 4,
                       task.stackUsagePercent,
-                      taskOK ? "✓" : "✗ WARNING");
+                      taskOK ? "?? : "??WARNING");
     }
     
     uint32_t duration = millis() - testStart;
     addTestResult("RTOS Task Stacks", allTasksOK, duration,
-                  allTasksOK ? "모든 태스크 스택 정상" : "일부 태스크 스택 부족");
+                  allTasksOK ? "紐⑤뱺 ?쒖뒪???ㅽ깮 ?뺤긽" : "?쇰? ?쒖뒪???ㅽ깮 遺議?);
     
-    Serial.printf("\n  결과: %s\n", allTasksOK ? "✓ 통과" : "✗ 실패");
+    Serial.printf("\n  寃곌낵: %s\n", allTasksOK ? "???듦낵" : "???ㅽ뙣");
     
     return allTasksOK;
 }
 
 bool SystemTest::testSensorBuffers() {
-    Serial.println("\n  --- 센서 버퍼 테스트 ---");
+    Serial.println("\n  --- ?쇱꽌 踰꾪띁 ?뚯뒪??---");
     uint32_t testStart = millis();
     
     // Test 1: Buffer capacity
-    Serial.println("\n  • 버퍼 용량 테스트:");
-    Serial.printf("    온도 버퍼: %zu/%d (%.1f%%)\n",
+    Serial.println("\n  ??踰꾪띁 ?⑸웾 ?뚯뒪??");
+    Serial.printf("    ?⑤룄 踰꾪띁: %zu/%d (%.1f%%)\n",
                   temperatureBuffer.size(), TEMP_BUFFER_SIZE,
                   (float)temperatureBuffer.size() / TEMP_BUFFER_SIZE * 100);
-    Serial.printf("    압력 버퍼: %zu/%d (%.1f%%)\n",
+    Serial.printf("    ?뺣젰 踰꾪띁: %zu/%d (%.1f%%)\n",
                   pressureBuffer.size(), PRESSURE_BUFFER_SIZE,
                   (float)pressureBuffer.size() / PRESSURE_BUFFER_SIZE * 100);
-    Serial.printf("    전류 버퍼: %zu/%d (%.1f%%)\n",
+    Serial.printf("    ?꾨쪟 踰꾪띁: %zu/%d (%.1f%%)\n",
                   currentBuffer.size(), CURRENT_BUFFER_SIZE,
                   (float)currentBuffer.size() / CURRENT_BUFFER_SIZE * 100);
     
     // Test 2: Statistics calculation
-    Serial.println("\n  • 통계 계산 테스트:");
+    Serial.println("\n  ???듦퀎 怨꾩궛 ?뚯뒪??");
     float avgTemp = temperatureBuffer.getAverage();
     float maxTemp = temperatureBuffer.getMax();
     float minTemp = temperatureBuffer.getMin();
     float stdDev = temperatureBuffer.getStdDev();
     
-    Serial.printf("    평균 온도: %.2f°C\n", avgTemp);
-    Serial.printf("    최대 온도: %.2f°C\n", maxTemp);
-    Serial.printf("    최소 온도: %.2f°C\n", minTemp);
-    Serial.printf("    표준편차: %.2f\n", stdDev);
+    Serial.printf("    ?됯퇏 ?⑤룄: %.2f째C\n", avgTemp);
+    Serial.printf("    理쒕? ?⑤룄: %.2f째C\n", maxTemp);
+    Serial.printf("    理쒖냼 ?⑤룄: %.2f째C\n", minTemp);
+    Serial.printf("    ?쒖??몄감: %.2f\n", stdDev);
     
     bool statsOK = (maxTemp >= minTemp) && (avgTemp >= minTemp) && (avgTemp <= maxTemp);
     
     // Test 3: Push/Pop operations
-    Serial.println("\n  • Push/Pop 동작 테스트:");
+    Serial.println("\n  ??Push/Pop ?숈옉 ?뚯뒪??");
     
     RingBuffer<float, 10> testBuffer;
     
@@ -286,89 +286,89 @@ bool SystemTest::testSensorBuffers() {
     }
     
     bool pushOK = testBuffer.size() == 10; // Should be capped at 10
-    Serial.printf("    Push 테스트: %s (크기: %zu/10)\n", 
-                  pushOK ? "✓" : "✗", testBuffer.size());
+    Serial.printf("    Push ?뚯뒪?? %s (?ш린: %zu/10)\n", 
+                  pushOK ? "?? : "??, testBuffer.size());
     
     // Pop test
     float value;
     bool popOK = testBuffer.pop(value);
-    Serial.printf("    Pop 테스트: %s (값: %.1f)\n", 
-                  popOK ? "✓" : "✗", value);
+    Serial.printf("    Pop ?뚯뒪?? %s (媛? %.1f)\n", 
+                  popOK ? "?? : "??, value);
     
     bool testPassed = statsOK && pushOK && popOK;
     
     uint32_t duration = millis() - testStart;
     addTestResult("Sensor Buffers", testPassed, duration,
-                  testPassed ? "버퍼 시스템 정상" : "버퍼 시스템 오류");
+                  testPassed ? "踰꾪띁 ?쒖뒪???뺤긽" : "踰꾪띁 ?쒖뒪???ㅻ쪟");
     
-    Serial.printf("\n  결과: %s\n", testPassed ? "✓ 통과" : "✗ 실패");
+    Serial.printf("\n  寃곌낵: %s\n", testPassed ? "???듦낵" : "???ㅽ뙣");
     
     return testPassed;
 }
 
 bool SystemTest::testWiFiPowerManagement() {
-    Serial.println("\n  --- WiFi 전력 관리 테스트 ---");
+    Serial.println("\n  --- WiFi ?꾨젰 愿由??뚯뒪??---");
     uint32_t testStart = millis();
     
     capturePowerMetrics();
     
     // Test 1: Power mode switching
-    Serial.println("\n  • 전력 모드 전환 테스트:");
+    Serial.println("\n  ???꾨젰 紐⑤뱶 ?꾪솚 ?뚯뒪??");
     
     WiFiPowerMode originalMode = power.currentMode;
     
     wifiPowerManager.setPowerMode(WiFiPowerMode::POWER_SAVE);
     vTaskDelay(pdMS_TO_TICKS(1000));
     bool mode1 = (wifiPowerManager.getPowerMode() == WiFiPowerMode::POWER_SAVE);
-    Serial.printf("    POWER_SAVE 모드: %s\n", mode1 ? "✓" : "✗");
+    Serial.printf("    POWER_SAVE 紐⑤뱶: %s\n", mode1 ? "?? : "??);
     
     wifiPowerManager.setPowerMode(WiFiPowerMode::BALANCED);
     vTaskDelay(pdMS_TO_TICKS(1000));
     bool mode2 = (wifiPowerManager.getPowerMode() == WiFiPowerMode::BALANCED);
-    Serial.printf("    BALANCED 모드: %s\n", mode2 ? "✓" : "✗");
+    Serial.printf("    BALANCED 紐⑤뱶: %s\n", mode2 ? "?? : "??);
     
     wifiPowerManager.setPowerMode(originalMode);
     
     // Test 2: TX Power adjustment
-    Serial.println("\n  • TX Power 조정 테스트:");
+    Serial.println("\n  ??TX Power 議곗젙 ?뚯뒪??");
     int8_t originalTxPower = power.txPower;
     
     wifiPowerManager.setTxPower(10);
     vTaskDelay(pdMS_TO_TICKS(500));
     bool tx1 = (wifiPowerManager.getTxPower() == 10);
-    Serial.printf("    10 dBm 설정: %s\n", tx1 ? "✓" : "✗");
+    Serial.printf("    10 dBm ?ㅼ젙: %s\n", tx1 ? "?? : "??);
     
     wifiPowerManager.setTxPower(originalTxPower);
     
     // Test 3: Power saving statistics
-    Serial.println("\n  • 전력 절감 통계:");
-    Serial.printf("    Modem Sleep: %lu회\n", power.modemSleepCount);
-    Serial.printf("    Light Sleep: %lu회\n", power.lightSleepCount);
-    Serial.printf("    절전 비율: %.2f%%\n", power.powerSavingRatio);
+    Serial.println("\n  ???꾨젰 ?덇컧 ?듦퀎:");
+    Serial.printf("    Modem Sleep: %lu??n", power.modemSleepCount);
+    Serial.printf("    Light Sleep: %lu??n", power.lightSleepCount);
+    Serial.printf("    ?덉쟾 鍮꾩쑉: %.2f%%\n", power.powerSavingRatio);
     Serial.printf("    RSSI: %ld dBm\n", power.rssi);
     
     bool testPassed = mode1 && mode2 && tx1;
     
     uint32_t duration = millis() - testStart;
     addTestResult("WiFi Power Management", testPassed, duration,
-                  testPassed ? "전력 관리 정상" : "전력 관리 오류");
+                  testPassed ? "?꾨젰 愿由??뺤긽" : "?꾨젰 愿由??ㅻ쪟");
     
-    Serial.printf("\n  결과: %s\n", testPassed ? "✓ 통과" : "✗ 실패");
+    Serial.printf("\n  寃곌낵: %s\n", testPassed ? "???듦낵" : "???ㅽ뙣");
     
     return testPassed;
 }
 
 bool SystemTest::testSystemStability() {
-    Serial.println("\n  --- 시스템 안정성 테스트 ---");
+    Serial.println("\n  --- ?쒖뒪???덉젙???뚯뒪??---");
     uint32_t testStart = millis();
     
     // Test 1: Watchdog
-    Serial.println("\n  • Watchdog 상태:");
+    Serial.println("\n  ??Watchdog ?곹깭:");
     esp_task_wdt_status(NULL);
-    Serial.println("    ✓ Watchdog 정상");
+    Serial.println("    ??Watchdog ?뺤긽");
     
     // Test 2: Memory leak check
-    Serial.println("\n  • 메모리 누수 체크:");
+    Serial.println("\n  ??硫붾え由??꾩닔 泥댄겕:");
     uint32_t heapBefore = ESP.getFreeHeap();
     
     // Simulate some operations
@@ -384,12 +384,12 @@ bool SystemTest::testSystemStability() {
     uint32_t heapAfter = ESP.getFreeHeap();
     int32_t heapDiff = heapAfter - heapBefore;
     
-    Serial.printf("    Heap 변화: %ld bytes\n", heapDiff);
+    Serial.printf("    Heap 蹂?? %ld bytes\n", heapDiff);
     bool noLeak = (abs(heapDiff) < 1000); // Allow < 1KB variation
-    Serial.printf("    메모리 누수: %s\n", noLeak ? "✓ 없음" : "✗ 감지됨");
+    Serial.printf("    硫붾え由??꾩닔: %s\n", noLeak ? "???놁쓬" : "??媛먯???);
     
     // Test 3: Task responsiveness
-    Serial.println("\n  • 태스크 응답성 체크:");
+    Serial.println("\n  ???쒖뒪???묐떟??泥댄겕:");
     bool allResponsive = true;
     
     for (uint8_t i = 0; i < currentMemory.taskCount; i++) {
@@ -399,15 +399,15 @@ bool SystemTest::testSystemStability() {
         if (!responsive) allResponsive = false;
     }
     
-    Serial.printf("    모든 태스크 응답: %s\n", allResponsive ? "✓" : "✗");
+    Serial.printf("    紐⑤뱺 ?쒖뒪???묐떟: %s\n", allResponsive ? "?? : "??);
     
     bool testPassed = noLeak && allResponsive;
     
     uint32_t duration = millis() - testStart;
     addTestResult("System Stability", testPassed, duration,
-                  testPassed ? "시스템 안정" : "불안정 요소 감지");
+                  testPassed ? "?쒖뒪???덉젙" : "遺덉븞???붿냼 媛먯?");
     
-    Serial.printf("\n  결과: %s\n", testPassed ? "✓ 통과" : "✗ 실패");
+    Serial.printf("\n  寃곌낵: %s\n", testPassed ? "???듦낵" : "???ㅽ뙣");
     
     return testPassed;
 }
@@ -423,69 +423,69 @@ void SystemTest::addTestResult(const char* name, bool passed, uint32_t duration,
 }
 
 void SystemTest::printMemoryReport() {
-    Serial.println("\n╔════════════════════════════════════════════════════════╗");
-    Serial.println("║              메모리 상태 리포트                       ║");
-    Serial.println("╚════════════════════════════════════════════════════════╝");
+    Serial.println("\n?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮");
+    Serial.println("??             硫붾え由??곹깭 由ы룷??                      ??);
+    Serial.println("?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴");
     
     captureMemoryMetrics(currentMemory);
     
-    Serial.println("\nHeap 메모리:");
-    Serial.printf("  총 Heap:      %10lu bytes\n", currentMemory.totalHeap);
-    Serial.printf("  사용 중:      %10lu bytes (%.1f%%)\n", 
+    Serial.println("\nHeap 硫붾え由?");
+    Serial.printf("  珥?Heap:      %10lu bytes\n", currentMemory.totalHeap);
+    Serial.printf("  ?ъ슜 以?      %10lu bytes (%.1f%%)\n", 
                   currentMemory.totalHeap - currentMemory.freeHeap,
                   (float)(currentMemory.totalHeap - currentMemory.freeHeap) / currentMemory.totalHeap * 100);
-    Serial.printf("  여유 공간:    %10lu bytes\n", currentMemory.freeHeap);
-    Serial.printf("  최소 여유:    %10lu bytes\n", currentMemory.minFreeHeap);
-    Serial.printf("  최대 할당:    %10lu bytes\n", currentMemory.maxAllocHeap);
-    Serial.printf("  단편화:       %10.1f%%\n", currentMemory.heapFragmentation);
+    Serial.printf("  ?ъ쑀 怨듦컙:    %10lu bytes\n", currentMemory.freeHeap);
+    Serial.printf("  理쒖냼 ?ъ쑀:    %10lu bytes\n", currentMemory.minFreeHeap);
+    Serial.printf("  理쒕? ?좊떦:    %10lu bytes\n", currentMemory.maxAllocHeap);
+    Serial.printf("  ?⑦렪??       %10.1f%%\n", currentMemory.heapFragmentation);
     
     if (currentMemory.totalPSRAM > 0) {
-        Serial.println("\nPSRAM 메모리:");
-        Serial.printf("  총 PSRAM:     %10lu bytes\n", currentMemory.totalPSRAM);
-        Serial.printf("  여유 공간:    %10lu bytes\n", currentMemory.freePSRAM);
+        Serial.println("\nPSRAM 硫붾え由?");
+        Serial.printf("  珥?PSRAM:     %10lu bytes\n", currentMemory.totalPSRAM);
+        Serial.printf("  ?ъ쑀 怨듦컙:    %10lu bytes\n", currentMemory.freePSRAM);
     }
     
-    Serial.println("\n메모리 풀 상태:");
-    Serial.printf("  Small Pool (256B):  %zu/%d 블록 사용\n", 
+    Serial.println("\n硫붾え由?? ?곹깭:");
+    Serial.printf("  Small Pool (256B):  %zu/%d 釉붾줉 ?ъ슜\n", 
                   smallPool.getUsedBlocks(), 8);
-    Serial.printf("  Medium Pool (512B): %zu/%d 블록 사용\n", 
+    Serial.printf("  Medium Pool (512B): %zu/%d 釉붾줉 ?ъ슜\n", 
                   mediumPool.getUsedBlocks(), 4);
-    Serial.printf("  Large Pool (1KB):   %zu/%d 블록 사용\n", 
+    Serial.printf("  Large Pool (1KB):   %zu/%d 釉붾줉 ?ъ슜\n", 
                   largePool.getUsedBlocks(), 2);
 }
 
 void SystemTest::printPerformanceReport() {
-    Serial.println("\n╔════════════════════════════════════════════════════════╗");
-    Serial.println("║              성능 상태 리포트                         ║");
-    Serial.println("╚════════════════════════════════════════════════════════╝");
+    Serial.println("\n?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮");
+    Serial.println("??             ?깅뒫 ?곹깭 由ы룷??                        ??);
+    Serial.println("?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴");
     
     capturePerformanceMetrics();
     
-    Serial.printf("\n메인 루프:\n");
-    Serial.printf("  실행 속도:    %10lu loops/sec\n", performance.loopRate);
-    Serial.printf("  평균 시간:    %10lu μs\n", performance.avgLoopTime);
-    Serial.printf("  최대 시간:    %10lu μs\n", performance.maxLoopTime);
+    Serial.printf("\n硫붿씤 猷⑦봽:\n");
+    Serial.printf("  ?ㅽ뻾 ?띾룄:    %10lu loops/sec\n", performance.loopRate);
+    Serial.printf("  ?됯퇏 ?쒓컙:    %10lu 關s\n", performance.avgLoopTime);
+    Serial.printf("  理쒕? ?쒓컙:    %10lu 關s\n", performance.maxLoopTime);
     
-    Serial.printf("\n태스크 성능:\n");
-    Serial.printf("  센서 읽기:    %10lu reads/sec\n", performance.sensorReadRate);
-    Serial.printf("  UI 업데이트:  %10lu updates/sec\n", performance.uiUpdateRate);
+    Serial.printf("\n?쒖뒪???깅뒫:\n");
+    Serial.printf("  ?쇱꽌 ?쎄린:    %10lu reads/sec\n", performance.sensorReadRate);
+    Serial.printf("  UI ?낅뜲?댄듃:  %10lu updates/sec\n", performance.uiUpdateRate);
     
     if (performance.mqttPublishRate > 0) {
-        Serial.printf("\nMQTT 성능:\n");
-        Serial.printf("  발행 속도:    %10lu msg/sec\n", performance.mqttPublishRate);
-        Serial.printf("  레이턴시:     %10lu ms\n", performance.mqttLatency);
+        Serial.printf("\nMQTT ?깅뒫:\n");
+        Serial.printf("  諛쒗뻾 ?띾룄:    %10lu msg/sec\n", performance.mqttPublishRate);
+        Serial.printf("  ?덉씠?댁떆:     %10lu ms\n", performance.mqttLatency);
     }
 }
 
 void SystemTest::printPowerReport() {
-    Serial.println("\n╔════════════════════════════════════════════════════════╗");
-    Serial.println("║              전력 상태 리포트                         ║");
-    Serial.println("╚════════════════════════════════════════════════════════╝");
+    Serial.println("\n?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮");
+    Serial.println("??             ?꾨젰 ?곹깭 由ы룷??                        ??);
+    Serial.println("?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴");
     
     capturePowerMetrics();
     
-    Serial.printf("\nWiFi 전력 모드:\n");
-    Serial.printf("  현재 모드:    ");
+    Serial.printf("\nWiFi ?꾨젰 紐⑤뱶:\n");
+    Serial.printf("  ?꾩옱 紐⑤뱶:    ");
     switch (power.currentMode) {
         case WiFiPowerMode::ALWAYS_ON: Serial.println("ALWAYS_ON"); break;
         case WiFiPowerMode::BALANCED: Serial.println("BALANCED"); break;
@@ -493,7 +493,7 @@ void SystemTest::printPowerReport() {
         case WiFiPowerMode::DEEP_SLEEP_READY: Serial.println("DEEP_SLEEP_READY"); break;
     }
     
-    Serial.printf("  활동 레벨:    ");
+    Serial.printf("  ?쒕룞 ?덈꺼:    ");
     switch (power.activityLevel) {
         case WiFiActivityLevel::IDLE: Serial.println("IDLE"); break;
         case WiFiActivityLevel::LOW: Serial.println("LOW"); break;
@@ -501,43 +501,43 @@ void SystemTest::printPowerReport() {
         case WiFiActivityLevel::HIGH: Serial.println("HIGH"); break;
     }
     
-    Serial.printf("\nRF 상태:\n");
+    Serial.printf("\nRF ?곹깭:\n");
     Serial.printf("  TX Power:     %10d dBm\n", power.txPower);
     Serial.printf("  RSSI:         %10ld dBm\n", power.rssi);
     
-    Serial.printf("\n절전 통계:\n");
-    Serial.printf("  Modem Sleep:  %10lu 회\n", power.modemSleepCount);
-    Serial.printf("  Light Sleep:  %10lu 회\n", power.lightSleepCount);
-    Serial.printf("  총 Sleep:     %10lu ms\n", power.totalSleepTime);
-    Serial.printf("  절전 비율:    %10.2f%%\n", power.powerSavingRatio);
+    Serial.printf("\n?덉쟾 ?듦퀎:\n");
+    Serial.printf("  Modem Sleep:  %10lu ??n", power.modemSleepCount);
+    Serial.printf("  Light Sleep:  %10lu ??n", power.lightSleepCount);
+    Serial.printf("  珥?Sleep:     %10lu ms\n", power.totalSleepTime);
+    Serial.printf("  ?덉쟾 鍮꾩쑉:    %10.2f%%\n", power.powerSavingRatio);
     
-    Serial.printf("\n네트워크 활동:\n");
-    Serial.printf("  TX 패킷:      %10lu\n", power.wifiTxPackets);
-    Serial.printf("  RX 패킷:      %10lu\n", power.wifiRxPackets);
+    Serial.printf("\n?ㅽ듃?뚰겕 ?쒕룞:\n");
+    Serial.printf("  TX ?⑦궥:      %10lu\n", power.wifiTxPackets);
+    Serial.printf("  RX ?⑦궥:      %10lu\n", power.wifiRxPackets);
 }
 
 void SystemTest::printFullReport() {
     Serial.println("\n\n");
-    Serial.println("╔════════════════════════════════════════════════════════╗");
-    Serial.println("║          Phase 2 통합 테스트 최종 리포트             ║");
-    Serial.println("╚════════════════════════════════════════════════════════╝");
+    Serial.println("?붴븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븮");
+    Serial.println("??         Phase 2 ?듯빀 ?뚯뒪??理쒖쥌 由ы룷??            ??);
+    Serial.println("?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴");
     
     // Test results summary
-    Serial.println("\n테스트 결과 요약:");
-    Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Serial.println("\n?뚯뒪??寃곌낵 ?붿빟:");
+    Serial.println("?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺??);
     
     uint8_t passedCount = 0;
     for (uint8_t i = 0; i < resultCount; i++) {
         Serial.printf("  %s %-25s [%5lu ms] %s\n",
-                      results[i].passed ? "✓" : "✗",
+                      results[i].passed ? "?? : "??,
                       results[i].testName,
                       results[i].duration,
                       results[i].details);
         if (results[i].passed) passedCount++;
     }
     
-    Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    Serial.printf("  합격: %d/%d (%.1f%%)\n", 
+    Serial.println("?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺??);
+    Serial.printf("  ?⑷꺽: %d/%d (%.1f%%)\n", 
                   passedCount, resultCount, 
                   (float)passedCount / resultCount * 100);
     
@@ -547,45 +547,45 @@ void SystemTest::printFullReport() {
     printPowerReport();
     
     // Comparison with baseline
-    Serial.println("\n\n베이스라인 대비 개선:");
-    Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Serial.println("\n\n踰좎씠?ㅻ씪???鍮?媛쒖꽑:");
+    Serial.println("?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺??);
     
     uint32_t baselineUsed = baselineMemory.totalHeap - baselineMemory.freeHeap;
     uint32_t currentUsed = currentMemory.totalHeap - currentMemory.freeHeap;
     int32_t heapSaved = baselineUsed - currentUsed;
     float heapImprovement = (float)heapSaved / baselineUsed * 100.0f;
     
-    Serial.printf("  Heap 절감:    %10ld bytes (%.1f%%)\n", heapSaved, heapImprovement);
-    Serial.printf("  단편화 개선:  %10.1f%% -> %.1f%%\n", 
+    Serial.printf("  Heap ?덇컧:    %10ld bytes (%.1f%%)\n", heapSaved, heapImprovement);
+    Serial.printf("  ?⑦렪??媛쒖꽑:  %10.1f%% -> %.1f%%\n", 
                   baselineMemory.heapFragmentation,
                   currentMemory.heapFragmentation);
     
     // Overall grade
-    Serial.println("\n\n최종 평가:");
-    Serial.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    Serial.println("\n\n理쒖쥌 ?됯?:");
+    Serial.println("?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺?곣봺??);
     
     float score = (float)passedCount / resultCount * 100;
     const char* grade;
     
-    if (score >= 90) grade = "우수 (A)";
-    else if (score >= 80) grade = "양호 (B)";
-    else if (score >= 70) grade = "보통 (C)";
-    else grade = "개선 필요 (D)";
+    if (score >= 90) grade = "?곗닔 (A)";
+    else if (score >= 80) grade = "?묓샇 (B)";
+    else if (score >= 70) grade = "蹂댄넻 (C)";
+    else grade = "媛쒖꽑 ?꾩슂 (D)";
     
-    Serial.printf("  종합 점수:    %.1f점\n", score);
-    Serial.printf("  평가 등급:    %s\n", grade);
+    Serial.printf("  醫낇빀 ?먯닔:    %.1f??n", score);
+    Serial.printf("  ?됯? ?깃툒:    %s\n", grade);
     
     if (score >= 80) {
-        Serial.println("\n  🎉 Phase 2 최적화가 성공적으로 완료되었습니다!");
+        Serial.println("\n  ?럦 Phase 2 理쒖쟻?붽? ?깃났?곸쑝濡??꾨즺?섏뿀?듬땲??");
     } else {
-        Serial.println("\n  ⚠️  일부 개선이 필요합니다. 위의 실패 항목을 검토하세요.");
+        Serial.println("\n  ?좑툘  ?쇰? 媛쒖꽑???꾩슂?⑸땲?? ?꾩쓽 ?ㅽ뙣 ??ぉ??寃?좏븯?몄슂.");
     }
     
-    Serial.println("\n╚════════════════════════════════════════════════════════╝\n");
+    Serial.println("\n?싢븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븧?먥븴\n");
 }
 
 void SystemTest::runQuickTest() {
-    Serial.println("\n=== 빠른 테스트 모드 ===\n");
+    Serial.println("\n=== 鍮좊Ⅸ ?뚯뒪??紐⑤뱶 ===\n");
     
     testStartTime = millis();
     
@@ -597,14 +597,14 @@ void SystemTest::runQuickTest() {
     printPowerReport();
     
     uint32_t duration = millis() - testStartTime;
-    Serial.printf("\n테스트 완료 시간: %lu ms\n", duration);
+    Serial.printf("\n?뚯뒪???꾨즺 ?쒓컙: %lu ms\n", duration);
 }
 
 void SystemTest::runStressTest(uint32_t durationMinutes) {
-    Serial.printf("\n=== 스트레스 테스트 (%lu분) ===\n", durationMinutes);
+    Serial.printf("\n=== ?ㅽ듃?덉뒪 ?뚯뒪??(%lu遺? ===\n", durationMinutes);
     
     uint32_t endTime = millis() + (durationMinutes * 60000);
-    uint32_t reportInterval = 60000; // 1분마다 리포트
+    uint32_t reportInterval = 60000; // 1遺꾨쭏??由ы룷??
     uint32_t lastReport = millis();
     
     establishBaseline();
@@ -616,7 +616,7 @@ void SystemTest::runStressTest(uint32_t durationMinutes) {
         
         // Periodic reporting
         if (millis() - lastReport >= reportInterval) {
-            Serial.printf("\n[%lu분 경과]\n", (millis() - testStartTime) / 60000);
+            Serial.printf("\n[%lu遺?寃쎄낵]\n", (millis() - testStartTime) / 60000);
             printMemoryReport();
             lastReport = millis();
         }
@@ -624,7 +624,7 @@ void SystemTest::runStressTest(uint32_t durationMinutes) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
     
-    Serial.println("\n=== 스트레스 테스트 완료 ===");
+    Serial.println("\n=== ?ㅽ듃?덉뒪 ?뚯뒪???꾨즺 ===");
     printFullReport();
 }
 

@@ -1,10 +1,10 @@
 // ================================================================
-// StateMachine.cpp  —  상태 머신 v3.9 (음성 알림 통합)
-// StateMachine.cpp — changeState() 함수 Mutex 추가
-// 변경사항:
-// - [K3] Mutex 획득/해제 추가
-// - 중복 진입 방지 (Mutex 보호)
-// - 원본 로직 100% 유지
+// StateMachine.cpp      v3.9 (  )
+// StateMachine.cpp  changeState()  Mutex 
+// :
+// - [K3] Mutex / 
+// -    (Mutex )
+// -   100% 
 // ================================================================
 #include "Config.h"
 #include "SensorManager.h"
@@ -18,59 +18,59 @@ extern SensorManager sensorManager;
 #include "Trend_Graph.h"
 #include "Lang.h"
 
-// v3.9: 음성 알림
+// v3.9:  
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay )
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-extern SafeVoiceAlert safeVoiceAlert;
+extern VoiceAlert voiceAlert;
 #endif
 
-// 자동 연장 카운터
+//   
 static uint8_t holdExtensionCount = 0;
 
-// [K3] 상태 전이 Mutex (터치/키보드 동시 입력 보호)
+// [K3]   Mutex (/   )
 static SemaphoreHandle_t g_stateMutex = nullptr;
 
-// ─────────────────── 매 루프 체크 ───────────────────────────
+//     
 void updateStateMachine() {
   uint32_t elapsedTime = millis() - stateStartTime;
 
-  // 비상정지 체크 (NC 타입: LOW = 트리거)
+  //   (NC : LOW = )
   if (!sensorManager.getEmergencyStop()) {
     changeState(STATE_EMERGENCY_STOP);
     return;
   }
 
-  // 과전류 체크
+  //  
   if (sensorManager.getCurrent() > CURRENT_THRESHOLD_CRITICAL) {
-    setError(ERROR_OVERCURRENT, SEVERITY_CRITICAL, "과전류 감지");
+    setError(ERROR_OVERCURRENT, SEVERITY_CRITICAL, " ");
     changeState(STATE_ERROR);
     return;
   }
 
-  // ═══ 온도 체크 (v3.5) ═══
+  //    (v3.5) 
   if (config.tempSensorEnabled) {
-    // 강제 정지 온도 (70°C)
+    //    (70C)
     if (sensorManager.getTemperature() >= config.tempShutdown) {
-      setError(ERROR_OVERHEAT, SEVERITY_CRITICAL, "과열 - 강제 정지");
+      setError(ERROR_OVERHEAT, SEVERITY_CRITICAL, " -  ");
       changeState(STATE_EMERGENCY_STOP);
       return;
     }
     
-    // 위험 온도 (60°C) - 에러 상태로 전환
+    //   (60C) -   
     if (sensorManager.getTemperature() >= config.tempCritical) {
-      setError(ERROR_OVERHEAT, SEVERITY_RECOVERABLE, "과열 - 냉각 필요");
+      setError(ERROR_OVERHEAT, SEVERITY_RECOVERABLE, " -  ");
       changeState(STATE_ERROR);
       return;
     }
     
-    // 경고 온도 (50°C) - 경고음 + 음성 알림
+    //   (50C) -  +  
     if (sensorManager.getTemperature() >= config.tempWarning) {
       static uint32_t lastBeep = 0;
-      if (millis() - lastBeep >= 10000) {  // 10초마다
+      if (millis() - lastBeep >= 10000) {  // 10
         digitalWrite(PIN_BUZZER, HIGH);
         vTaskDelay(pdMS_TO_TICKS(200));
         digitalWrite(PIN_BUZZER, LOW);
@@ -79,12 +79,12 @@ void updateStateMachine() {
         vTaskDelay(pdMS_TO_TICKS(200));
         digitalWrite(PIN_BUZZER, LOW);
         
-        Serial.printf("[경고] 온도 상승: %.1f°C\n", sensorManager.getTemperature());
+        Serial.printf("[]  : %.1fC\n", sensorManager.getTemperature());
         
-        // v3.9: 음성 경고
+        // v3.9:  
         #ifdef ENABLE_VOICE_ALERTS
-        if (safeVoiceAlert.isOnline()) {
-          safeVoiceAlert.enqueue(1, 5);  // 과열 경보
+        if (voiceAlert.isOnline()) {
+          voiceAlert.enqueue(1, 5);  //  
         }
         #endif
         
@@ -93,14 +93,14 @@ void updateStateMachine() {
     }
   }
 
-  // 상태별 처리
+  //  
   switch (currentState) {
-    // ── IDLE ──────────────────────────────────────────────
+    //  IDLE 
     case STATE_IDLE:
       if (sensorManager.getLimitSwitch()) changeState(STATE_VACUUM_ON);
       break;
 
-    // ── VACUUM_ON ─────────────────────────────────────────
+    //  VACUUM_ON 
     case STATE_VACUUM_ON:
       if (currentMode == MODE_AUTO) {
         if (elapsedTime >= config.vacuumOnTime) changeState(STATE_VACUUM_HOLD);
@@ -111,90 +111,90 @@ void updateStateMachine() {
       }
       break;
 
-    // ── VACUUM_HOLD ───────────────────────────────────────
+    //  VACUUM_HOLD 
     case STATE_VACUUM_HOLD:
       if (elapsedTime >= config.vacuumHoldTime) {
         changeState(STATE_VACUUM_BREAK);
       }
       break;
 
-    // ── VACUUM_BREAK ──────────────────────────────────────
+    //  VACUUM_BREAK 
     case STATE_VACUUM_BREAK:
       if (elapsedTime >= config.vacuumBreakTime) {
         changeState(STATE_WAIT_REMOVAL);
       }
       break;
 
-    // ── WAIT_REMOVAL (자동 연장 기능) ──────────────────────
+    //  WAIT_REMOVAL (  ) 
     case STATE_WAIT_REMOVAL:
-      // 광센서 체크 (박스 제거 감지)
+      //   (  )
       if (!sensorManager.getPhotoSensor()) {
-        Serial.println("[WAIT_REMOVAL] 박스 제거 감지 → COMPLETE");
+        Serial.println("[WAIT_REMOVAL]     COMPLETE");
         holdExtensionCount = 0;
         changeState(STATE_COMPLETE);
         break;
       }
       
-      // 타임아웃 체크
+      //  
       if (elapsedTime >= config.waitRemovalTime) {
-        // 자동 연장 활성화 && 연장 가능 횟수 남음
+        //    &&    
         if (config.holdExtensionEnabled && 
             holdExtensionCount < config.maxHoldExtensions) {
           
           holdExtensionCount++;
           stateStartTime = millis();
           
-          Serial.printf("[WAIT_REMOVAL] 자동 연장 %d/%d (+ %lu ms)\n",
+          Serial.printf("[WAIT_REMOVAL]   %d/%d (+ %lu ms)\n",
                         holdExtensionCount, 
                         config.maxHoldExtensions,
                         config.vacuumHoldExtension);
           
-          // 부드러운 알림음
+          //  
           digitalWrite(PIN_BUZZER, HIGH);
           vTaskDelay(pdMS_TO_TICKS(100));
           digitalWrite(PIN_BUZZER, LOW);
           
-          // v3.9: 음성 안내 (박스 제거 요청)
+          // v3.9:   (  )
           #ifdef ENABLE_VOICE_ALERTS
-          if (safeVoiceAlert.isOnline()) {
-            safeVoiceAlert.enqueue(1, 6);  // 박스 제거 안내
+          if (voiceAlert.isOnline()) {
+            voiceAlert.enqueue(1, 6);  //   
           }
           #endif
         } 
         else {
-          Serial.printf("[WAIT_REMOVAL] 타임아웃 (연장 %d회 후) → ERROR\n", 
+          Serial.printf("[WAIT_REMOVAL]  ( %d )  ERROR\n", 
                         holdExtensionCount);
           holdExtensionCount = 0;
-          setError(ERROR_PHOTO_TIMEOUT, SEVERITY_INFO, "박스 제거 타임아웃");
+          setError(ERROR_PHOTO_TIMEOUT, SEVERITY_INFO, "  ");
           changeState(STATE_ERROR);
         }
       }
       break;
 
-    // ── COMPLETE ──────────────────────────────────────────
+    //  COMPLETE 
     case STATE_COMPLETE:
       if (elapsedTime >= 1000) changeState(STATE_IDLE);
       break;
 
-    // ── ERROR ─────────────────────────────────────────────
+    //  ERROR 
     case STATE_ERROR:
-      // 온도 과열 에러인 경우 자동 복구 체크
+      //       
       if (config.tempSensorEnabled && 
           currentError.code == ERROR_OVERHEAT &&
           sensorManager.getTemperature() < config.tempCritical - 5.0) {
-        Serial.println("[ERROR] 온도 하강 → 자동 복구");
+        Serial.println("[ERROR]     ");
         clearError();
         changeState(STATE_IDLE);
       }
       break;
 
-    // ── EMERGENCY_STOP ────────────────────────────────────
+    //  EMERGENCY_STOP 
     case STATE_EMERGENCY_STOP:
       if (sensorManager.getEmergencyStop()) {
-        // 온도 과열로 인한 비상정지는 온도가 내려가야 복구
+        //       
         if (currentError.code == ERROR_OVERHEAT) {
           if (sensorManager.getTemperature() < config.tempShutdown - 10.0) {
-            Serial.println("[EMERGENCY] 온도 정상화 → 복구 가능");
+            Serial.println("[EMERGENCY]     ");
             clearError();
             changeState(STATE_IDLE);
           }
@@ -206,28 +206,28 @@ void updateStateMachine() {
   }
 }
 
-// StateMachine 초기화 — Mutex 생성 void 
+// StateMachine   Mutex  void 
 void initStateMachine() {
   if (g_stateMutex == nullptr) {
     g_stateMutex = xSemaphoreCreateMutex();
     if (g_stateMutex == nullptr) {
-      Serial.println("[StateMachine] ⚠️  Mutex 생성 실패!");
+      Serial.println("[StateMachine]   Mutex  !");
     } else {
-      Serial.println("[StateMachine] Mutex 생성 완료");
+      Serial.println("[StateMachine] Mutex  ");
     }
   }
 }
 
-//  changeState() 함수 Mutex 추가
+//  changeState()  Mutex 
 void changeState(SystemState newState) {
-  // [K3] Mutex 획득 (100ms 타임아웃)
+  // [K3] Mutex  (100ms )
   if (g_stateMutex == nullptr || 
       xSemaphoreTake(g_stateMutex, pdMS_TO_TICKS(100)) != pdTRUE) {
-    Serial.println("[StateMachine] ⚠️  Mutex 획득 실패 — 상태 전이 건너뜀");
+    Serial.println("[StateMachine]   Mutex      ");
     return;
   }
 
-  // 중복 진입 방지
+  //   
   if (currentState == newState) {
     xSemaphoreGive(g_stateMutex);
     return;
@@ -238,23 +238,23 @@ void changeState(SystemState newState) {
   stateStartTime = millis();
   screenNeedsRedraw = true;
   
-  Serial.printf("[상태 전이] %s → %s\n", 
+  Serial.printf("[ ] %s  %s\n", 
                 getStateName(previousState), 
                 getStateName(currentState));
   
-  // v3.9: 음성 알림 - 상태 변경 시 자동 재생
+  // v3.9:   -     
   #ifdef ENABLE_VOICE_ALERTS
-  if (safeVoiceAlert.isOnline() && safeVoiceAlert.isOnline()) {
-    safeVoiceAlert.enqueue(1, (uint8_t)newState + 1);  // 상태 변경
+  if (voiceAlert.isOnline() && voiceAlert.isOnline()) {
+    voiceAlert.enqueue(1, (uint8_t)newState + 1);  //  
   }
   #endif
     
-  // 상태 진입 시 초기화
+  //    
   if (newState == STATE_WAIT_REMOVAL) {
     holdExtensionCount = 0;
   }
 
-  // 상태별 진입 처리
+  //   
   switch (newState) {
     case STATE_IDLE:
       controlPump(0);
@@ -265,11 +265,11 @@ void changeState(SystemState newState) {
     case STATE_VACUUM_ON:
       controlValve(false);
       stats.totalCycles++;
-      // initGraphData();  // 미구현
+      // initGraphData();  // 
       break;
 
     case STATE_VACUUM_HOLD:
-      if (currentMode == MODE_AUTO) controlPump(200  /* manualPWM 미정의 */);
+      if (currentMode == MODE_AUTO) controlPump(200  /* manualPWM  */);
       break;
 
     case STATE_VACUUM_BREAK:
@@ -281,10 +281,10 @@ void changeState(SystemState newState) {
       controlPump(0);
       controlValve(false);
       
-      // v3.9: 박스 제거 안내 음성
+      // v3.9:    
       #ifdef ENABLE_VOICE_ALERTS
-      if (safeVoiceAlert.isOnline()) {
-        safeVoiceAlert.enqueue(1, 6);  // 박스 제거 안내
+      if (voiceAlert.isOnline()) {
+        voiceAlert.enqueue(1, 6);  //   
       }
       #endif
       break;
@@ -316,11 +316,11 @@ void changeState(SystemState newState) {
       break;
   }
 
-  // [K3] Mutex 해제
+  // [K3] Mutex 
   xSemaphoreGive(g_stateMutex);
 }
 
-// ─────────────────── 상태 이름 반환 ─────────────────────────
+//     
 const char* getStateName(SystemState state) {
   switch (state) {
     case STATE_IDLE:            return L(SN_IDLE);

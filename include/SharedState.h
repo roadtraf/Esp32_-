@@ -1,11 +1,11 @@
 // ================================================================
-// SharedState.h - 멀티태스크 공유 상태 안전 접근
+// SharedState.h -     
 // v3.9.4 Hardened Edition
 // ================================================================
-// [A] sensorData / stats / currentState 동시접근 보호
-// [B] ledcWrite PWM 채널 경쟁 보호
-// [F] MQTT→StateChange Queue 기반 안전 전달
-// [J] volatile 선언으로 컴파일러 캐싱 방지
+// [A] sensorData / stats / currentState  
+// [B] ledcWrite PWM   
+// [F] MQTTStateChange Queue   
+// [J] volatile    
 // ================================================================
 #pragma once
 
@@ -14,18 +14,18 @@
 #include <freertos/semphr.h>
 #include <freertos/queue.h>
 #include "AdditionalHardening.h"
-// Config.h의 구조체 의존
+// Config.h  
 #include "Config.h"
 
 // ================================================================
-// [J] volatile 선언 - 멀티코어 가시성 보장
+// [J] volatile  -   
 // ================================================================
-// 기존 Config.h의 extern 선언들은 volatile이 없어
-// 컴파일러가 레지스터에 캐싱 → 타 코어의 변경값 미반영
-// 여기서는 전역 변수 접근용 래퍼로 해결 (하위호환 유지)
+//  Config.h extern  volatile 
+//        
+//       ( )
 
 // ================================================================
-// [A] 공유 데이터 보호 관리자
+// [A]    
 // ================================================================
 class SharedStateManager {
 public:
@@ -42,19 +42,19 @@ public:
         _nvsMutex    = xSemaphoreCreateMutex();
         _adcMutex    = xSemaphoreCreateMutex();
 
-        // [F] MQTT 명령 큐
+        // [F] MQTT  
         _mqttCmdQueue = xQueueCreate(MQTT_CMD_QUEUE_SIZE, sizeof(MQTTCommand));
 
         if (!_sensorMutex || !_statsMutex || !_stateMutex ||
             !_pwmMutex    || !_nvsMutex   || !_adcMutex   ||
             !_mqttCmdQueue) {
-            Serial.println("[SharedState] ❌ 초기화 실패! 시스템 정지");
+            Serial.println("[SharedState]   !  ");
             esp_restart();
         }
-        Serial.println("[SharedState] ✅ 공유 상태 보호 초기화 완료");
+        Serial.println("[SharedState]      ");
     }
 
-    // ── [A] SensorData 안전 읽기/쓰기 ──
+    //  [A] SensorData  / 
     SensorData readSensorData() {
         SensorData snapshot;
         if (xSemaphoreTake(_sensorMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
@@ -81,10 +81,10 @@ public:
         }
     }
 
-    // 센서 데이터 포인터 등록 (main에서 호출)
+    //     (main )
     void setSensorDataPtr(SensorData* ptr) { _pSensorData = ptr; }
 
-    // ── [A] Statistics 안전 접근 ──
+    //  [A] Statistics   
     void setStatsPtr(Statistics* ptr) { _pStats = ptr; }
 
     Statistics readStats() {
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    // ── [A] SystemState 안전 읽기/쓰기 ──
+    //  [A] SystemState  / 
     void setStatePtr(SystemState* ptr) { _pState = ptr; }
 
     SystemState readState() {
@@ -118,8 +118,8 @@ public:
         return s;
     }
 
-    // !! 주의: 상태 변경은 VacuumCtrl Task 컨텍스트에서만!
-    // 타 태스크는 반드시 sendStateChangeCmd() 사용
+    // !! :   VacuumCtrl Task !
+    //    sendStateChangeCmd() 
     void writeState(SystemState newState) {
         if (_pState && xSemaphoreTake(_stateMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
             *_pState = newState;
@@ -127,11 +127,11 @@ public:
         }
     }
 
-    // ── [B] PWM 안전 쓰기 ──
-    // Control.cpp, ControlManager.cpp, UIManager.cpp 모두 이 함수 사용
+    //  [B] PWM   
+    // Control.cpp, ControlManager.cpp, UIManager.cpp    
     bool safeLedcWrite(uint8_t channel, uint32_t duty) {
         if (xSemaphoreTake(_pwmMutex, pdMS_TO_TICKS(PWM_MUTEX_TIMEOUT_MS)) != pdTRUE) {
-            Serial.printf("[PWM] 뮤텍스 타임아웃 (ch=%d)\n", channel);
+            Serial.printf("[PWM]   (ch=%d)\n", channel);
             return false;
         }
         ledcWrite(channel, duty);
@@ -139,19 +139,19 @@ public:
         return true;
     }
 
-    // ── [C] NVS(Preferences) 안전 접근 ──
+    //  [C] NVS(Preferences)   
     bool acquireNVS() {
         return xSemaphoreTake(_nvsMutex, pdMS_TO_TICKS(NVS_MUTEX_TIMEOUT_MS)) == pdTRUE;
     }
     void releaseNVS() { xSemaphoreGive(_nvsMutex); }
 
-    // ── [H] ADC 안전 읽기 (오버샘플링 포함) ──
+    //  [H] ADC   ( ) 
     int safeAnalogRead(uint8_t pin) {
         if (xSemaphoreTake(_adcMutex, pdMS_TO_TICKS(ADC_MUTEX_TIMEOUT_MS)) != pdTRUE) {
             return -1;
         }
 
-        // 오버샘플링으로 노이즈 제거
+        //   
         int32_t sum = 0;
         int validCount = 0;
         int samples[ADC_OVERSAMPLE_COUNT];
@@ -160,11 +160,11 @@ public:
             samples[i] = analogRead(pin);
         }
 
-        // 평균 계산
+        //  
         for (int i = 0; i < ADC_OVERSAMPLE_COUNT; i++) sum += samples[i];
         float avg = (float)sum / ADC_OVERSAMPLE_COUNT;
 
-        // 이상값 제거 (평균 ±15% 초과 샘플 제외)
+        //   ( 15%   )
         sum = 0; validCount = 0;
         for (int i = 0; i < ADC_OVERSAMPLE_COUNT; i++) {
             if (abs(samples[i] - avg) / avg < ADC_REJECT_THRESHOLD) {
@@ -177,10 +177,10 @@ public:
         return (validCount > 0) ? (sum / validCount) : (int)avg;
     }
 
-    // ── [F] MQTT 명령 큐 ──
-    // [사용법]
-    //   보내는 쪽 (MQTT callback, Core0):  sharedState.sendStateCmd(STATE_VACUUM_ON)
-    //   받는 쪽  (VacuumCtrl Task, Core1): sharedState.receivePendingCmd(cmd)
+    //  [F] MQTT   
+    // []
+    //     (MQTT callback, Core0):  sharedState.sendStateCmd(STATE_VACUUM_ON)
+    //      (VacuumCtrl Task, Core1): sharedState.receivePendingCmd(cmd)
     enum MQTTCmdType {
         CMD_NONE,
         CMD_STATE_CHANGE,
@@ -191,7 +191,7 @@ public:
 
     struct MQTTCommand {
         MQTTCmdType type;
-        uint32_t    param;   // 상태값 또는 모드값
+        uint32_t    param;   //   
     };
 
     bool sendStateCmd(SystemState newState) {
@@ -201,7 +201,7 @@ public:
 
     bool sendEmergencyStop() {
         MQTTCommand cmd = { CMD_EMERGENCY_STOP, 0 };
-        return xQueueSend(_mqttCmdQueue, &cmd, 0) == pdTRUE;  // 긴급: 타임아웃 없음
+        return xQueueSend(_mqttCmdQueue, &cmd, 0) == pdTRUE;  // :  
     }
 
     bool receivePendingCmd(MQTTCommand& cmd) {
@@ -233,15 +233,15 @@ private:
 };
 
 // ================================================================
-// 편의 매크로
+//  
 // ================================================================
 #define SHARED_STATE    SharedStateManager::getInstance()
 
-// PWM 안전 쓰기
+// PWM  
 #define SAFE_PWM_WRITE(ch, duty) \
     SharedStateManager::getInstance().safeLedcWrite(ch, duty)
 
-// NVS RAII 가드
+// NVS RAII 
 class NVSGuard {
 public:
     NVSGuard()  : _acquired(SharedStateManager::getInstance().acquireNVS()) {}
@@ -252,14 +252,14 @@ private:
 };
 
 // ================================================================
-// [L] 비상정지 디바운스 처리기
+// [L]   
 // ================================================================
 class EStopDebouncer {
 public:
     EStopDebouncer() : _confirmCount(0), _lastRaw(false), _confirmed(false),
                        _lastChangeTime(0) {}
 
-    // SensorTask에서 주기적 호출 (100ms 주기 가정)
+    // SensorTask   (100ms  )
     bool update(bool rawSignal) {
         uint32_t now = millis();
 
@@ -269,7 +269,7 @@ public:
             _confirmCount = 0;
         }
 
-        // 신호가 ESTOP_DEBOUNCE_MS 동안 안정적이면
+        //  ESTOP_DEBOUNCE_MS  
         if (now - _lastChangeTime >= ESTOP_DEBOUNCE_MS) {
             if (_lastRaw != _confirmed) {
                 _confirmCount++;
@@ -277,7 +277,7 @@ public:
                     _confirmed = _lastRaw;
                     _confirmCount = 0;
                     if (_confirmed) {
-                        Serial.println("[EStop] ⚠️  비상정지 확정 (디바운스 완료)");
+                        Serial.println("[EStop]     ( )");
                     }
                 }
             }
@@ -299,7 +299,7 @@ private:
 extern EStopDebouncer eStopDebouncer;
 
 // ================================================================
-// [D] Serial 안전 출력 (멀티태스크)
+// [D] Serial   ()
 // ================================================================
 class SafeSerial {
 public:

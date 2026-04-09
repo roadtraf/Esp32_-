@@ -1,27 +1,27 @@
 // ================================================================
-// NetworkManager.cpp - 네트워크 관리 구현
+// NetworkManager.cpp -   
 // ESP32-S3 v3.9.2 Phase 3-1 - Step 5
 // ================================================================
-#include "NetworkManager.h"
 #include "Config.h"
+#include "../include/NetworkManager.h"
 
-// FreeRTOS (delay 개선)
+// FreeRTOS (delay )
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-// 전역 인스턴스
-NetworkManager networkManager;
+//  
+AppNetworkManager networkManager;
 
-// 외부 참조
+//  
 extern SystemConfig config;
 extern WiFiClient wifiClient;
 extern PubSubClient mqttClient;
 
 // ================================================================
-// 초기화
+// 
 // ================================================================
-void NetworkManager::begin() {
-    Serial.println("[NetworkMgr] 초기화 시작...");
+void AppNetworkManager::begin() {
+    Serial.println("[NetworkMgr]  ...");
     
     wifiConnected = false;
     mqttConnected = false;
@@ -32,13 +32,13 @@ void NetworkManager::begin() {
     lastPublish = 0;
     lastCloudUpload = 0;
     
-    // MQTT 콜백 설정
+    // MQTT  
     mqttClient.setCallback(mqttCallback);
     
-    Serial.println("[NetworkMgr] ✅ 초기화 완료");
+    Serial.println("[NetworkMgr]   ");
 }
 
-void NetworkManager::update() {
+void AppNetworkManager::update() {
     if (autoReconnect) {
         checkConnections();
     }
@@ -49,15 +49,15 @@ void NetworkManager::update() {
 }
 
 // ================================================================
-// WiFi 관리
+// WiFi 
 // ================================================================
-bool NetworkManager::connectWiFi() {
+bool AppNetworkManager::connectWiFi() {
     if (strlen(config.wifiSSID) == 0) {
-        Serial.println("[NetworkMgr] WiFi SSID 없음");
+        Serial.println("[NetworkMgr] WiFi SSID ");
         return false;
     }
     
-    Serial.printf("[NetworkMgr] WiFi 연결 시도: %s\n", config.wifiSSID);
+    Serial.printf("[NetworkMgr] WiFi  : %s\n", config.wifiSSID);
     
     WiFi.mode(WIFI_STA);
     WiFi.begin(config.wifiSSID, config.wifiPassword);
@@ -72,48 +72,48 @@ bool NetworkManager::connectWiFi() {
     if (WiFi.status() == WL_CONNECTED) {
         wifiConnected = true;
         char ipBuf[16]; WiFi.localIP().toString().toCharArray(ipBuf, sizeof(ipBuf));
-        Serial.printf("[NetworkMgr] ✅ WiFi 연결됨: %s\n", ipBuf);
+        Serial.printf("[NetworkMgr]  WiFi : %s\n", ipBuf);
         Serial.printf("[NetworkMgr] RSSI: %d dBm\n", WiFi.RSSI());
         return true;
     } else {
         wifiConnected = false;
-        Serial.println("[NetworkMgr] ❌ WiFi 연결 실패");
+        Serial.println("[NetworkMgr]  WiFi  ");
         return false;
     }
 }
 
-void NetworkManager::disconnectWiFi() {
+void AppNetworkManager::disconnectWiFi() {
     WiFi.disconnect();
     wifiConnected = false;
-    Serial.println("[NetworkMgr] WiFi 연결 해제");
+    Serial.println("[NetworkMgr] WiFi  ");
 }
 
-bool NetworkManager::isWiFiConnected() {
+bool AppNetworkManager::isWiFiConnected() {
     wifiConnected = (WiFi.status() == WL_CONNECTED);
     return wifiConnected;
 }
 
-int NetworkManager::getWiFiRSSI() {
+int AppNetworkManager::getWiFiRSSI() {
     return WiFi.RSSI();
 }
 
 // ================================================================
-// MQTT 관리
+// MQTT 
 // ================================================================
-bool NetworkManager::connectMQTT() {
+bool AppNetworkManager::connectMQTT() {
     if (!isWiFiConnected()) {
-        Serial.println("[NetworkMgr] WiFi 미연결, MQTT 연결 불가");
+        Serial.println("[NetworkMgr] WiFi , MQTT  ");
         return false;
     }
     
     if (strlen(config.mqttBroker) == 0) {
-        Serial.println("[NetworkMgr] MQTT 서버 설정 없음");
+        Serial.println("[NetworkMgr] MQTT   ");
         return false;
     }
     
     mqttClient.setServer(config.mqttBroker, config.mqttPort);
     
-    Serial.printf("[NetworkMgr] MQTT 연결 시도: %s:%d\n", 
+    Serial.printf("[NetworkMgr] MQTT  : %s:%d\n", 
                   config.mqttBroker, config.mqttPort);
     
     char clientId[32];
@@ -121,40 +121,40 @@ bool NetworkManager::connectMQTT() {
     
     if (mqttClient.connect(clientId, config.mqttUser, config.mqttPassword)) {
         mqttConnected = true;
-        Serial.println("[NetworkMgr] ✅ MQTT 연결됨");
+        Serial.println("[NetworkMgr]  MQTT ");
         
-        // 토픽 구독
+        //  
         mqttClient.subscribe("vacuum/control/#");
         
         return true;
     } else {
         mqttConnected = false;
-        Serial.printf("[NetworkMgr] ❌ MQTT 연결 실패 (상태: %d)\n", mqttClient.state());
+        Serial.printf("[NetworkMgr]  MQTT   (: %d)\n", mqttClient.state());
         return false;
     }
 }
 
-void NetworkManager::disconnectMQTT() {
+void AppNetworkManager::disconnectMQTT() {
     mqttClient.disconnect();
     mqttConnected = false;
-    Serial.println("[NetworkMgr] MQTT 연결 해제");
+    Serial.println("[NetworkMgr] MQTT  ");
 }
 
-bool NetworkManager::isMQTTConnected() {
+bool AppNetworkManager::isMQTTConnected() {
     mqttConnected = mqttClient.connected();
     return mqttConnected;
 }
 
-void NetworkManager::mqttLoop() {
+void AppNetworkManager::mqttLoop() {
     if (mqttConnected) {
         mqttClient.loop();
     }
 }
 
 // ================================================================
-// 데이터 발행
+//  
 // ================================================================
-void NetworkManager::publishSensorData() {
+void AppNetworkManager::publishSensorData() {
     if (!mqttConnected) return;
     
     extern SensorData sensorData;
@@ -167,7 +167,7 @@ void NetworkManager::publishSensorData() {
     mqttClient.publish("vacuum/sensors", payload);
 }
 
-void NetworkManager::publishSystemStatus() {
+void AppNetworkManager::publishSystemStatus() {
     if (!mqttConnected) return;
     
     extern SystemState currentState;
@@ -181,21 +181,21 @@ void NetworkManager::publishSystemStatus() {
     mqttClient.publish("vacuum/status", payload);
 }
 
-void NetworkManager::publishCustom(const char* topic, const char* payload) {
+void AppNetworkManager::publishCustom(const char* topic, const char* payload) {
     if (!mqttConnected) return;
     mqttClient.publish(topic, payload);
 }
 
 // ================================================================
-// 클라우드 업로드
+//  
 // ================================================================
-void NetworkManager::uploadToCloud() {
+void AppNetworkManager::uploadToCloud() {
     if (!isWiFiConnected()) return;
     
     uint32_t now = millis();
-    if (now - lastCloudUpload < 60000) return;  // 1분에 1회
+    if (now - lastCloudUpload < 60000) return;  // 1 1
     
-    // CloudManager 사용
+    // CloudManager 
     #ifdef ENABLE_CLOUD
     extern CloudManager cloudManager;
     extern SensorData sensorData;
@@ -217,7 +217,7 @@ void NetworkManager::uploadToCloud() {
     );
     
     if (success) {
-        Serial.println("[NetworkMgr] ✅ 클라우드 업로드 성공");
+        Serial.println("[NetworkMgr]    ");
     }
     #endif
     
@@ -225,82 +225,82 @@ void NetworkManager::uploadToCloud() {
 }
 
 // ================================================================
-// 재연결 관리
+//  
 // ================================================================
-void NetworkManager::enableAutoReconnect(bool enable) {
+void AppNetworkManager::enableAutoReconnect(bool enable) {
     autoReconnect = enable;
-    Serial.printf("[NetworkMgr] 자동 재연결: %s\n", enable ? "활성화" : "비활성화");
+    Serial.printf("[NetworkMgr]  : %s\n", enable ? "" : "");
 }
 
-void NetworkManager::checkConnections() {
+void AppNetworkManager::checkConnections() {
     uint32_t now = millis();
     
-    // WiFi 체크 (5초마다)
+    // WiFi  (5)
     if (now - lastWiFiCheck >= 5000) {
         lastWiFiCheck = now;
         
         if (!isWiFiConnected()) {
-            Serial.println("[NetworkMgr] WiFi 끊김 감지, 재연결 시도...");
+            Serial.println("[NetworkMgr] WiFi  ,  ...");
             attemptWiFiReconnect();
         }
     }
     
-    // MQTT 체크 (10초마다)
+    // MQTT  (10)
     if (now - lastMQTTCheck >= 10000) {
         lastMQTTCheck = now;
         
         if (isWiFiConnected() && !isMQTTConnected()) {
-            Serial.println("[NetworkMgr] MQTT 끊김 감지, 재연결 시도...");
+            Serial.println("[NetworkMgr] MQTT  ,  ...");
             attemptMQTTReconnect();
         }
     }
 }
 
-bool NetworkManager::attemptWiFiReconnect() {
+bool AppNetworkManager::attemptWiFiReconnect() {
     return connectWiFi();
 }
 
-bool NetworkManager::attemptMQTTReconnect() {
+bool AppNetworkManager::attemptMQTTReconnect() {
     return connectMQTT();
 }
 
 // ================================================================
-// MQTT 콜백
+// MQTT 
 // ================================================================
-void NetworkManager::mqttCallback(char* topic, byte* payload, unsigned int length) {
-    Serial.printf("[NetworkMgr] MQTT 수신: %s\n", topic);
+void AppNetworkManager::mqttCallback(char* topic, byte* payload, unsigned int length) {
+    Serial.printf("[NetworkMgr] MQTT : %s\n", topic);
     
-    // 메시지 파싱 및 처리
-    // (실제 구현은 프로젝트 요구사항에 따라)
+    //    
+    // (    )
 }
 
 // ================================================================
-// 상태 출력
+//  
 // ================================================================
-void NetworkManager::printStatus() {
-    Serial.println("\n╔═══════════════════════════════════════╗");
-    Serial.println("║       네트워크 상태                   ║");
-    Serial.println("╠═══════════════════════════════════════╣");
-    Serial.printf("║ WiFi: %s                              ║\n",
-                  wifiConnected ? "✅ 연결됨" : "❌ 끊김");
+void AppNetworkManager::printStatus() {
+    Serial.println("\n");
+    Serial.println("                           ");
+    Serial.println("");
+    Serial.printf(" WiFi: %s                              \n",
+                  wifiConnected ? " " : " ");
     
     if (wifiConnected) {
-        Serial.printf("║ SSID: %-31s ║\n", WiFi.SSID().c_str());
+        Serial.printf(" SSID: %-31s \n", WiFi.SSID().c_str());
         char ipBuf2[16]; WiFi.localIP().toString().toCharArray(ipBuf2, sizeof(ipBuf2));
-        Serial.printf("║ IP: %-33s ║\n", ipBuf2);
-        Serial.printf("║ RSSI: %d dBm                          ║\n", WiFi.RSSI());
+        Serial.printf(" IP: %-33s \n", ipBuf2);
+        Serial.printf(" RSSI: %d dBm                          \n", WiFi.RSSI());
     }
     
-    Serial.println("╠═══════════════════════════════════════╣");
-    Serial.printf("║ MQTT: %s                              ║\n",
-                  mqttConnected ? "✅ 연결됨" : "❌ 끊김");
+    Serial.println("");
+    Serial.printf(" MQTT: %s                              \n",
+                  mqttConnected ? " " : " ");
     
     if (mqttConnected) {
-        Serial.printf("║ 서버: %-31s ║\n", config.mqttBroker);
+        Serial.printf(" : %-31s \n", config.mqttBroker);
     }
     
-    Serial.println("╠═══════════════════════════════════════╣");
-    Serial.printf("║ 자동 재연결: %s                       ║\n",
-                  autoReconnect ? "활성화" : "비활성화");
-    Serial.println("╚═══════════════════════════════════════╝\n");
+    Serial.println("");
+    Serial.printf("  : %s                       \n",
+                  autoReconnect ? "" : "");
+    Serial.println("\n");
 }

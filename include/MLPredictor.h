@@ -9,7 +9,7 @@
 
 #include <Arduino.h>
 
-// 이상 감지 타입
+//   
 enum AnomalyType {
     ANOMALY_NONE = 0,
     ANOMALY_PRESSURE = 1,
@@ -18,10 +18,10 @@ enum AnomalyType {
     ANOMALY_PATTERN = 4
 };
 
-// 센서 데이터 구조
-#include "SensorManager.h"  // SensorData 정의
+//   
+#include "SensorManager.h"  // SensorData 
 
-// 통계 데이터
+//  
 struct MLStatistics {
     float mean;
     float stdDev;
@@ -31,29 +31,29 @@ struct MLStatistics {
 
 class MLPredictor {
 private:
-    // 학습 데이터 버퍼
-    static const int BUFFER_SIZE = 60;  // 60개 샘플
+    //   
+    static const int BUFFER_SIZE = 60;  // 60 
     SensorData dataBuffer[BUFFER_SIZE];
     int bufferIndex;
     int sampleCount;
     
-    // 정상 범위 통계
+    //   
     MLStatistics pressureStats;
     MLStatistics temperatureStats;
     MLStatistics currentStats;
     
-    // 이상 감지 임계값 (표준편차 배수)
+    //    ( )
     float anomalyThreshold;
     
-    // 최근 이상 감지
+    //   
     AnomalyType lastAnomaly;
     unsigned long lastAnomalyTime;
     
-    // 내부 함수
+    //  
     void updateStatistics();
     bool isOutlier(float value, MLStatistics stats);
     
-    // v3.9.1: 제로카피 헬퍼 함수
+    // v3.9.1:   
     float calculatePressureMean();
     float calculatePressureStdDev(float mean);
     void calculatePressureMinMax(float& min, float& max);
@@ -66,23 +66,23 @@ private:
     float calculateCurrentStdDev(float mean);
     void calculateCurrentMinMax(float& min, float& max);
     
-    // 레거시 함수 (사용 안함, 제거 가능)
+    //   ( ,  )
     // float calculateMean(float* data, int count);
     // float calculateStdDev(float* data
 
 public:
     MLPredictor();
     
-    // 초기화
+    // 
     void begin();
     
-    // 데이터 추가 및 학습
+    //    
     void addSample(float vacuumPressure, float temperature, float current);
     
-    // 이상 감지
+    //  
     AnomalyType detectAnomaly(float vacuumPressure, float temperature, float current);
     
-    // 예측
+    // 
     float predictNextValue(float* recentValues, int count);
     
     // Getter
@@ -91,12 +91,12 @@ public:
     bool isLearned() { return sampleCount >= BUFFER_SIZE; }
     int getSampleCount() { return sampleCount; }
     
-    // 통계 정보
+    //  
     MLStatistics getPressureStats() { return pressureStats; }
     MLStatistics getTemperatureStats() { return temperatureStats; }
     MLStatistics getCurrentStats() { return currentStats; }
     
-    // 이상 감지 메시지 (v3.9.3: const char* 반환)
+    //    (v3.9.3: const char* )
     const char* getAnomalyMessage(AnomalyType type);
 };
 

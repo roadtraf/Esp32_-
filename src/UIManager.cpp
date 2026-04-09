@@ -1,32 +1,32 @@
 // ================================================================
-// UIManager.cpp - UI 관리자 개선판
-// [U3] vTaskDelay → 타이머 기반 비동기 메시지
-// [U5] E-Stop 발생 시 즉시 전용 화면 전환
-// [U8] screenNeedsRedraw / currentScreen Race 조건 수정
-//      → SemaphoreHandle 보호
+// UIManager.cpp - UI  
+// [U3] vTaskDelay     
+// [U5] E-Stop      
+// [U8] screenNeedsRedraw / currentScreen Race  
+//       SemaphoreHandle 
 // ================================================================
 #include "UIManager.h"
 #include "UI_Screens.h"
 #include "UI_AccessControl.h"
 
-// 전역 인스턴스
+//  
 UIManager uiManager;
 
-extern LGFX tft;
-extern LGFX_Sprite ts;
+extern TFT_GFX tft;
+// 
 
 // ================================================================
-// [U8] 화면 상태 Mutex 보호
+// [U8]   Mutex 
 // ================================================================
 static SemaphoreHandle_t g_screenMutex = nullptr;
 
 // ================================================================
-// 초기화
+// 
 // ================================================================
 void UIManager::begin() {
-    Serial.println("[UIMgr] 초기화 시작...");
+    Serial.println("[UIMgr]  ...");
 
-    // [U8] Mutex 생성
+    // [U8] Mutex 
     g_screenMutex = xSemaphoreCreateMutex();
     configASSERT(g_screenMutex);
 
@@ -44,20 +44,20 @@ void UIManager::begin() {
     sleepMode        = false;
     savedBrightness  = 255;
 
-    // Toast 초기화
+    // Toast 
     toastActive    = false;
     toastStartTime = 0;
 
-    Serial.println("[UIMgr] ✅ 초기화 완료");
+    Serial.println("[UIMgr]   ");
 }
 
 // ================================================================
-// 업데이트 루프
+//  
 // ================================================================
 void UIManager::update() {
     uint32_t now = millis();
 
-    // [U5] E-Stop 이벤트 감지 → 즉시 전용 화면 전환
+    // [U5] E-Stop       
     extern bool g_estopActive;  // SharedState or main_hardened
     if (g_estopActive && currentScreen != SCREEN_ESTOP) {
         extern void recordEStopStart(ScreenType);
@@ -65,7 +65,7 @@ void UIManager::update() {
         setScreen(SCREEN_ESTOP);
     }
 
-    // 화면 업데이트 (150ms마다)
+    //   (150ms)
     if (now - lastUpdate >= 150) {
         lastUpdate = now;
 
@@ -74,13 +74,13 @@ void UIManager::update() {
             needsRedraw = false;
         }
 
-        // E-Stop 화면은 깜빡임 때문에 강제 주기 갱신
+        // E-Stop      
         if (currentScreen == SCREEN_ESTOP) {
             drawCurrentScreen();
         }
     }
 
-    // [U3] 메시지/Toast 자동 소멸 (블로킹 없음)
+    // [U3] /Toast   ( )
     if (messageActive && (now - messageStartTime >= messageDuration)) {
         hideMessage();
     }
@@ -89,19 +89,19 @@ void UIManager::update() {
         needsRedraw = true;
     }
 
-    // PIN 화면 잠금 타이머 갱신
+    // PIN    
     if (isPinScreenActive()) {
         drawPinInputScreen();
     }
 
-    // 자동 로그아웃 체크
+    //   
     systemController.checkAutoLogout();
     
-    // updatePopupLongPress();  // 미구현 
+    // updatePopupLongPress();  //  
 }
 
 // ================================================================
-// 화면 전환  [U8] Mutex 보호
+//    [U8] Mutex 
 // ================================================================
 void UIManager::setScreen(ScreenType screen) {
     if (xSemaphoreTake(g_screenMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
@@ -109,7 +109,7 @@ void UIManager::setScreen(ScreenType screen) {
             previousScreen = currentScreen;
             currentScreen  = screen;
             needsRedraw    = true;
-            Serial.printf("[UIMgr] 화면: %d → %d\n",
+            Serial.printf("[UIMgr] : %d  %d\n",
                           (int)previousScreen, (int)currentScreen);
         }
         xSemaphoreGive(g_screenMutex);
@@ -125,10 +125,10 @@ void UIManager::requestRedraw() {
 }
 
 // ================================================================
-// 화면 그리기 디스패치 (E-Stop 추가)
+//    (E-Stop )
 // ================================================================
 void UIManager::drawCurrentScreen() {
-    // PIN 화면이 활성이면 PIN만 그림
+    // PIN   PIN 
     if (isPinScreenActive()) {
         drawPinInputScreen();
         return;
@@ -138,7 +138,7 @@ void UIManager::drawCurrentScreen() {
         case SCREEN_MAIN:            drawMainScreen();           break;
         case SCREEN_SETTINGS:        drawSettingsScreen();       break;
         case SCREEN_ALARM:           drawAlarmScreen();          break;
-        case SCREEN_TREND_GRAPH:     // drawGraphScreen();  break;  // 미구현
+        case SCREEN_TREND_GRAPH:     // drawGraphScreen();  break;  // 
             break;
         case SCREEN_TIMING_SETUP:    drawTimingScreen();         break;
         case SCREEN_PID_SETUP:       drawPIDScreen();            break;
@@ -148,7 +148,7 @@ void UIManager::drawCurrentScreen() {
         case SCREEN_HELP:            drawHelpScreen();           break;
         case SCREEN_STATE_DIAGRAM:   drawStateDiagramScreen();   break;
         case SCREEN_WATCHDOG_STATUS: drawWatchdogStatusScreen(); break;
-        // [U5] E-Stop 전용 화면
+        // [U5] E-Stop  
         case SCREEN_ESTOP:           drawEStopScreen();          break;
 #ifdef ENABLE_PREDICTIVE_MAINTENANCE
         case SCREEN_HEALTH:          drawHealthScreen();         break;
@@ -164,21 +164,21 @@ void UIManager::drawCurrentScreen() {
         case SCREEN_ADVANCED_ANALYSIS: drawAdvancedAnalysisScreen(); break;
 #endif
         default:
-            Serial.printf("[UIMgr] ⚠ 알 수 없는 화면: %d\n", (int)currentScreen);
+            Serial.printf("[UIMgr]     : %d\n", (int)currentScreen);
             break;
     }
 
-    // Toast 오버레이 (화면 위에 항상 표시)
+    // Toast  (   )
     if (toastActive) {
         drawToastOverlay();
     }
 }
 
 // ================================================================
-// 터치 처리 디스패치
+//   
 // ================================================================
 void UIManager::handleTouch() {
-    // PIN 화면 최우선
+    // PIN  
     if (isPinScreenActive()) {
         uint16_t x = 0, y = 0;
         tft.getTouch(&x, &y);
@@ -186,7 +186,7 @@ void UIManager::handleTouch() {
         return;
     }
 
-    // 팝업 우선
+    //  
     if (popupActive) {
         uint16_t x = 0, y = 0;
         tft.getTouch(&x, &y);
@@ -194,13 +194,13 @@ void UIManager::handleTouch() {
         return;
     }
 
-    // 화면별 터치
+    //  
     extern void handleTouchByScreen();
     handleTouchByScreen();
 }
 
 // ================================================================
-// [U3] 메시지 표시 (타이머 기반, 블로킹 없음)
+// [U3]   ( ,  )
 // ================================================================
 void UIManager::showMessage(const char* message, uint32_t duration) {
     strncpy(messageText, message, sizeof(messageText) - 1);
@@ -210,7 +210,7 @@ void UIManager::showMessage(const char* message, uint32_t duration) {
     messageStartTime = millis();
     messageDuration  = duration;
 
-    // 화면 하단 메시지 바에 즉시 표시
+    //      
     int16_t my = SCREEN_HEIGHT - 40;
     tft.fillRect(0, my, SCREEN_WIDTH, 40, UITheme::COLOR_INFO);
     tft.setTextSize(UITheme::TEXT_SIZE_SMALL);
@@ -226,7 +226,7 @@ void UIManager::hideMessage() {
 }
 
 // ================================================================
-// Toast 오버레이 (화면 중앙 상단)
+// Toast  (  )
 // ================================================================
 void UIManager::showToast(const char* message, uint16_t color) {
     strncpy(toastText, message, sizeof(toastText) - 1);
@@ -252,7 +252,7 @@ void UIManager::drawToastOverlay() {
 }
 
 // ================================================================
-// 팝업 관리 (기존 유지)
+//   ( )
 // ================================================================
 void UIManager::showPopup(const char* label, float* target, float min,
                           float max, float step, uint8_t decimals) {
@@ -292,22 +292,22 @@ void UIManager::hidePopup() {
 }
 
 // ================================================================
-// 백라이트
+// 
 // ================================================================
 void UIManager::setBrightness(uint8_t level) {
     brightness = constrain(level, 0, 255);
-    tft.setBrightness(brightness);  // LovyanGFX 내장 함수 사용
+    tft.setBrightness(brightness);  // LovyanGFX   
 }
 
 // ================================================================
-// 절전
+// 
 // ================================================================
 void UIManager::enterSleepMode() {
     if (sleepMode) return;
     sleepMode       = true;
     savedBrightness = brightness;
     setBrightness(0);
-    Serial.println("[UIMgr] 절전 진입");
+    Serial.println("[UIMgr]  ");
 }
 
 void UIManager::exitSleepMode() {
@@ -315,11 +315,11 @@ void UIManager::exitSleepMode() {
     sleepMode = false;
     setBrightness(savedBrightness);
     needsRedraw = true;
-    Serial.println("[UIMgr] 절전 해제");
+    Serial.println("[UIMgr]  ");
 }
 
 // ================================================================
-// 활동 시간 업데이트
+//   
 // ================================================================
 void UIManager::updateActivity() {
     systemController.updateActivity();
@@ -327,11 +327,11 @@ void UIManager::updateActivity() {
 }
 
 // ================================================================
-// 상태 출력
+//  
 // ================================================================
 void UIManager::printStatus() {
     Serial.printf(
-        "[UIMgr] 화면=%d, 재그리기=%s, 메시지=%s, Toast=%s, Popup=%s, 밝기=%d\n",
+        "[UIMgr] =%d, =%s, =%s, Toast=%s, Popup=%s, =%d\n",
         (int)currentScreen,
         needsRedraw   ? "Y" : "N",
         messageActive ? "Y" : "N",

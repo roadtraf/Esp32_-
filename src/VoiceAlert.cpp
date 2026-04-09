@@ -1,494 +1,289 @@
-// ================================================================
-// VoiceAlert.cpp  —  v3.9 DFPlayer Mini 음성 알림 구현
-// ================================================================
-
-#ifdef ENABLE_VOICE_ALERTS
+// ============================================================
+// VoiceAlert.cpp  — ES8311 + audioI2S 버전
+// Waveshare ESP32-S3-Touch-LCD-3.5B
+// 2026-04-08
+// ============================================================
+// 의존 라이브러리:
+//   schreibfaul1/ESP32-audioI2S  @ ^3.3.0   (lib_deps 에 포함)
+//   es8311 드라이버              → lib/es8311/ (오프라인 설치)
+//
+// 음성 파일 위치: SPIFFS  /voice/001.mp3 ~ /voice/013.mp3
+//   pio run --target uploadfs  로 업로드
+// ============================================================
 
 #include "VoiceAlert.h"
+#include "Config.h"        // PIN_I2C_SDA, PIN_I2C_SCL 등
+#include <Arduino.h>
+#include <SPIFFS.h>
+#include <Wire.h>
+#include <Audio.h>         // schreibfaul1/ESP32-audioI2S
 
-// FreeRTOS (delay 개선)
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+// ── ES8311 I2C 레지스터 직접 제어용 ─────────────────────────
+// Waveshare 공식 es8311 드라이버가 lib/es8311/ 에 있으면 아래를 활성화
+// #include "es8311.h"
+// 없으면 Wire 로 직접 초기화 (아래 _codecInit() 구현)
 
-// 전역 인스턴스
-VoiceAlert safeVoiceAlert;
+// ── 핀 (Config.h 또는 platformio.ini -D 플래그에서 옴) ──────
+#ifndef I2S_BCK_PIN
+#  define I2S_BCK_PIN   13
+#endif
+#ifndef I2S_LRCK_PIN
+#  define I2S_LRCK_PIN  15
+#endif
+#ifndef I2S_DOUT_PIN
+#  define I2S_DOUT_PIN  16
+#endif
+#ifndef I2S_DIN_PIN
+#  define I2S_DIN_PIN   14
+#endif
+#ifndef PIN_I2C_SDA
+#  define PIN_I2C_SDA   7
+#endif
+#ifndef PIN_I2C_SCL
+#  define PIN_I2C_SCL   8
+#endif
 
-// ═══════════════════════════════════════════════════════════════
-//  생성자
-// ═══════════════════════════════════════════════════════════════
+// ── ES8311 I2C 주소 ──────────────────────────────────────────
+#define ES8311_ADDR      0x18
 
-VoiceAlert::VoiceAlert() {
-    serial = nullptr;
-    online = false;
-    autoVoice = true;
-    muted = false;
-    currentVolume = DEFAULT_VOLUME;
-    savedVolume = DEFAULT_VOLUME;
-    
-    currentLang = LANG_KO;  // 기본값
-    
-    repeatEnabled = false;
-    repeatCount = 2;
-    currentRepeat = 0;
-    repeatFolder = 0;
-    repeatTrack = 0;
-    
-    queueHead = 0;
-    queueTail = 0;
-    
-    totalPlayed = 0;
-    lastPlayTime = 0;
+// ── Audio 객체 (ESP32-audioI2S) ──────────────────────────────
+static Audio _audio;
+
+// ── 볼륨 변환: DFPlayer 0~21 → audioI2S 0~100 ───────────────
+static inline uint8_t _map_volume(uint8_t vol21) {
+    return (uint8_t)((uint32_t)vol21 * 100 / 21);
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  초기화
-// ═══════════════════════════════════════════════════════════════
+// ── 전역 싱글턴 ──────────────────────────────────────────────
+VoiceAlert voiceAlert;
 
+// ============================================================
+// 생성자
+// ============================================================
+VoiceAlert::VoiceAlert() {}
+
+// ============================================================
+// begin() — ES8311 코덱 + I2S + SPIFFS 초기화
+// ============================================================
 bool VoiceAlert::begin() {
-    Serial.println("[VoiceAlert] 초기화 시작...");
-    
-    // UART2 초기화
-    serial = new HardwareSerial(DFPLAYER_UART);
-    serial->begin(DFPLAYER_BAUD, SERIAL_8N1, DFPLAYER_RX_PIN, DFPLAYER_TX_PIN);
-    
-    vTaskDelay(pdMS_TO_TICKS(500));  // DFPlayer 부팅 대기
-    
-    // DFPlayer 초기화
-    if (!dfPlayer.begin(*serial)) {
-        Serial.println("[VoiceAlert] ✗ DFPlayer 연결 실패");
-        Serial.println("  - 배선 확인 (TX ↔ RX)");
-        Serial.println("  - MicroSD 카드 삽입 확인");
-        Serial.println("  - 전원 확인 (3.3V 또는 5V)");
-        online = false;
+    if (_initialized) return true;
+
+    // 1. SPIFFS 마운트
+    if (!SPIFFS.begin(true)) {
+        Serial.println("[VoiceAlert] SPIFFS 마운트 실패");
+        _state = VS_ERROR;
         return false;
     }
-    
-    online = true;
-    Serial.println("[VoiceAlert] ✓ DFPlayer 연결 성공");
-    
-    // 기본 설정
-    dfPlayer.volume(currentVolume);
-    dfPlayer.EQ(DFPLAYER_EQ_NORMAL);
-    dfPlayer.outputDevice(DFPLAYER_DEVICE_SD);
-    
-    vTaskDelay(pdMS_TO_TICKS(200));
-    
-    // SD 카드 파일 개수 확인
-    int fileCount = dfPlayer.readFileCounts();
-    Serial.printf("[VoiceAlert] SD 카드 파일: %d개\n", fileCount);
-    
-    if (fileCount <= 0) {
-        Serial.println("[VoiceAlert] ⚠️  SD 카드에 파일 없음");
-        Serial.println("  - SD 카드 포맷 확인 (FAT32)");
-        Serial.println("  - 음성 파일 복사 확인");
-    }
-    
-    Serial.printf("[VoiceAlert] 볼륨: %d/30\n", currentVolume);
-    Serial.printf("[VoiceAlert] 언어: %s\n", 
-                 currentLang == LANG_KO ? "한국어" : "English");
-    Serial.println("[VoiceAlert] 준비 완료!");
-    
+
+    // 2. Wire(I2C) 초기화 (온보드 기기와 공유)
+    Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);
+
+    // 3. ES8311 코덱 초기화
+    _codecInit();
+
+    // 4. audioI2S I2S 핀 설정
+    _audio.setPinout(I2S_BCK_PIN, I2S_LRCK_PIN, I2S_DOUT_PIN);
+    _audio.setVolume(_map_volume(_volume));  // 0~21 → 0~100
+
+    _initialized = true;
+    _state       = VS_IDLE;
+
+    Serial.println("[VoiceAlert] ES8311 초기화 완료");
     return true;
 }
 
-bool VoiceAlert::isOnline() {
-    return online;
+// ============================================================
+// end()
+// ============================================================
+void VoiceAlert::end() {
+    if (!_initialized) return;
+    _audio.stopSong();
+    _initialized = false;
+    _state       = VS_IDLE;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  언어 설정
-// ═══════════════════════════════════════════════════════════════
-
-void VoiceAlert::setLanguage(Language lang) {
-    currentLang = lang;
-    
-    const char* langName = (lang == LANG_KO) ? "한국어" : "English";
-    Serial.printf("[VoiceAlert] 언어 변경: %s\n", langName);
+// ============================================================
+// play() — 즉시 재생 (진행 중이면 중단)
+// ============================================================
+bool VoiceAlert::play(VoiceID id) {
+    if (!_initialized || id == VOICE_NONE || id >= VOICE_MAX) return false;
+    stop();
+    _startPlay(id);
+    return true;
 }
 
-Language VoiceAlert::getLanguage() const {
-    return currentLang;
-}
-
-uint8_t VoiceAlert::getFolderNumber(uint8_t baseFolder) {
-    uint8_t offset;
-    
-    switch (currentLang) {
-        case LANG_KO:
-            offset = FOLDER_OFFSET_KOREAN;
-            break;
-            
-        case LANG_EN:
-            offset = FOLDER_OFFSET_ENGLISH;
-            break;
-            
-        default:
-            offset = FOLDER_OFFSET_KOREAN;  // 폴백
-            break;
+// ============================================================
+// queue() — 큐에 추가
+// ============================================================
+bool VoiceAlert::queue(VoiceID id) {
+    if (!_initialized || id == VOICE_NONE || id >= VOICE_MAX) return false;
+    uint8_t next = (_qTail + 1) % 8;
+    if (next == _qHead) return false;  // 큐 가득 참
+    _queue[_qTail] = id;
+    _qTail = next;
+    if (_state == VS_IDLE) {
+        _startPlay(_queue[_qHead]);
+        _qHead = (_qHead + 1) % 8;
     }
-    
-    return baseFolder + offset;
+    return true;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  볼륨 제어
-// ═══════════════════════════════════════════════════════════════
-
-void VoiceAlert::setVolume(uint8_t volume) {
-    if (!online) return;
-    
-    if (volume > MAX_VOLUME) volume = MAX_VOLUME;
-    
-    currentVolume = volume;
-    
-    if (!muted) {
-        dfPlayer.volume(volume);
-        Serial.printf("[VoiceAlert] 볼륨: %d/30\n", volume);
-    } else {
-        savedVolume = volume;
-    }
-}
-
-uint8_t VoiceAlert::getVolume() {
-    return currentVolume;
-}
-
-void VoiceAlert::volumeUp() {
-    if (currentVolume < MAX_VOLUME) {
-        setVolume(currentVolume + 1);
-    }
-}
-
-void VoiceAlert::volumeDown() {
-    if (currentVolume > 0) {
-        setVolume(currentVolume - 1);
-    }
-}
-
-void VoiceAlert::mute() {
-    if (!online || muted) return;
-    
-    savedVolume = currentVolume;
-    dfPlayer.volume(0);
-    muted = true;
-    
-    Serial.println("[VoiceAlert] 음소거");
-}
-
-void VoiceAlert::unmute() {
-    if (!online || !muted) return;
-    
-    dfPlayer.volume(savedVolume);
-    currentVolume = savedVolume;
-    muted = false;
-    
-    Serial.println("[VoiceAlert] 음소거 해제");
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  재생 제어
-// ═══════════════════════════════════════════════════════════════
-
-void VoiceAlert::play(uint8_t folder, uint8_t track) {
-    if (!online || muted) return;
-    
-    dfPlayer.playFolder(folder, track);
-    
-    totalPlayed++;
-    lastPlayTime = millis();
-    
-    Serial.printf("[VoiceAlert] 재생: 폴더 %02d / 트랙 %03d\n", folder, track);
-    
-    // 반복 설정
-    if (repeatEnabled) {
-        currentRepeat = 1;
-        repeatFolder = folder;
-        repeatTrack = track;
-    }
-}
-
-void VoiceAlert::playSystem(SystemVoice voice) {
-    uint8_t folder = getFolderNumber(FOLDER_BASE_SYSTEM);  // 01 또는 11
-    play(folder, (uint8_t)voice);
-}
-
-void VoiceAlert::playState(StateVoice voice) {
-    uint8_t folder = getFolderNumber(FOLDER_BASE_STATE);   // 02 또는 12
-    play(folder, (uint8_t)voice);
-}
-
-void VoiceAlert::playError(ErrorVoice voice) {
-    uint8_t folder = getFolderNumber(FOLDER_BASE_ERROR);   // 03 또는 13
-    play(folder, (uint8_t)voice);
-    
-    // 에러는 자동 반복
-    if (!repeatEnabled) {
-        repeatEnabled = true;
-        repeatCount = 2;
-        currentRepeat = 1;
-        repeatFolder = folder;
-        repeatTrack = (uint8_t)voice;
-    }
-}
-
-void VoiceAlert::playMaintenance(MaintenanceVoice voice) {
-    uint8_t folder = getFolderNumber(FOLDER_BASE_MAINTENANCE);  // 04 또는 14
-    play(folder, (uint8_t)voice);
-}
-
-void VoiceAlert::playGuide(GuideVoice voice) {
-    uint8_t folder = getFolderNumber(FOLDER_BASE_GUIDE);   // 05 또는 15
-    play(folder, (uint8_t)voice);
-}
-
-void VoiceAlert::pause() {
-    if (!online) return;
-    dfPlayer.pause();
-    Serial.println("[VoiceAlert] 일시정지");
-}
-
-void VoiceAlert::resume() {
-    if (!online) return;
-    dfPlayer.start();
-    Serial.println("[VoiceAlert] 재개");
-}
-
+// ============================================================
+// stop()
+// ============================================================
 void VoiceAlert::stop() {
-    if (!online) return;
-    dfPlayer.stop();
-    currentRepeat = 0;
-    Serial.println("[VoiceAlert] 정지");
+    if (!_initialized) return;
+    _audio.stopSong();
+    _qHead = _qTail = 0;  // 큐 비우기
+    _state = VS_IDLE;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  자동 재생
-// ═══════════════════════════════════════════════════════════════
+// ============================================================
+// isPlaying()
+// ============================================================
+bool VoiceAlert::isPlaying() const {
+    return _state == VS_PLAYING;
+}
 
-void VoiceAlert::playStateMessage(SystemState state) {
-    if (!online || !autoVoice) return;
-    
-    switch (state) {
-        case STATE_IDLE:
-            playState(VOICE_STATE_IDLE);
-            break;
-            
-        case STATE_VACUUM_ON:
-            playState(VOICE_STATE_VACUUM_ON);
-            break;
-            
-        case STATE_VACUUM_HOLD:
-            playState(VOICE_STATE_VACUUM_HOLD);
-            break;
-            
-        case STATE_VACUUM_BREAK:
-            playState(VOICE_STATE_VACUUM_BREAK);
-            break;
-            
-        case STATE_COMPLETE:
-            playState(VOICE_STATE_COMPLETE);
-            break;
-            
-        /*
-        case STATE_STANDBY:  // ← SystemState에 미정의
-            playState(VOICE_STATE_STANDBY);
-            break;
-        */
-            
-        default:
-            break;
+// ============================================================
+// setVolume()  0~21 (DFPlayer 스케일 호환)
+// ============================================================
+void VoiceAlert::setVolume(uint8_t vol) {
+    _volume = (vol > 21) ? 21 : vol;
+    if (_initialized) {
+        _audio.setVolume(_map_volume(_volume));
     }
 }
 
-void VoiceAlert::playErrorMessage(ErrorCode error) {
-    if (!online || !autoVoice) return;
-    
-    switch (error) {
-        case ERROR_OVERHEAT:
-            playError(VOICE_ERROR_OVERHEAT);
-            break;
-            
-        case ERROR_OVERCURRENT:
-            playError(VOICE_ERROR_OVERCURRENT);
-            break;
-            
-        case ERROR_VACUUM_FAIL:
-            playError(VOICE_ERROR_VACUUM_FAIL);
-            break;            
-               
-        case ERROR_SENSOR_FAULT:
-            playError(VOICE_ERROR_SENSOR);
-            break;
-            
-        case ERROR_EMERGENCY_STOP:
-            playError(VOICE_ERROR_EMERGENCY);
-            break;
-            
-        case ERROR_PHOTO_TIMEOUT:
-            playError(VOICE_ERROR_TIMEOUT);
-            break;
-            
-        default:
-            break;
+uint8_t VoiceAlert::getVolume() const { return _volume; }
+
+// ============================================================
+// setRepeat()
+// ============================================================
+void VoiceAlert::setRepeat(bool en, uint32_t intervalMs) {
+    _repeat   = en;
+    _repeatMs = intervalMs;
+}
+
+// ============================================================
+// handle() — loop() 에서 호출
+// ============================================================
+void VoiceAlert::handle() {
+    if (!_initialized) return;
+
+    // audioI2S 루프 처리 (내부 스트림 관리)
+    _audio.loop();
+
+    // 재생 완료 감지
+    if (_state == VS_PLAYING && !_audio.isRunning()) {
+        _state = VS_IDLE;
+
+        // 큐에 다음 항목이 있으면 재생
+        if (_qHead != _qTail) {
+            _startPlay(_queue[_qHead]);
+            _qHead = (_qHead + 1) % 8;
+            return;
+        }
+
+        // 반복 재생
+        if (_repeat && _lastID != VOICE_NONE) {
+            uint32_t now = millis();
+            if (now - _lastPlayMs >= _repeatMs) {
+                _startPlay(_lastID);
+            }
+        }
     }
 }
 
-void VoiceAlert::playMaintenanceMessage(MaintenanceLevel level) {
-    if (!online || !autoVoice) return;
-    
-    switch (level) {
-        case MAINTENANCE_SOON:
-            playMaintenance(VOICE_MAINT_SOON);
-            break;
-            
-        case MAINTENANCE_REQUIRED:
-            playMaintenance(VOICE_MAINT_REQUIRED);
-            break;
-            
-        case MAINTENANCE_URGENT:
-            playMaintenance(VOICE_MAINT_URGENT);
-            break;
-            
-        default:
-            break;
-    }
-}
+// ============================================================
+// getState()
+// ============================================================
+VoiceState VoiceAlert::getState() const { return _state; }
 
-// ═══════════════════════════════════════════════════════════════
-//  재생 상태
-// ═══════════════════════════════════════════════════════════════
-
-bool VoiceAlert::isPlaying() {
-    if (!online) return false;
-    
-    // DFPlayer busy 핀 체크 (핀 연결 필요)
-    // 또는 타이머 기반 추정
-    return (millis() - lastPlayTime < 5000);  // 5초 이내면 재생 중
-}
-
-bool VoiceAlert::isBusy() {
-    return isPlaying();
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  설정
-// ═══════════════════════════════════════════════════════════════
-
-void VoiceAlert::enableAutoVoice(bool enable) {
-    autoVoice = enable;
-    
-    if (enable) {
-        Serial.println("[VoiceAlert] 자동 음성 ON");
-    } else {
-        Serial.println("[VoiceAlert] 자동 음성 OFF");
-    }
-}
-
-bool VoiceAlert::isAutoVoiceEnabled() {
-    return autoVoice;
-}
-
-void VoiceAlert::enableRepeat(bool enable) {
-    repeatEnabled = enable;
-    
-    if (!enable) {
-        currentRepeat = 0;
-    }
-}
-
-void VoiceAlert::setRepeatCount(uint8_t count) {
-    repeatCount = count;
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  큐 시스템
-// ═══════════════════════════════════════════════════════════════
-
-void VoiceAlert::queueVoice(uint8_t folder, uint8_t track) {
-    if (enqueue(folder, track)) {
-        Serial.printf("[VoiceAlert] 큐 추가: %02d/%03d (큐 크기: %d)\n", 
-                     folder, track, getQueueSize());
-    } else {
-        Serial.println("[VoiceAlert] ⚠️  큐가 가득 찼습니다");
-    }
-}
-
-void VoiceAlert::clearQueue() {
-    queueHead = 0;
-    queueTail = 0;
-    Serial.println("[VoiceAlert] 큐 초기화");
-}
-
-uint8_t VoiceAlert::getQueueSize() {
-    if (queueTail >= queueHead) {
-        return queueTail - queueHead;
-    } else {
-        return 10 - queueHead + queueTail;
-    }
-}
-
-bool VoiceAlert::enqueue(uint8_t folder, uint8_t track) {
-    uint8_t next = (queueTail + 1) % 10;
-    
-    if (next == queueHead) {
-        return false;  // 큐 가득 찼음
-    }
-    
-    queue[queueTail].folder = folder;
-    queue[queueTail].track = track;
-    queueTail = next;
-    
-    return true;
-}
-
-bool VoiceAlert::dequeue(uint8_t& folder, uint8_t& track) {
-    if (queueHead == queueTail) {
-        return false;  // 큐 비었음
-    }
-    
-    folder = queue[queueHead].folder;
-    track = queue[queueHead].track;
-    queueHead = (queueHead + 1) % 10;
-    
-    return true;
-}
-
-void VoiceAlert::processQueue() {
-    if (!online || isPlaying()) return;
-    
-    // 반복 재생 중
-    if (currentRepeat > 0 && currentRepeat < repeatCount) {
-        currentRepeat++;
-        play(repeatFolder, repeatTrack);
+// ============================================================
+// _startPlay() — 내부 재생 실행
+// ============================================================
+void VoiceAlert::_startPlay(VoiceID id) {
+    const char* path = _idToPath(id);
+    if (!SPIFFS.exists(path)) {
+        Serial.printf("[VoiceAlert] 파일 없음: %s\n", path);
+        _state = VS_ERROR;
         return;
     }
-    
-    // 반복 완료
-    if (currentRepeat >= repeatCount) {
-        currentRepeat = 0;
-        repeatEnabled = false;
-    }
-    
-    // 큐에서 다음 재생
-    uint8_t folder, track;
-    if (dequeue(folder, track)) {
-        play(folder, track);
+    if (_audio.connecttoFS(SPIFFS, path)) {
+        _state      = VS_PLAYING;
+        _lastID     = id;
+        _lastPlayMs = millis();
+        Serial.printf("[VoiceAlert] 재생: %s\n", path);
+    } else {
+        Serial.printf("[VoiceAlert] 재생 실패: %s\n", path);
+        _state = VS_ERROR;
     }
 }
 
-void VoiceAlert::handleRepeat() {
-    processQueue();
+// ============================================================
+// _idToPath() — VoiceID → SPIFFS 경로
+// ============================================================
+const char* VoiceAlert::_idToPath(VoiceID id) const {
+    // SPIFFS 에 /voice/001.mp3 ~ /voice/013.mp3 형태로 저장
+    static char buf[24];
+    snprintf(buf, sizeof(buf), "/voice/%03d.mp3", (int)id);
+    return buf;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  통계
-// ═══════════════════════════════════════════════════════════════
+// ============================================================
+// _codecInit() — ES8311 레지스터 직접 초기화
+// (공식 es8311.h 드라이버가 없는 경우 사용)
+// ============================================================
+void VoiceAlert::_codecInit() {
+    // ES8311 기본 초기화 시퀀스 (Waveshare 공식 예제 기반)
+    // I2C 레지스터 쓰기 헬퍼
+    auto wr = [](uint8_t reg, uint8_t val) {
+        Wire.beginTransmission(ES8311_ADDR);
+        Wire.write(reg);
+        Wire.write(val);
+        uint8_t err = Wire.endTransmission();
+        if (err) {
+            Serial.printf("[ES8311] I2C 오류: reg=0x%02X err=%d\n", reg, err);
+        }
+    };
 
-uint32_t VoiceAlert::getTotalPlayed() {
-    return totalPlayed;
+    // 소프트 리셋
+    wr(0x00, 0x1F);
+    delay(20);
+    wr(0x00, 0x00);
+
+    // MCLK 내부 생성 (I2S BCLK 기반)
+    wr(0x01, 0x30);   // MCLK from BCLK
+    wr(0x02, 0x10);   // ADC/DAC 클럭 분주
+    wr(0x03, 0x10);
+
+    // I2S 포맷: I2S 표준, 16비트
+    wr(0x09, 0x00);   // DAC I2S standard
+    wr(0x0A, 0x00);   // ADC I2S standard
+
+    // DAC 볼륨 기본값
+    wr(0x32, 0x00);   // DAC 볼륨 0dB
+    wr(0x37, 0x08);   // 스피커 출력 믹서 활성화
+
+    // 전원 ON
+    wr(0x0D, 0x01);   // DAC 전원 ON
+    wr(0x15, 0x00);   // 아날로그 전원 ON
+
+    delay(50);
+    Serial.println("[ES8311] 코덱 초기화 완료");
 }
 
-uint32_t VoiceAlert::getLastPlayTime() {
-    return lastPlayTime;
-}
-
-#endif // ENABLE_VOICE_ALERTS
+// ============================================================
+// audioI2S v3.x 콜백 (라이브러리 필수 - 없으면 링크 오류)
+// ============================================================
+void audio_info(const char* info)           { /* Serial.printf("[audio] %s\n", info); */ }
+void audio_id3data(const char* info)        { /* ID3 태그 정보 */ }
+void audio_eof_mp3(const char* info)        { /* 재생 완료 — handle() 에서 isPlaying()으로 감지 */ }
+void audio_showstation(const char* info)    { }
+void audio_showstreamtitle(const char* info){ }
+void audio_bitrate(const char* info)        { }
+void audio_commercial(const char* info)     { }
+void audio_icyurl(const char* info)         { }
+void audio_lasthost(const char* info)       { }
+void audio_eof_speech(const char* info)     { }

@@ -1,8 +1,8 @@
 // ================================================================
-// UI_Screen_Alarm.cpp - 경보 화면 개선판
-// [U6] 조치 가이드 추가
-// [U7] strlen()*6 → tft.textWidth() 교체
-// [U8] screenNeedsRedraw/currentScreen → uiManager 경유
+// UI_Screen_Alarm.cpp -   
+// [U6]   
+// [U7] strlen()*6  tft.textWidth() 
+// [U8] screenNeedsRedraw/currentScreen  uiManager 
 // ================================================================
 #include "UIComponents.h"
 #include "UITheme.h"
@@ -13,7 +13,7 @@
 using namespace UIComponents;
 using namespace UITheme;
 
-extern LGFX             tft;
+extern TFT_GFX tft;
 extern UIManager        uiManager;
 extern bool             errorActive;
 extern ErrorInfo        currentError;
@@ -22,7 +22,7 @@ extern uint8_t          errorHistIdx;
 extern uint8_t          errorHistCnt;
 
 // ================================================================
-// [U6] 에러 코드별 조치 가이드 매핑
+// [U6]     
 // ================================================================
 struct ActionGuide {
     uint16_t codeMin;
@@ -33,18 +33,18 @@ struct ActionGuide {
 };
 
 static const ActionGuide ACTION_GUIDES[] = {
-    // 압력 관련 (E100~E199)
-    {100, 149, "펌프 동작 확인",      "배관 누기 점검",     "압력 센서 점검"},
-    {150, 199, "트립 값 확인",         "펌프 즉시 정지",     "원인 제거 후 재시작"},
-    // 온도 관련 (E200~E299)
-    {200, 249, "냉각 계통 점검",        "통풍구 막힘 확인",   "주변 온도 확인"},
-    {250, 299, "즉시 전원 차단",        "열 손상 부품 확인",  "냉각 후 재기동"},
-    // 통신 관련 (E300~E399)
-    {300, 399, "네트워크 연결 확인",    "MQTT 브로커 확인",   "ESP 재시작 고려"},
-    // 센서 관련 (E400~E499)
-    {400, 499, "센서 배선 점검",        "센서 교체 고려",     "캘리브레이션 실행"},
-    // 기본값
-    {0,   999, "시스템 로그 확인",      "관리자에게 문의",    "필요시 재시작"},
+    //   (E100~E199)
+    {100, 149, "  ",      "  ",     "  "},
+    {150, 199, "  ",         "  ",     "   "},
+    //   (E200~E299)
+    {200, 249, "  ",        "  ",   "  "},
+    {250, 299, "  ",        "   ",  "  "},
+    //   (E300~E399)
+    {300, 399, "  ",    "MQTT  ",   "ESP  "},
+    //   (E400~E499)
+    {400, 499, "  ",        "  ",     " "},
+    // 
+    {0,   999, "  ",      " ",    " "},
 };
 
 static const ActionGuide* findGuide(uint16_t code) {
@@ -55,29 +55,29 @@ static const ActionGuide* findGuide(uint16_t code) {
 }
 
 // ================================================================
-// 레이아웃 상수
+//  
 // ================================================================
 namespace AlarmLayout {
     constexpr int16_t STATUS_CARD_Y  = HEADER_HEIGHT + SPACING_SM;
     constexpr int16_t STATUS_CARD_H  = 68;
 
     constexpr int16_t ACTION_CARD_Y  = STATUS_CARD_Y + STATUS_CARD_H + SPACING_SM;
-    constexpr int16_t ACTION_CARD_H  = 76;  // [U6] 조치 가이드 영역
+    constexpr int16_t ACTION_CARD_H  = 76;  // [U6]   
 
     constexpr int16_t HIST_LABEL_Y   = ACTION_CARD_Y + ACTION_CARD_H + SPACING_XS;
     constexpr int16_t HIST_ITEM_H    = 38;
     constexpr int16_t HIST_ITEM_GAP  = 4;
-    constexpr uint8_t HIST_MAX_SHOW  = 3;   // 3개로 줄이고 조치 카드 확보
+    constexpr uint8_t HIST_MAX_SHOW  = 3;   // 3    
 }
 
 // ================================================================
-// 경보 화면 그리기
+//   
 // ================================================================
 void drawAlarmScreen() {
     tft.fillScreen(COLOR_BG_DARK);
-    drawHeader("경보 / 이력");
+    drawHeader(" / ");
 
-    // ── 현재 상태 카드 ──
+    //     
     {
         CardConfig card = {
             .x = SPACING_SM,
@@ -92,13 +92,13 @@ void drawAlarmScreen() {
         if (errorActive) {
             drawIconWarning(card.x + CARD_PADDING, card.y + 14, COLOR_TEXT_PRIMARY);
 
-            // 에러 제목
+            //  
             tft.setTextSize(TEXT_SIZE_MEDIUM);
             tft.setTextColor(COLOR_TEXT_PRIMARY);
             tft.setCursor(card.x + CARD_PADDING + 28, card.y + CARD_PADDING);
-            tft.print("경보 발생!");
+            tft.print(" !");
 
-            // 에러 메시지 (텍스트 너비 안전하게 잘라냄)
+            //   (   )
             tft.setTextSize(TEXT_SIZE_SMALL);
             tft.setCursor(card.x + CARD_PADDING + 28, card.y + CARD_PADDING + 22);
             char shortMsg[40];
@@ -106,7 +106,7 @@ void drawAlarmScreen() {
             shortMsg[sizeof(shortMsg) - 1] = '\0';
             tft.print(shortMsg);
 
-            // 에러 코드 + 심각도 배지
+            //   +  
             char codeBuf[8];
             snprintf(codeBuf, sizeof(codeBuf), "E%03d", currentError.code);
             drawBadge(card.x + card.w - CARD_PADDING - 40,
@@ -115,7 +115,7 @@ void drawAlarmScreen() {
                       (currentError.severity >= SEVERITY_CRITICAL)
                           ? BADGE_DANGER : BADGE_WARNING);
 
-            // 클리어 버튼
+            //  
             SystemPermissions perms = systemController.getPermissions();
             if (perms.canReset) {
                 ButtonConfig clearBtn = {
@@ -123,7 +123,7 @@ void drawAlarmScreen() {
                     .y = (int16_t)(card.y + CARD_PADDING + 26),
                     .w = 66,
                     .h = 26,
-                    .label = "클리어",
+                    .label = "",
                     .style = BTN_OUTLINE,
                     .enabled = true
                 };
@@ -134,15 +134,15 @@ void drawAlarmScreen() {
             tft.setTextSize(TEXT_SIZE_MEDIUM);
             tft.setTextColor(COLOR_TEXT_PRIMARY);
             tft.setCursor(card.x + CARD_PADDING + 28, card.y + CARD_PADDING);
-            tft.print("정상 운전 중");
+            tft.print("  ");
             tft.setTextSize(TEXT_SIZE_SMALL);
             tft.setTextColor(COLOR_TEXT_PRIMARY);
             tft.setCursor(card.x + CARD_PADDING + 28, card.y + CARD_PADDING + 22);
-            tft.print("시스템에 이상이 없습니다");
+            tft.print("  ");
         }
     }
 
-    // ── [U6] 조치 가이드 카드 (에러 활성 시) ──
+    //  [U6]    (  ) 
     if (errorActive) {
         const ActionGuide* guide = findGuide(currentError.code);
 
@@ -159,7 +159,7 @@ void drawAlarmScreen() {
         tft.setTextSize(TEXT_SIZE_SMALL);
         tft.setTextColor(COLOR_WARNING);
         tft.setCursor(card.x + CARD_PADDING, card.y + CARD_PADDING);
-        tft.print("▶ 조치 방법");
+        tft.print("  ");
 
         const char* steps[] = {guide->step1, guide->step2, guide->step3};
         tft.setTextColor(COLOR_TEXT_PRIMARY);
@@ -172,11 +172,11 @@ void drawAlarmScreen() {
         }
     }
 
-    // ── 에러 이력 ──
+    //    
     {
         int16_t labelY = AlarmLayout::HIST_LABEL_Y;
         if (!errorActive) {
-            // 에러 없으면 조치 카드 자리에 이력 올림
+            //       
             labelY = AlarmLayout::ACTION_CARD_Y;
         }
 
@@ -184,7 +184,7 @@ void drawAlarmScreen() {
         tft.setTextColor(COLOR_TEXT_SECONDARY);
         tft.setCursor(SPACING_SM, labelY);
         char histTitle[24];
-        snprintf(histTitle, sizeof(histTitle), "이력 (%u건)", errorHistCnt);
+        snprintf(histTitle, sizeof(histTitle), " (%u)", errorHistCnt);
         tft.print(histTitle);
 
         int16_t listY = labelY + 18;
@@ -208,7 +208,7 @@ void drawAlarmScreen() {
             };
             drawCard(hCard);
 
-            // 에러 코드 + 색상
+            //   + 
             uint16_t ec = (err->severity >= SEVERITY_CRITICAL)
                           ? COLOR_DANGER
                           : (err->severity >= SEVERITY_RECOVERABLE)
@@ -220,7 +220,7 @@ void drawAlarmScreen() {
             snprintf(codeBuf, sizeof(codeBuf), "E%03d", err->code);
             tft.print(codeBuf);
 
-            // 메시지 (최대 28자)
+            //  ( 28)
             tft.setTextColor(COLOR_TEXT_PRIMARY);
             tft.setCursor(hCard.x + CARD_PADDING + 44, hCard.y + CARD_PADDING);
             char msgBuf[29];
@@ -228,15 +228,15 @@ void drawAlarmScreen() {
             msgBuf[28] = '\0';
             tft.print(msgBuf);
 
-            // 경과 시간 — [U7] 우측 정렬에 textWidth() 사용
+            //    [U7]   textWidth() 
             uint32_t elapsed = (millis() - err->timestamp) / 1000;
             char timeBuf[16];
             if (elapsed < 60)
-                snprintf(timeBuf, sizeof(timeBuf), "%lu초 전", elapsed);
+                snprintf(timeBuf, sizeof(timeBuf), "%lu ", elapsed);
             else if (elapsed < 3600)
-                snprintf(timeBuf, sizeof(timeBuf), "%lu분 전", elapsed / 60);
+                snprintf(timeBuf, sizeof(timeBuf), "%lu ", elapsed / 60);
             else
-                snprintf(timeBuf, sizeof(timeBuf), "%lu시간 전", elapsed / 3600);
+                snprintf(timeBuf, sizeof(timeBuf), "%lu ", elapsed / 3600);
 
             tft.setTextSize(1);
             tft.setTextColor(COLOR_TEXT_SECONDARY);
@@ -249,39 +249,39 @@ void drawAlarmScreen() {
         if (errorHistCnt == 0) {
             tft.setTextSize(TEXT_SIZE_SMALL);
             tft.setTextColor(COLOR_TEXT_SECONDARY);
-            const char* noHist = "이력 없음";
-            // [U7] textWidth() 사용
+            const char* noHist = " ";
+            // [U7] textWidth() 
             int16_t nx = (SCREEN_WIDTH - tft.textWidth(noHist)) / 2;
             tft.setCursor(nx, listY + 24);
             tft.print(noHist);
         }
     }
 
-    // ── 하단 네비게이션 ──
+    //    
     SystemPermissions perms = systemController.getPermissions();
     bool canClearAll = perms.canChangeSettings && errorHistCnt > 0;
 
     if (canClearAll) {
         NavButton nav[] = {
-            {"뒤로",     BTN_OUTLINE, true},
-            {"전체삭제", BTN_DANGER,  true}
+            {"",     BTN_OUTLINE, true},
+            {"", BTN_DANGER,  true}
         };
         drawNavBar(nav, 2);
     } else {
-        NavButton nav[] = {{"뒤로", BTN_OUTLINE, true}};
+        NavButton nav[] = {{"", BTN_OUTLINE, true}};
         drawNavBar(nav, 1);
     }
 }
 
 // ================================================================
-// 터치 처리  [U8]
+//    [U8]
 // ================================================================
 void handleAlarmTouch(uint16_t x, uint16_t y) {
     uiManager.updateActivity();
 
     int16_t navY = SCREEN_HEIGHT - FOOTER_HEIGHT;
 
-    // 클리어 버튼 (에러 활성 + 권한 있을 때)
+    //   (  +   )
     if (errorActive && systemController.getPermissions().canReset) {
         int16_t cx = SPACING_SM + (SCREEN_WIDTH - SPACING_SM * 2) - 76;
         int16_t cy = AlarmLayout::STATUS_CARD_Y + CARD_PADDING + 26;
@@ -292,23 +292,23 @@ void handleAlarmTouch(uint16_t x, uint16_t y) {
         }
     }
 
-    // 네비게이션
+    // 
     if (y >= navY) {
         SystemPermissions perms = systemController.getPermissions();
         int16_t bw = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
 
-        // 뒤로
+        // 
         if (x < SPACING_SM + bw) {
             uiManager.setScreen(SCREEN_MAIN);   // [U8]
             return;
         }
 
-        // 전체 삭제
+        //  
         if (perms.canChangeSettings && errorHistCnt > 0 &&
             x >= SPACING_SM + bw + SPACING_SM) {
             errorHistCnt = 0;
             errorHistIdx = 0;
-            uiManager.showToast("이력 삭제됨", COLOR_INFO);
+            uiManager.showToast(" ", COLOR_INFO);
             uiManager.requestRedraw();
             return;
         }

@@ -11,7 +11,7 @@ WIFI_MANAGER_STACK = 4096
 MQTT_HANDLER_STACK = 4096
 DATA_LOGGER_STACK = 4096
 HEALTH_MONITOR_STACK = 2048
-PREDICTOR_STACK = 4096 으로 조정
+PREDICTOR_STACK = 4096  
 */
 
 // Task Stack Sizes (optimized)
@@ -22,7 +22,7 @@ namespace TaskConfig {
     constexpr uint16_t UI_UPDATE_STACK = 8192;       // 3072 -> 2560
     
     // Normal Priority Tasks
-    constexpr uint16_t WIFI_MANAGER_STACK = 4096;    // 유지 (WiFi 스택 요구사항)
+    constexpr uint16_t WIFI_MANAGER_STACK = 4096;    //  (WiFi  )
     constexpr uint16_t MQTT_HANDLER_STACK = 4096;    // 4096 -> 3584
     constexpr uint16_t DATA_LOGGER_STACK = 4096;     // 2560 -> 2048
     

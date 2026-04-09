@@ -1,5 +1,5 @@
 // ================================================================
-// NetworkManager.h - 네트워크 관리 모듈
+// NetworkManager.h -   
 // ESP32-S3 v3.9.2 Phase 3-1 - Step 5
 // ================================================================
 #pragma once
@@ -9,39 +9,39 @@
 #include <PubSubClient.h>
 
 // ================================================================
-// 네트워크 관리자 클래스
+//   
 // ================================================================
-class NetworkManager {
+class AppNetworkManager {
 public:
-    // 초기화
+    // 
     void begin();
     void update();
     
-    // WiFi 관리
+    // WiFi 
     bool connectWiFi();
     void disconnectWiFi();
     bool isWiFiConnected();
     int getWiFiRSSI();
     
-    // MQTT 관리
+    // MQTT 
     bool connectMQTT();
     void disconnectMQTT();
     bool isMQTTConnected();
     void mqttLoop();
     
-    // 데이터 발행
+    //  
     void publishSensorData();
     void publishSystemStatus();
     void publishCustom(const char* topic, const char* payload);
     
-    // 클라우드 업로드
+    //  
     void uploadToCloud();
     
-    // 재연결 관리
+    //  
     void enableAutoReconnect(bool enable);
     void checkConnections();
     
-    // 상태 조회
+    //  
     void printStatus();
     
 private:
@@ -54,14 +54,14 @@ private:
     uint32_t lastPublish;
     uint32_t lastCloudUpload;
     
-    // WiFi 재연결
+    // WiFi 
     bool attemptWiFiReconnect();
     
-    // MQTT 재연결
+    // MQTT 
     bool attemptMQTTReconnect();
     
-    // MQTT 콜백
+    // MQTT 
     static void mqttCallback(char* topic, byte* payload, unsigned int length);
 };
 
-extern NetworkManager networkManager;
+extern AppNetworkManager networkManager;

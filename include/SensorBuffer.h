@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-// SensorData 정의 (중복 방지)
+// SensorData  ( )
 #ifndef SENSOR_DATA_DEFINED
 #define SENSOR_DATA_DEFINED
 struct SensorData {
@@ -20,7 +20,7 @@ struct SensorData {
 
 
 // ================================================================
-// Ring Buffer Template - 범용 링 버퍼
+// Ring Buffer Template -   
 // ================================================================
 template<typename T, size_t CAPACITY>
 class RingBuffer {
@@ -175,11 +175,11 @@ public:
 };
 
 // ================================================================
-// 센서 데이터 구조체
+//   
 // ================================================================
 
 // ================================================================
-// 센서 통계 구조체
+//   
 // ================================================================
 #define SENSORSTATS_DEFINED
 struct SensorStats {
@@ -210,9 +210,9 @@ struct SensorStats {
 
 
 // ================================================================
-// 전역 센서 버퍼
+//   
 // ================================================================
-constexpr size_t TEMP_BUFFER_SIZE = 60;       // 60 samples = 1분 @ 1Hz
+constexpr size_t TEMP_BUFFER_SIZE = 60;       // 60 samples = 1 @ 1Hz
 constexpr size_t PRESSURE_BUFFER_SIZE = 60;
 constexpr size_t CURRENT_BUFFER_SIZE = 60;
 constexpr size_t SENSOR_DATA_BUFFER_SIZE = 20;
@@ -223,22 +223,22 @@ extern RingBuffer<float, CURRENT_BUFFER_SIZE> currentBuffer;
 extern RingBuffer<SensorData, SENSOR_DATA_BUFFER_SIZE> sensorDataBuffer;
 
 // ================================================================
-// 버퍼 관리 함수
+//   
 // ================================================================
 
-// 센서 데이터를 버퍼에 추가
+//    
 void updateSensorBuffers();
 
-// 통계 계산
+//  
 void calculateSensorStats(SensorStats& stats);
 
-// 버퍼 초기화
+//  
 void clearSensorBuffers();
 
-// 버퍼 상태 출력
+//   
 void printBufferStatus();
 
-// 평균값 빠른 조회
+//   
 float getAvgTemperature();
 float getAvgPressure();
 float getAvgCurrent();

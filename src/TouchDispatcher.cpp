@@ -1,45 +1,45 @@
 // ================================================================
-// TouchDispatcher.cpp — 화면별 터치 라우팅
+// TouchDispatcher.cpp    
 // 
-// Tasks.cpp에서 호출하는 전역 handleTouch() 구현
-// UIManager::handleTouch()와는 별개로 실제 디스패치 수행
+// Tasks.cpp   handleTouch() 
+// UIManager::handleTouch()    
 // ================================================================
 #include "Config.h"
 #include "UI_Screens.h"
 #include "UIManager.h"
 
-extern LGFX tft;
+extern TFT_GFX tft;
 extern ScreenType currentScreen;
 extern uint32_t lastIdleTime;
 extern bool sleepMode;
 extern UIManager uiManager;
 
 // ================================================================
-// 터치 좌표 읽기
+//   
 // ================================================================
 static bool getTouch(uint16_t* x, uint16_t* y) {
     return tft.getTouch(x, y);
 }
 
 // ================================================================
-// 전역 터치 디스패처 — 화면별 핸들러 호출
+//       
 // ================================================================
 void handleTouch() {
     uint16_t x = 0, y = 0;
     
     if (!getTouch(&x, &y)) {
-        return;  // 터치 없음
+        return;  //  
     }
     
-    // 활동 시간 갱신 (절전 해제)
+    //    ( )
     lastIdleTime = millis();
     if (sleepMode) {
         extern void exitSleepMode();
         exitSleepMode();
-        return;  // 첫 터치는 화면만 켬
+        return;  //    
     }
     
-    // 화면별 터치 핸들러 디스패치
+    //    
     switch (currentScreen) {
         case SCREEN_MAIN:
             handleMainTouch(x, y);
@@ -89,7 +89,7 @@ void handleTouch() {
             handleWatchdogStatusTouch(x, y);
             break;
         
-        // [U5] E-Stop 화면 추가
+        // [U5] E-Stop  
         case SCREEN_ESTOP:
             handleEStopTouch(x, y);
             break;
@@ -123,14 +123,14 @@ void handleTouch() {
 #endif
         
         default:
-            // 알 수 없는 화면 — 메인으로 복귀
+            //       
             uiManager.setScreen(SCREEN_MAIN);
             break;
     }
 }
 
 // ================================================================
-// updateUI 디스패처 (Tasks.cpp에서 호출)
+// updateUI  (Tasks.cpp )
 // ================================================================
 void updateUI() {
 	extern UIManager uiManager;

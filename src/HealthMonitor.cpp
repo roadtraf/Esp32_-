@@ -1,19 +1,19 @@
 // ================================================================
-// HealthMonitor.cpp - 시스템 건강도 모니터링 (v3.9.2 수정)
-// sensorData → sensorManager 변경
+// HealthMonitor.cpp -    (v3.9.2 )
+// sensorData  sensorManager 
 // ================================================================
 
 #include "HealthMonitor.h"
 #include "Config.h"
-#include "SensorManager.h"  // ← 추가
+#include "SensorManager.h"  //  
 
-// v3.9: 음성 알림
+// v3.9:  
 #ifdef ENABLE_VOICE_ALERTS
 #include "VoiceAlert.h"
-extern SafeVoiceAlert safeVoiceAlert;
+extern VoiceAlert voiceAlert;
 #endif
 
-// 외부 SensorManager 참조
+//  SensorManager 
 extern SensorManager sensorManager;
 
 HealthMonitor::HealthMonitor() {
@@ -32,13 +32,13 @@ HealthMonitor::HealthMonitor() {
 }
 
 void HealthMonitor::begin() {
-    Serial.println("[HealthMonitor] 초기화 완료");
+    Serial.println("[HealthMonitor]  ");
     currentHealthScore = 100.0f;
     lastMaintenanceTime = millis();
 }
 
 // ================================================================
-// update() - SensorManager 사용 버전
+// update() - SensorManager  
 // ================================================================
 void HealthMonitor::update(
     float pressure,
@@ -47,18 +47,18 @@ void HealthMonitor::update(
     uint8_t pwm,
     int state
 ) {
-    // 매개변수로 받은 값 사용
-    // 추가로 필요한 센서 값은 sensorManager에서 가져옴
+    //    
+    //     sensorManager 
     
     MaintenanceLevel previousLevel = maintenanceLevel;
     
-    // 각 요소별 건강도 계산
+    //    
     factors.pumpEfficiency = calculatePumpEfficiency(pressure, TARGET_PRESSURE);
     factors.temperatureHealth = calculateTemperatureHealth(temperature);
     factors.currentHealth = calculateCurrentHealth(current);
     factors.runtimeHealth = calculateRuntimeHealth(totalRuntime);
     
-    // 가중 평균으로 전체 건강도 계산
+    //     
     currentHealthScore = (
         factors.pumpEfficiency * 0.35f +
         factors.temperatureHealth * 0.25f +
@@ -66,7 +66,7 @@ void HealthMonitor::update(
         factors.runtimeHealth * 0.15f
     );
     
-    // 이상 카운터 페널티
+    //   
     float penalty = 0;
     penalty += overTempCount * 2.0f;
     penalty += overCurrentCount * 1.5f;
@@ -74,17 +74,17 @@ void HealthMonitor::update(
     
     currentHealthScore = max(0.0f, currentHealthScore - penalty);
     
-    // 유지보수 레벨 결정
+    //   
     maintenanceLevel = determineMaintenanceLevel();
     
     #ifdef ENABLE_VOICE_ALERTS
-    if (safeVoiceAlert.isOnline() && maintenanceLevel != previousLevel) {
+    if (voiceAlert.isOnline() && maintenanceLevel != previousLevel) {
         if (maintenanceLevel > previousLevel && maintenanceLevel >= MAINTENANCE_SOON) {
-            safeVoiceAlert.enqueue(2, (uint8_t)maintenanceLevel + 1);  // 유지보수 알림
+            voiceAlert.enqueue(2, (uint8_t)maintenanceLevel + 1);  //  
             
             if (maintenanceLevel == MAINTENANCE_URGENT) {
-                // safeVoiceAlert.enableRepeat(true);  // 미지원
-                // safeVoiceAlert.setRepeatCount(2);  // 미지원
+                // voiceAlert.enableRepeat(true);  // 
+                // voiceAlert.setRepeatCount(2);  // 
             }
         }
     }
@@ -135,7 +135,7 @@ float HealthMonitor::calculateCurrentHealth(float current) {
 }
 
 float HealthMonitor::calculateRuntimeHealth(unsigned long runtime) {
-    // 1000시간 = 100%, 10000시간 = 50%
+    // 1000 = 100%, 10000 = 50%
     if (runtime < 1000) return 100.0f;
     else if (runtime < 5000) return 90.0f;
     else if (runtime < 10000) return 80.0f;
@@ -161,11 +161,11 @@ MaintenanceLevel HealthMonitor::getMaintenanceLevel() const {
 
 const char* HealthMonitor::getMaintenanceLevelString() const {
     switch(maintenanceLevel) {
-        case MAINTENANCE_NONE: return "정상";
-        case MAINTENANCE_SOON: return "곧 필요";
-        case MAINTENANCE_REQUIRED: return "권장";
-        case MAINTENANCE_URGENT: return "긴급";
-                default: return "알 수 없음";
+        case MAINTENANCE_NONE: return "";
+        case MAINTENANCE_SOON: return " ";
+        case MAINTENANCE_REQUIRED: return "";
+        case MAINTENANCE_URGENT: return "";
+                default: return "  ";
     }
 }
 
@@ -179,12 +179,12 @@ void HealthMonitor::reset() {
 }
 
 void HealthMonitor::printStatus() const {
-    Serial.println("\n=== 건강도 모니터 ===");
-    Serial.printf("건강도: %.1f%%\n", currentHealthScore);
-    Serial.printf("유지보수: %s\n", getMaintenanceLevelString());
-    Serial.printf("펌프 효율: %.1f%%\n", factors.pumpEfficiency);
-    Serial.printf("온도 건강: %.1f%%\n", factors.temperatureHealth);
-    Serial.printf("전류 건강: %.1f%%\n", factors.currentHealth);
-    Serial.printf("작동시간: %lu\n", totalRuntime);
+    Serial.println("\n===   ===");
+    Serial.printf(": %.1f%%\n", currentHealthScore);
+    Serial.printf(": %s\n", getMaintenanceLevelString());
+    Serial.printf(" : %.1f%%\n", factors.pumpEfficiency);
+    Serial.printf(" : %.1f%%\n", factors.temperatureHealth);
+    Serial.printf(" : %.1f%%\n", factors.currentHealth);
+    Serial.printf(": %lu\n", totalRuntime);
     Serial.println("=====================\n");
 }

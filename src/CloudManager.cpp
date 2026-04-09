@@ -1,11 +1,11 @@
-// CloudManager.cpp - CloudManager.h 인터페이스 기반
+// CloudManager.cpp - CloudManager.h  
 #include "CloudManager.h"
 #include "Config.h"
 
 CloudManager::CloudManager() : lastUpdateTime(0), isConnected(false) {}
 
 bool CloudManager::begin() {
-    Serial.println("[CloudManager] 초기화 완료");
+    Serial.println("[CloudManager]  ");
     return true;
 }
 
@@ -41,7 +41,7 @@ void CloudManager::bufferData(float p, float t, float c, float h) {
 CloudDataPoint CloudManager::getBufferedData() { return dataBuffer; }
 
 void CloudManager::printStatistics() {
-    Serial.println("[CloudManager] 통계 출력");
+    Serial.println("[CloudManager]  ");
 }
 
 void CloudManager::getSystemStatusString(char* buffer, size_t size) {

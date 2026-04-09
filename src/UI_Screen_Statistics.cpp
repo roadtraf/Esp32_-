@@ -1,11 +1,11 @@
-UI_Screen_Statistics.cpp (재설계)
 // ================================================================
-// UI_Screen_Statistics.cpp - 재설계 통계 화면
+// UI_Screen_Statistics.cpp -   
 // ================================================================
 #include "UIComponents.h"
 #include "Config.h"
-
-// FreeRTOS (delay 개선)
+#include "UI_Screens.h"
+#include "UIManager.h"
+// FreeRTOS (delay )
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -15,15 +15,15 @@ using namespace UITheme;
 void drawStatisticsScreen() {
     tft.fillScreen(COLOR_BG_DARK);
     
-    // ── 헤더 ──
-    drawHeader("통계");
+    //   
+    drawHeader("");
     
-    // ── 통계 카드들 ──
+    //    
     int16_t startY = HEADER_HEIGHT + SPACING_SM;
     int16_t cardW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
     int16_t cardH = 80;
     
-    // 총 사이클
+    //  
     CardConfig cycleCard = {
         .x = SPACING_SM,
         .y = startY,
@@ -39,14 +39,14 @@ void drawStatisticsScreen() {
     ValueDisplayConfig cycleDisplay = {
         .x = (int16_t)(cycleCard.x + CARD_PADDING),
         .y = (int16_t)(cycleCard.y + CARD_PADDING),
-        .label = "총 사이클",
+        .label = " ",
         .value = cycleVal,
-        .unit = "회",
+        .unit = "",
         .valueColor = COLOR_PRIMARY
     };
     drawValueDisplay(cycleDisplay);
     
-    // 성공률
+    // 
     CardConfig successCard = {
         .x = (int16_t)(SPACING_SM + cardW + SPACING_SM),
         .y = startY,
@@ -66,14 +66,14 @@ void drawStatisticsScreen() {
     ValueDisplayConfig successDisplay = {
         .x = (int16_t)(successCard.x + CARD_PADDING),
         .y = (int16_t)(successCard.y + CARD_PADDING),
-        .label = "성공률",
+        .label = "",
         .value = successVal,
         .unit = "%",
         .valueColor = (successRate >= 95) ? COLOR_SUCCESS : COLOR_WARNING
     };
     drawValueDisplay(successDisplay);
     
-    // 가동 시간
+    //  
     CardConfig uptimeCard = {
         .x = SPACING_SM,
         .y = (int16_t)(startY + cardH + SPACING_SM),
@@ -91,14 +91,14 @@ void drawStatisticsScreen() {
     ValueDisplayConfig uptimeDisplay = {
         .x = (int16_t)(uptimeCard.x + CARD_PADDING),
         .y = (int16_t)(uptimeCard.y + CARD_PADDING),
-        .label = "가동 시간",
+        .label = " ",
         .value = uptimeVal,
-        .unit = "시간",
+        .unit = "",
         .valueColor = COLOR_ACCENT
     };
     drawValueDisplay(uptimeDisplay);
     
-    // 에러 발생
+    //  
     CardConfig errorCard = {
         .x = (int16_t)(SPACING_SM + cardW + SPACING_SM),
         .y = (int16_t)(startY + cardH + SPACING_SM),
@@ -114,14 +114,14 @@ void drawStatisticsScreen() {
     ValueDisplayConfig errorDisplay = {
         .x = (int16_t)(errorCard.x + CARD_PADDING),
         .y = (int16_t)(errorCard.y + CARD_PADDING),
-        .label = "에러 발생",
+        .label = " ",
         .value = errorVal,
-        .unit = "회",
+        .unit = "",
         .valueColor = (errorHistCnt > 10) ? COLOR_DANGER : COLOR_INFO
     };
     drawValueDisplay(errorDisplay);
     
-    // 센서 통계 카드 (Phase 2-3)
+    //    (Phase 2-3)
     CardConfig sensorCard = {
         .x = SPACING_SM,
         .y = (int16_t)(startY + (cardH + SPACING_SM) * 2),
@@ -134,7 +134,7 @@ void drawStatisticsScreen() {
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
     tft.setCursor(sensorCard.x + CARD_PADDING, sensorCard.y + CARD_PADDING);
-    tft.print("센서 평균값 (최근 1분)");
+    tft.print("  ( 1)");
     
     SensorStats sensorStats;
     calculateSensorStats(sensorStats);
@@ -143,21 +143,21 @@ void drawStatisticsScreen() {
     int16_t lineY = sensorCard.y + CARD_PADDING + 20;
     
     tft.setCursor(sensorCard.x + CARD_PADDING, lineY);
-    tft.printf("온도: %.1f°C", sensorStats.avgTemperature);
+    tft.printf(": %.1fC", sensorStats.avgTemperature);
     
     tft.setCursor(sensorCard.x + CARD_PADDING + 150, lineY);
-    tft.printf("압력: %.1f kPa", sensorStats.avgPressure);
+    tft.printf(": %.1f kPa", sensorStats.avgPressure);
     
     tft.setCursor(sensorCard.x + CARD_PADDING, lineY + 20);
-    tft.printf("전류: %.2f A", sensorStats.avgCurrent);
+    tft.printf(": %.2f A", sensorStats.avgCurrent);
     
     tft.setCursor(sensorCard.x + CARD_PADDING + 150, lineY + 20);
-    tft.printf("샘플: %lu개", sensorStats.sampleCount);
+    tft.printf(": %lu", sensorStats.sampleCount);
     
-    // ── 하단 네비게이션 ──
+    //    
     NavButton navButtons[] = {
-        {"뒤로", BTN_OUTLINE, true},
-        {"초기화", BTN_DANGER, systemController.getPermissions().canChangeSettings}
+        {"", BTN_OUTLINE, true},
+        {"", BTN_DANGER, systemController.getPermissions().canChangeSettings}
     };
     drawNavBar(navButtons, 2);
 }
@@ -165,7 +165,7 @@ void drawStatisticsScreen() {
 void handleStatisticsTouch(uint16_t x, uint16_t y) {
     int16_t navY = SCREEN_HEIGHT - FOOTER_HEIGHT;
 
- // 통계 초기화 팝업이 활성화되어 있으면 우선 처리
+ //       
 if (isResetConfirmPending()) {
     if (handleResetConfirmTouch(x, y)) return;
 }
@@ -173,13 +173,13 @@ if (isResetConfirmPending()) {
  if (y >= navY) {
         int16_t buttonW = (SCREEN_WIDTH - SPACING_SM * 3) / 2;
         
-        // 뒤로 버튼
+        //  
         ButtonConfig backBtn = {
             .x = SPACING_SM,
             .y = (int16_t)(navY + 2),
             .w = buttonW,
             .h = (int16_t)(FOOTER_HEIGHT - 4),
-            .label = "뒤로",
+            .label = "",
             .style = BTN_OUTLINE,
             .enabled = true
         };
@@ -190,28 +190,28 @@ if (isResetConfirmPending()) {
             return;
         }
         
-        // 초기화 버튼 (관리자 전용)
+        //   ( )
         if (systemController.getPermissions().canChangeSettings) {
             ButtonConfig resetBtn = {
                 .x = (int16_t)(SPACING_SM + buttonW + SPACING_SM),
                 .y = (int16_t)(navY + 2),
                 .w = buttonW,
                 .h = (int16_t)(FOOTER_HEIGHT - 4),
-                .label = "초기화",
+                .label = "",
                 .style = BTN_DANGER,
                 .enabled = true
             };
             
             if (isButtonPressed(resetBtn, x, y)) {
-                // 통계 초기화 확인 팝업
-                showResetConfirmation();
+                //    
+                void showLocalResetConfirmation(); 
                 return;
             }
         }
     }
 }
 
-void showResetConfirmation() {
+void showLocalResetConfirmation() {
     int16_t popupW = 280;
     int16_t popupH = 140;
     int16_t popupX = (SCREEN_WIDTH - popupW) / 2;
@@ -234,23 +234,23 @@ void showResetConfirmation() {
     tft.setTextSize(TEXT_SIZE_MEDIUM);
     tft.setTextColor(COLOR_TEXT_PRIMARY);
     tft.setCursor(popupX + 80, popupY + 45);
-    tft.print("통계 초기화");
+    tft.print(" ");
     
     tft.setTextSize(TEXT_SIZE_SMALL);
     tft.setTextColor(COLOR_TEXT_SECONDARY);
     tft.setCursor(popupX + 40, popupY + 70);
-    tft.print("모든 통계를 초기화합니다");
+    tft.print("  ");
     
     tft.setCursor(popupX + 70, popupY + 85);
-    tft.print("계속하시겠습니까?");
+    tft.print("?");
     
-    // 버튼
+    // 
     ButtonConfig cancelBtn = {
         .x = (int16_t)(popupX + 20),
         .y = (int16_t)(popupY + popupH - 35),
         .w = 110,
         .h = 28,
-        .label = "취소",
+        .label = "",
         .style = BTN_OUTLINE,
         .enabled = true
     };
@@ -261,13 +261,13 @@ void showResetConfirmation() {
         .y = (int16_t)(popupY + popupH - 35),
         .w = 110,
         .h = 28,
-        .label = "초기화",
+        .label = "",
         .style = BTN_DANGER,
         .enabled = true
     };
     drawButton(confirmBtn);
     
-    // [R4] 비블로킹: 초기화 확인은 터치 이벤트로 처리
-    // 실제 초기화는 handleStatisticsTouch에서 버튼 터치 감지 필요
-    uiManager.showMessage("버튼을 선택하세요", 2000);
+    // [R4] :     
+    //   handleStatisticsTouch    
+    uiManager.showMessage(" ", 2000);
 }

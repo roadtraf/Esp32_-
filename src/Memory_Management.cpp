@@ -1,30 +1,30 @@
 
-#include "Config.h"                 // Arduino.h 포함
+#include "Config.h"                 // Arduino.h 
 #include <esp_heap_caps.h>
 
-// ==================== 메모리 검증 ====================
+// ====================   ====================
 bool verifyMemory() {
   size_t freeHeap = ESP.getFreeHeap();
   size_t totalHeap = ESP.getHeapSize();
   size_t freePSRAM = ESP.getFreePsram();
   size_t totalPSRAM = ESP.getPsramSize();
 
-  Serial.println("\n========== 메모리 검증 ==========");
-  Serial.printf("Heap:  %d / %d bytes (%.1f%% 사용)\n", 
+  Serial.println("\n==========   ==========");
+  Serial.printf("Heap:  %d / %d bytes (%.1f%% )\n", 
     totalHeap - freeHeap, totalHeap, 
     ((totalHeap - freeHeap) * 100.0) / totalHeap);
-  Serial.printf("PSRAM: %d / %d bytes (%.1f%% 사용)\n", 
+  Serial.printf("PSRAM: %d / %d bytes (%.1f%% )\n", 
     totalPSRAM - freePSRAM, totalPSRAM, 
     ((totalPSRAM - freePSRAM) * 100.0) / totalPSRAM);
 
-  // 임계값 체크 (80% 이상 사용 시 경고)
+  //   (80%    )
   if (((totalHeap - freeHeap) * 100 / totalHeap) > 80) {
-    Serial.println("[경고] Heap 사용률 80% 초과");
+    Serial.println("[] Heap  80% ");
     return false;
   }
 
   if (totalPSRAM > 0 && ((totalPSRAM - freePSRAM) * 100 / totalPSRAM) > 80) {
-    Serial.println("[경고] PSRAM 사용률 80% 초과");
+    Serial.println("[] PSRAM  80% ");
     return false;
   }
 
@@ -32,7 +32,7 @@ bool verifyMemory() {
   return true;
 }
 
-// ==================== 메모리 누수 감지 ====================
+// ====================    ====================
 void detectMemoryLeak() {
   static size_t lastFreeHeap = 0;
   static uint8_t consecutiveDecreases = 0;
@@ -43,7 +43,7 @@ void detectMemoryLeak() {
     if (currentFreeHeap < lastFreeHeap) {
       consecutiveDecreases++;
       if (consecutiveDecreases >= 10) {
-        Serial.printf("[경고] 메모리 누수 의심: %d bytes 감소\n", 
+        Serial.printf("[]   : %d bytes \n", 
           lastFreeHeap - currentFreeHeap);
         consecutiveDecreases = 0;
       }
@@ -55,20 +55,20 @@ void detectMemoryLeak() {
   lastFreeHeap = currentFreeHeap;
 }
 
-// ==================== PSRAM 할당 ====================
+// ==================== PSRAM  ====================
 void* allocatePSRAM(size_t size) {
   void* ptr = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
   if (ptr == NULL) {
-    Serial.printf("[에러] PSRAM 할당 실패: %d bytes\n", size);
+    Serial.printf("[] PSRAM  : %d bytes\n", size);
   } else {
-    Serial.printf("[PSRAM] %d bytes 할당됨\n", size);
+    Serial.printf("[PSRAM] %d bytes \n", size);
   }
   return ptr;
 }
 
-// ==================== 메모리 정보 출력 ====================
+// ====================    ====================
 void printDetailedMemoryInfo() {
-  Serial.println("\n========== 상세 메모리 정보 ==========");
+  Serial.println("\n==========    ==========");
   
   // Heap
   Serial.println("[Heap]");
@@ -85,7 +85,7 @@ void printDetailedMemoryInfo() {
     Serial.printf("  Min Free: %d bytes\n", ESP.getMinFreePsram());
     Serial.printf("  Max Alloc: %d bytes\n", ESP.getMaxAllocPsram());
   } else {
-    Serial.println("[PSRAM] 없음");
+    Serial.println("[PSRAM] ");
   }
 
   // Flash

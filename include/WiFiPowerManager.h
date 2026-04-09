@@ -9,34 +9,34 @@
 
 // WiFi Power Modes
 enum class WiFiPowerMode {
-    ALWAYS_ON,          // 항상 최대 성능 (개발/디버깅)
-    BALANCED,           // 균형 모드 (기본)
-    POWER_SAVE,         // 전력 절약 모드
-    DEEP_SLEEP_READY    // Deep Sleep 준비 모드
+    ALWAYS_ON,          //    (/)
+    BALANCED,           //   ()
+    POWER_SAVE,         //   
+    DEEP_SLEEP_READY    // Deep Sleep  
 };
 
 // WiFi Activity Level
 enum class WiFiActivityLevel {
-    IDLE,               // 유휴 상태
-    WIFI_LOW,             // 낮은 활동
-    MEDIUM,             // 중간 활동
-    WIFI_HIGH           // 높은 활동
+    IDLE,               //  
+    WIFI_LOW,             //  
+    MEDIUM,             //  
+    WIFI_HIGH           //  
 };
 
 // WiFi Power Configuration
 struct WiFiPowerConfig {
     WiFiPowerMode mode;
-    uint32_t idleTimeout;           // 유휴 후 절전 모드 진입 시간 (ms)
-    uint32_t sleepInterval;         // Light Sleep 간격 (ms)
-    uint32_t wakeInterval;          // Wake 간격 (ms)
-    bool enableModemSleep;          // Modem Sleep 활성화
-    bool enableLightSleep;          // Light Sleep 활성화
-    uint8_t minTxPower;             // 최소 송신 전력 (dBm)
-    uint8_t maxTxPower;             // 최대 송신 전력 (dBm)
+    uint32_t idleTimeout;           //       (ms)
+    uint32_t sleepInterval;         // Light Sleep  (ms)
+    uint32_t wakeInterval;          // Wake  (ms)
+    bool enableModemSleep;          // Modem Sleep 
+    bool enableLightSleep;          // Light Sleep 
+    uint8_t minTxPower;             //    (dBm)
+    uint8_t maxTxPower;             //    (dBm)
     
     WiFiPowerConfig() 
         : mode(WiFiPowerMode::BALANCED),
-          idleTimeout(30000),       // 30초
+          idleTimeout(30000),       // 30
           sleepInterval(100),       // 100ms
           wakeInterval(3),          // 3ms
           enableModemSleep(true),
