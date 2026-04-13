@@ -11,22 +11,22 @@
 #include <stdarg.h>
 
 #ifndef LCD_QSPI_CS
-#  define LCD_QSPI_CS   5
+#  define LCD_QSPI_CS  12
 #endif
 #ifndef LCD_QSPI_CLK
-#  define LCD_QSPI_CLK  1
+#  define LCD_QSPI_CLK  5
 #endif
 #ifndef LCD_QSPI_D0
-#  define LCD_QSPI_D0   2
+#  define LCD_QSPI_D0   1
 #endif
 #ifndef LCD_QSPI_D1
-#  define LCD_QSPI_D1   3
+#  define LCD_QSPI_D1   2
 #endif
 #ifndef LCD_QSPI_D2
-#  define LCD_QSPI_D2   4
+#  define LCD_QSPI_D2   3
 #endif
 #ifndef LCD_QSPI_D3
-#  define LCD_QSPI_D3  12
+#  define LCD_QSPI_D3   4
 #endif
 #ifndef LCD_BL_PIN
 #  define LCD_BL_PIN    6
@@ -38,11 +38,9 @@
 #  define I2C_SCL_PIN   8
 #endif
 
-// AXS15231B 터치 I2C 주소
 #define AXS15231B_TOUCH_ADDR  0x3B
 #define AXS15231B_TOUCH_REG   0x02
 
-// 색상 정의
 #define TFT_BLACK   0x0000
 #define TFT_WHITE   0xFFFF
 #define TFT_RED     0xF800
@@ -61,47 +59,39 @@
 #define TFT_DARKCYAN 0x03EF
 #define TFT_TRANSPARENT 0xFFFF
 
-// ============================================================
-// TFT_GFX 클래스
-// ============================================================
 class TFT_GFX {
 public:
     TFT_GFX() {}
 
     bool begin() {
-    _bus = new Arduino_ESP32QSPI(
-        LCD_QSPI_CS, LCD_QSPI_CLK,
-        LCD_QSPI_D0, LCD_QSPI_D1,
-        LCD_QSPI_D2, LCD_QSPI_D3);
-    _panel = new Arduino_AXS15231B(
-        _bus, -1, 0, false, 320, 480);
-    _gfx = _panel;  // Canvas 없이 직접 패널
-    _canvas = nullptr;
+        _bus = new Arduino_ESP32QSPI(
+            LCD_QSPI_CS, LCD_QSPI_CLK,
+            LCD_QSPI_D0, LCD_QSPI_D1,
+            LCD_QSPI_D2, LCD_QSPI_D3);
+        _panel = new Arduino_AXS15231B(
+            _bus, -1, 1, false, 320, 480);
+        _gfx = _panel;
+        _canvas = nullptr;
 
-    Serial.println("GFX: begin start"); Serial.flush();
-    if (!_gfx->begin()) {
-        Serial.println("GFX: _gfx->begin() FAIL"); Serial.flush();
-        return false;
+        Serial.println("GFX: begin start"); Serial.flush();
+        if (!_gfx->begin()) {
+            Serial.println("GFX: _gfx->begin() FAIL"); Serial.flush();
+            return false;
+        }
+        Serial.println("GFX: begin OK"); Serial.flush();
+        pinMode(LCD_BL_PIN, OUTPUT);
+        analogWrite(LCD_BL_PIN, 200);
+        return true;
     }
-    Serial.println("GFX: begin OK"); Serial.flush();
-    pinMode(LCD_BL_PIN, OUTPUT);
-    analogWrite(LCD_BL_PIN, 255);
-    return true;
-}
 
-    void flush() { /* Canvas 없으므로 no-op */ }
     void init() { begin(); }
+    void flush() { /* no-op: 직접 패널 방식 */ }
 
     void setBrightness(uint8_t val) {
         analogWrite(LCD_BL_PIN, val);
     }
 
-    // 도형
-    void fillScreen(uint16_t color) {
-    Serial.println("GFX: fillScreen start"); Serial.flush();
-    _gfx->fillScreen(color);
-    Serial.println("GFX: fillScreen done"); Serial.flush();
-}
+    void fillScreen(uint16_t color) { _gfx->fillScreen(color); }
     void drawPixel(int32_t x, int32_t y, uint16_t color) { _gfx->drawPixel(x, y, color); }
     void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t color) {
         _gfx->drawLine(x0, y0, x1, y1, color);
@@ -139,7 +129,6 @@ public:
         _gfx->fillTriangle(x0, y0, x1, y1, x2, y2, color);
     }
 
-    // 텍스트
     void setFont(const GFXfont* font = nullptr) { _gfx->setFont(font); _font = font; }
     void setTextSize(uint8_t s) { _gfx->setTextSize(s); _textSize = s; }
     void setTextColor(uint16_t fg) { _fgColor = fg; _bgColor = TFT_TRANSPARENT; _gfx->setTextColor(fg); }
@@ -182,8 +171,8 @@ public:
         drawRightString(str.c_str(), x, y, font);
     }
 
-    int16_t textWidth(const char* str)    { return _textWidth(str); }
-    int16_t textWidth(const String& str)  { return _textWidth(str.c_str()); }
+    int16_t textWidth(const char* str)   { return _textWidth(str); }
+    int16_t textWidth(const String& str) { return _textWidth(str.c_str()); }
     int16_t fontHeight() {
         if (_font) return (int16_t)(_font->yAdvance * _textSize);
         return (int16_t)(8 * _textSize);
@@ -193,7 +182,7 @@ public:
     int16_t width()  { return _gfx->width(); }
     int16_t height() { return _gfx->height(); }
     void startWrite() { _gfx->startWrite(); }
-    void endWrite()   { _gfx->endWrite(); flush(); }  // endWrite 시 자동 flush
+    void endWrite()   { _gfx->endWrite(); }
     void setSwapBytes(bool) {}
 
     void pushColors(uint16_t* data, uint32_t len, bool = true) {
@@ -203,7 +192,6 @@ public:
         pushColors(reinterpret_cast<uint16_t*>(data), len / 2, swap);
     }
 
-    // 터치
     bool getTouch(uint16_t* x, uint16_t* y) {
         uint8_t buf[7] = {0};
         Wire.beginTransmission(AXS15231B_TOUCH_ADDR);

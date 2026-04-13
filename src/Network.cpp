@@ -663,9 +663,9 @@ void handleSerialCommand() {
 }
 
 //    
-static bool sleepMode = false;
+bool sleepMode = false;
 static uint8_t savedBacklight = 100;
-static uint32_t lastIdleTime = 0;
+uint32_t lastIdleTime = 0;
 
 void enterSleepMode() {
   sleepMode        = true;

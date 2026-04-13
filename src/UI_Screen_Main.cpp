@@ -362,8 +362,16 @@ static void drawEventRow() {
 //      [U1]
 // ================================================================
 void drawMainScreen() {
+    Serial.println("[UI] drawMainScreen called"); Serial.flush();  // ← 추가
+    Serial.printf("[UI] fillScreen color: 0x%04X\n", COLOR_BG_DARK); Serial.flush();  // ← 추가
     tft.fillScreen(COLOR_BG_DARK);
-
+    
+    // 임시 테스트 텍스트 추가
+    tft.setTextColor(0xFFFF);
+    tft.setTextSize(2);
+    tft.setCursor(10, 10);
+    tft.print("TEST OK");
+    
     drawHeader("  ");
     drawStatusBar();
     drawSensorCards();

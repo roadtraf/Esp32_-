@@ -43,6 +43,8 @@
 #include <Arduino.h>
 #include "SD_MMC.h"
 #include "UIManager.h"
+bool screenNeedsRedraw = true;
+void resetStatistics() { /* stub */ }
 #define GFX_WRAPPER_IMPLEMENTATION
 #include "GFX_Wrapper.hpp"
 #include <freertos/FreeRTOS.h>
@@ -1450,15 +1452,10 @@ void setup() {
     delay(500);
     Serial.println("=== BOOT START ===");
     Serial.flush();
-    // LCD 초기화 (힙 단편화 전 먼저 실행)
-    Serial.println("LCD init start"); Serial.flush();
-    if (tft.begin()) {
-        Serial.println("LCD OK"); Serial.flush();
-        tft.fillScreen(0xFFFF);
-        tft.flush();
-    } else {
-        Serial.println("LCD FAIL"); Serial.flush();
-    }
+    
+    // SPI Bus Manager 초기화 (LCD 초기화 후)
+    SPIBusManager::getInstance().begin();
+    Serial.println("SPI Bus init done"); Serial.flush();
     esp_task_wdt_reset();
 
     // [D] Serial  (   )
@@ -1496,7 +1493,7 @@ void setup() {
     // --------------------------------------------------------
     // [2] WDT  (15 )
     // --------------------------------------------------------
-     esp_task_wdt_add(NULL);  // 현재 태스크 WDT 등록
+    esp_task_wdt_add(NULL);  // 현재 태스크 WDT 등록
     esp_task_wdt_config_t wdtCfg = {
         .timeout_ms     = 30000, // 30초로 늘림
         .idle_core_mask = 0,
@@ -1505,6 +1502,19 @@ void setup() {
     ESP_ERROR_CHECK(esp_task_wdt_reconfigure(&wdtCfg));
     Serial.println("STEP 6: WDT done"); 
     Serial.flush();
+    esp_task_wdt_reset();
+    // LCD 초기화
+    esp_task_wdt_delete(NULL);
+    Serial.println("LCD init start"); Serial.flush();
+    if (tft.begin()) {
+        Serial.println("LCD OK"); Serial.flush();
+        tft.fillScreen(0x0000);
+        tft.flush();
+    } else {
+        Serial.println("LCD FAIL"); Serial.flush();
+    }
+    esp_task_wdt_add(NULL);
+    esp_task_wdt_reset();
     ESP_LOGI(TAG_MAIN, "WDT : %u", WDT_TIMEOUT);
 
     // --------------------------------------------------------
@@ -1689,6 +1699,13 @@ void setup() {
                             CFG::STACK_MONITOR, nullptr, 1,
                             &g_taskMonitor, 0);
     Serial.println("STEP 18f: Monitor task"); Serial.flush();
+    // UI 태스크 추가
+    extern void uiUpdateTask(void*);
+    TaskHandle_t uiTask = nullptr;
+    xTaskCreatePinnedToCore(uiUpdateTask, "UIUpdate",
+                        8192, nullptr, 3,
+                        &uiTask, 1);
+    Serial.println("STEP 18g: UI task"); Serial.flush();
 
     TaskHandle_t otaTask = nullptr;
     xTaskCreatePinnedToCore(taskOTA, "OTA",

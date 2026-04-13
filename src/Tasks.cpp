@@ -196,16 +196,9 @@ static void uiUpdateStep() {
             }
         }
 
-        if (screenNeedsRedraw) {
-            SPIGuard tftGuard(SPI_DEV_TFT, SPI_MUTEX_TIMEOUT_MS);
-            if (tftGuard.acquired()) {
-                WDT_FEED();
-                updateUI();
-                screenNeedsRedraw = false;
-            } else {
-                Serial.println("[UITask] SPI   , UI  ");
-            }
-        }
+       WDT_FEED();
+       updateUI();
+       screenNeedsRedraw = false;
     }
 
     if (!sleepMode && (now - lastIdleTime > IDLE_TIMEOUT)) {

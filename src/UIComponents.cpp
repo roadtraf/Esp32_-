@@ -340,3 +340,10 @@ void drawNavBar(NavButton buttons[], uint8_t count) {
 }
 
 } // namespace UIComponents
+
+namespace UIComponents {
+bool isButtonPressed(const ButtonConfig& config, uint16_t touchX, uint16_t touchY) {
+    return touchX >= config.x && touchX <= config.x + config.w &&
+           touchY >= config.y && touchY <= config.y + config.h;
+}
+}

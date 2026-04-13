@@ -172,7 +172,7 @@
 #define PID_UPDATE_INTERVAL    50      // ms  PID  
 #define DEBOUNCE_TIME          50      // ms
 #define WDT_TIMEOUT            10      // 
-#define IDLE_TIMEOUT  (2UL * 60 * 1000) // 2
+#define IDLE_TIMEOUT  (60UL * 60 * 1000) // 1시간 // 2
 
 // ================================================================
 // PWM

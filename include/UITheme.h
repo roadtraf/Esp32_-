@@ -20,7 +20,7 @@ namespace UITheme {
     constexpr uint16_t COLOR_DANGER        = 0xF800;  //  ()
     constexpr uint16_t COLOR_INFO          = 0x04BF;  //  ()
     
-    constexpr uint16_t COLOR_BG_DARK       = 0xF800;  //  ()
+    constexpr uint16_t COLOR_BG_DARK       = 0x0000;  //  ()
     constexpr uint16_t COLOR_BG_CARD       = 0x2124;  //   ()
     constexpr uint16_t COLOR_BG_ELEVATED   = 0x31A6;  //   ()
     
