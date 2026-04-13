@@ -172,6 +172,7 @@ void UIManager::drawCurrentScreen() {
     if (toastActive) {
         drawToastOverlay();
     }
+    tft.flush();
 }
 
 // ================================================================

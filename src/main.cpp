@@ -41,6 +41,10 @@
 #include "EnhancedWatchdog.h"
 
 #include <Arduino.h>
+#include "SD_MMC.h"
+#include "UIManager.h"
+#define GFX_WRAPPER_IMPLEMENTATION
+#include "GFX_Wrapper.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
@@ -56,8 +60,8 @@
 #include <nvs.h>
 #include <driver/gpio.h>
 #include <driver/ledc.h>
-#include <driver/adc.h>
-#include <soc/adc_channel.h>
+#include <esp_adc/adc_oneshot.h>
+
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <PubSubClient.h>
@@ -89,32 +93,22 @@ static const char* TAG_SYS    = "SYS";
 //  
 // ============================================================
 namespace PIN {
-    //   PWM
-    constexpr gpio_num_t PUMP_PWM       = GPIO_NUM_18;
-    //  
-    constexpr gpio_num_t VALVE_1        = GPIO_NUM_19;
-    constexpr gpio_num_t VALVE_2        = GPIO_NUM_20;
-    constexpr gpio_num_t VALVE_3        = GPIO_NUM_21;
-    //   (ADC)
-    constexpr gpio_num_t PRESSURE_ADC   = GPIO_NUM_4;   // ADC1_CH3
-    //   ( )
-    constexpr gpio_num_t ESTOP          = GPIO_NUM_0;
-    // DS18B20  
-    constexpr gpio_num_t DS18B20_DATA   = GPIO_NUM_15;
-    // SPI (SD)
-    constexpr gpio_num_t SD_CS          = GPIO_NUM_5;
-    constexpr gpio_num_t SD_MOSI        = GPIO_NUM_11;
-    constexpr gpio_num_t SD_MISO        = GPIO_NUM_13;
-    constexpr gpio_num_t SD_SCK         = GPIO_NUM_26;
-    // I2C (  )
-    constexpr gpio_num_t I2C_SDA        = GPIO_NUM_16;
-    constexpr gpio_num_t I2C_SCL        = GPIO_NUM_17;
-    // DFPlayer UART
-    constexpr gpio_num_t DFPLAYER_TX    = GPIO_NUM_27;
-    constexpr gpio_num_t DFPLAYER_RX    = GPIO_NUM_14;
-    //  LED
-    constexpr gpio_num_t LED_STATUS     = GPIO_NUM_2;
-    constexpr gpio_num_t LED_ERROR      = GPIO_NUM_13;
+constexpr gpio_num_t PUMP_PWM      = GPIO_NUM_17;
+constexpr gpio_num_t VALVE_1       = GPIO_NUM_18;
+constexpr gpio_num_t VALVE_2       = GPIO_NUM_42;
+constexpr gpio_num_t VALVE_3       = GPIO_NUM_45;
+constexpr gpio_num_t PRESSURE_ADC  = GPIO_NUM_33;
+constexpr gpio_num_t ESTOP         = GPIO_NUM_38;
+constexpr gpio_num_t DS18B20_DATA  = GPIO_NUM_35;
+constexpr gpio_num_t SD_CLK        = GPIO_NUM_9;   // SD_MMC CLK
+constexpr gpio_num_t SD_CMD        = GPIO_NUM_10;  // SD_MMC CMD
+constexpr gpio_num_t SD_D0         = GPIO_NUM_11;  // SD_MMC D0
+constexpr gpio_num_t I2C_SDA       = GPIO_NUM_7;
+constexpr gpio_num_t I2C_SCL       = GPIO_NUM_8;
+constexpr gpio_num_t DFPLAYER_TX   = GPIO_NUM_43;
+constexpr gpio_num_t DFPLAYER_RX   = GPIO_NUM_44;
+constexpr gpio_num_t LED_STATUS    = GPIO_NUM_46;
+constexpr gpio_num_t LED_ERROR     = GPIO_NUM_45;
 }
 
 // ============================================================
@@ -180,8 +174,8 @@ namespace CFG {
     constexpr uint32_t    ESTOP_CONFIRM_MS  = 100;
 
     // ADC
-    constexpr adc1_channel_t ADC_CH_PRESSURE = ADC1_CHANNEL_3;  // GPIO4
-    constexpr adc_atten_t    ADC_ATTEN        = ADC_ATTEN_DB_11;
+    // ADC_CH_PRESSURE removed - using analogRead directly
+    constexpr adc_atten_t    ADC_ATTEN        = ADC_ATTEN_DB_12;
 
     //  
     constexpr uint8_t     CMD_QUEUE_DEPTH   = 16;  // [F]
@@ -426,13 +420,13 @@ static HardwareSerial   g_dfSerial(2);
 // ============================================================
 // [H]  ADC 
 // ============================================================
-static bool adcReadSafe(adc1_channel_t ch, int* outRaw) {
+static bool adcReadSafe(int pin, int* outRaw) {
     if (!g_adcMutex) return false;
     if (xSemaphoreTake(g_adcMutex, pdMS_TO_TICKS(50)) != pdTRUE) {
         ESP_LOGW(TAG_SENSOR, "ADC mutex timeout");
         return false;
     }
-    *outRaw = adc1_get_raw(ch);
+    *outRaw = analogRead(33);
     xSemaphoreGive(g_adcMutex);
     if (*outRaw < 0) {
         ESP_LOGE(TAG_SENSOR, "ADC read error: %d", *outRaw);
@@ -681,7 +675,8 @@ static int8_t initPumpPwm() {
         ESP_LOGE(TAG_MAIN, "PWM    -  ");
         return -1;
     }
-
+    Serial.println("STEP 11: PWM init"); 
+    Serial.flush();
     ledc_timer_config_t timerCfg = {};
     timerCfg.speed_mode      = LEDC_LOW_SPEED_MODE;
     timerCfg.timer_num       = LEDC_TIMER_0;
@@ -738,6 +733,9 @@ static void recoverI2CBus() {
     digitalWrite(PIN::I2C_SDA, HIGH);
 
     Wire.begin(PIN::I2C_SDA, PIN::I2C_SCL, 100000);
+    esp_task_wdt_reset();
+    Serial.println("STEP 13a: I2C done"); 
+    Serial.flush();
     ESP_LOGI(TAG_MAIN, "I2C   ");
 }
 
@@ -745,29 +743,18 @@ static void recoverI2CBus() {
 // [4] SD   
 // ============================================================
 static bool initSDWithTimeout(uint32_t timeoutMs) {
-    uint32_t start = millis();
-    bool ok = false;
-
-    SPI.begin(PIN::SD_SCK, PIN::SD_MISO, PIN::SD_MOSI, PIN::SD_CS);
-
-    while (!ok && (millis() - start < timeoutMs)) {
-        if (SD.begin(PIN::SD_CS, SPI, 4000000, "/sd", 5, false)) {
-            ok = true;
-            break;
-        }
-        ESP_LOGW(TAG_SD, "SD  ...");
-        vTaskDelay(pdMS_TO_TICKS(500));
+    esp_task_wdt_reset();
+    // Waveshare 3.5B: SD_MMC 방식
+    // CLK=9, CMD=10, D0=11
+    if (SD_MMC.begin("/sdcard", true)) {  // true = 1-bit mode
+        ESP_LOGI(TAG_MAIN, "SD_MMC OK");
+        esp_task_wdt_reset();
+        return true;
     }
-
-    if (!ok) {
-        ESP_LOGE(TAG_SD, "SD    (timeout=%u ms)", timeoutMs);
-    } else {
-        ESP_LOGI(TAG_SD, "SD    (=%llu MB)",
-                 SD.cardSize() / (1024ULL * 1024ULL));
-    }
-    return ok;
+    ESP_LOGE(TAG_MAIN, "SD_MMC failed");
+    esp_task_wdt_reset();
+    return false;
 }
-
 // ============================================================
 // [3] PSRAM   ( )
 // ============================================================
@@ -1057,8 +1044,8 @@ static void taskSensor(void* pv) {
     ds18b20RequestConversion();  //   [9]
 
     // [H] ADC 
-    adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(CFG::ADC_CH_PRESSURE, CFG::ADC_ATTEN);
+    // adc1_config_width removed
+    // adc1_config_channel_atten removed
 
     xEventGroupSetBits(g_sysEvents, EVT_SENSOR_READY);
 
@@ -1080,7 +1067,7 @@ static void taskSensor(void* pv) {
         if (now - lastPressureMs >= 100) {
             lastPressureMs = now;
             int raw = 0;
-            if (adcReadSafe(CFG::ADC_CH_PRESSURE, &raw)) {
+            if (adcReadSafe(33, &raw)) {
                 float kpa = adcToKpa(raw);
                 g_state.setPressure(kpa, true);
                 i2cErrCount = 0;
@@ -1424,14 +1411,23 @@ static void initOTA() {
 // WiFi  [6]
 // ============================================================
 static void initWifiNonBlocking() {
+    esp_task_wdt_reset();
+    // WiFi 임시 비활성화 (SSID 미설정)
+    ESP_LOGW(TAG_MAIN, "WiFi skipped - no SSID");
+    esp_task_wdt_reset();
+}
+/* static void initWifiNonBlocking() {
+    esp_task_wdt_reset();
     WiFi.onEvent(wifiEventHandler);
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);
+    esp_task_wdt_reset();
     WiFi.begin(CFG::WIFI_SSID, CFG::WIFI_PASS);
+    esp_task_wdt_reset();
     ESP_LOGI(TAG_MAIN, "WiFi   : %s", CFG::WIFI_SSID);
     //     
 }
-
+*/
 // ============================================================
 // OTA   (ArduinoOTA.handle() ) [G]
 // ============================================================
@@ -1449,6 +1445,22 @@ static void taskOTA(void* pv) {
 // setup() -  
 // ============================================================
 void setup() {
+    delay(5000);
+    Serial.begin(115200);
+    delay(500);
+    Serial.println("=== BOOT START ===");
+    Serial.flush();
+    // LCD 초기화 (힙 단편화 전 먼저 실행)
+    Serial.println("LCD init start"); Serial.flush();
+    if (tft.begin()) {
+        Serial.println("LCD OK"); Serial.flush();
+        tft.fillScreen(0xFFFF);
+        tft.flush();
+    } else {
+        Serial.println("LCD FAIL"); Serial.flush();
+    }
+    esp_task_wdt_reset();
+
     // [D] Serial  (   )
     Serial.begin(115200);
     delay(100);
@@ -1457,31 +1469,42 @@ void setup() {
     // --------------------------------------------------------
     //  /  /    [A][C][D][F][H][I]
     // --------------------------------------------------------
-    g_state.init();                                          // [A] SharedState mutex
+    Serial.println("STEP 1: g_state.init");
+    Serial.flush();
+    g_state.init();
+    Serial.println("STEP 2: mutex"); 
+    Serial.flush();                                          // [A] SharedState mutex
     g_nvsMutex    = xSemaphoreCreateMutex();                 // [C]
     g_serialMutex = xSemaphoreCreateMutex();                 // [D]
     g_adcMutex    = xSemaphoreCreateMutex();                 // [H]
+    Serial.println("STEP 3: queue"); 
+    Serial.flush();
     g_cmdQueue    = xQueueCreate(CFG::CMD_QUEUE_DEPTH,   sizeof(SystemCommand));  // [F]
     g_voiceQueue  = xQueueCreate(CFG::VOICE_QUEUE_DEPTH, sizeof(VoiceMessage));  // [I]
     g_logQueue    = xQueueCreate(CFG::LOG_QUEUE_DEPTH,   sizeof(char)*128);
     g_sysEvents   = xEventGroupCreate();
-
+    Serial.println("STEP 4: assert"); 
+    Serial.flush();
     configASSERT(g_nvsMutex);
     configASSERT(g_serialMutex);
     configASSERT(g_adcMutex);
     configASSERT(g_cmdQueue);
     configASSERT(g_voiceQueue);
     configASSERT(g_sysEvents);
-
+    Serial.println("STEP 5: WDT config"); 
+    Serial.flush();
     // --------------------------------------------------------
     // [2] WDT  (15 )
     // --------------------------------------------------------
+     esp_task_wdt_add(NULL);  // 현재 태스크 WDT 등록
     esp_task_wdt_config_t wdtCfg = {
-        .timeout_ms     = WDT_TIMEOUT * 1000,
+        .timeout_ms     = 30000, // 30초로 늘림
         .idle_core_mask = 0,
         .trigger_panic  = true,
     };
     ESP_ERROR_CHECK(esp_task_wdt_reconfigure(&wdtCfg));
+    Serial.println("STEP 6: WDT done"); 
+    Serial.flush();
     ESP_LOGI(TAG_MAIN, "WDT : %u", WDT_TIMEOUT);
 
     // --------------------------------------------------------
@@ -1501,13 +1524,15 @@ void setup() {
         nvsErr = nvs_flash_init();
     }
     ESP_ERROR_CHECK(nvsErr);
-
+    Serial.println("STEP 7: NVS done"); 
+    Serial.flush();
     // NVS  
     uint32_t savedSetpoint = 80000;
     nvsLoadU32("pressure_sp", &savedSetpoint, 80000);
     g_state.pressureSetpoint = savedSetpoint;
     ESP_LOGI(TAG_MAIN, "NVS  : pressure_sp=%u Pa", savedSetpoint);
-
+    Serial.println("STEP 8: GPIO config"); 
+    Serial.flush();
     // --------------------------------------------------------
     // GPIO 
     // --------------------------------------------------------
@@ -1521,7 +1546,11 @@ void setup() {
     outCfg.pin_bit_mask = (1ULL << PIN::VALVE_1) | (1ULL << PIN::VALVE_2) |
                           (1ULL << PIN::VALVE_3) | (1ULL << PIN::LED_STATUS) |
                           (1ULL << PIN::LED_ERROR);
+    Serial.println("STEP 8a: outCfg"); 
+    Serial.flush();
     ESP_ERROR_CHECK(gpio_config(&outCfg));
+    Serial.println("STEP9: GPIO out done"); 
+    Serial.flush();
 
     gpio_set_level(PIN::VALVE_1, 0);
     gpio_set_level(PIN::VALVE_2, 0);
@@ -1536,11 +1565,14 @@ void setup() {
     estopCfg.pull_up_en     = GPIO_PULLUP_ENABLE;   //  
     estopCfg.pull_down_en   = GPIO_PULLDOWN_DISABLE;
     estopCfg.intr_type      = GPIO_INTR_NEGEDGE;    //   
-    ESP_ERROR_CHECK(gpio_config(&estopCfg));
-    ESP_ERROR_CHECK(gpio_install_isr_service(0));
-    ESP_ERROR_CHECK(gpio_isr_handler_add(PIN::ESTOP, estopISR, nullptr));
+    // ESP_ERROR_CHECK(gpio_config(&estopCfg));
+    // ESP_ERROR_CHECK(gpio_install_isr_service(0));
+    // ESP_ERROR_CHECK(gpio_isr_handler_add(PIN::ESTOP, estopISR, nullptr));
+    Serial.println("STEP 10: ESTOP done"); 
+    Serial.flush();
     ESP_LOGI(TAG_MAIN, " GPIO   (=%u ms)", CFG::ESTOP_DEBOUNCE_MS);
-
+    Serial.println("STEP 11: PWM init"); 
+    Serial.flush();
     // --------------------------------------------------------
     // [B][8] PWM  (  )
     // --------------------------------------------------------
@@ -1549,15 +1581,22 @@ void setup() {
         g_state.pumpPwmCh = pwmCh;
         xSemaphoreGive(g_state.mutex);
     }
-
+    Serial.println("STEP 12: PSRAM check"); 
+    Serial.flush();
     // --------------------------------------------------------
     // [3] PSRAM 
     // --------------------------------------------------------
+    Serial.println("STEP 12: PSRAM check"); 
+    Serial.flush();
+    esp_task_wdt_reset();  // WDT 피드
     if (psramFound()) {
         ESP_LOGI(TAG_MAIN, "PSRAM : %u bytes", ESP.getPsramSize());
     } else {
         ESP_LOGW(TAG_MAIN, "PSRAM ");
     }
+    esp_task_wdt_reset();
+    Serial.println("STEP 13: I2C done"); 
+    Serial.flush();
     //   PSRAM  ( )
     // uint8_t* logBuf = allocPsramBuffer(64 * 1024);
 
@@ -1565,32 +1604,47 @@ void setup() {
     // I2C  [5]
     // --------------------------------------------------------
     Wire.begin(PIN::I2C_SDA, PIN::I2C_SCL, 100000);
+    esp_task_wdt_reset();
+    Serial.println("STEP 13b: I2C done"); 
+    Serial.flush();
     ESP_LOGI(TAG_MAIN, "I2C  ");
 
     // --------------------------------------------------------
     // [4] SD   ( 5)
     // --------------------------------------------------------
+    esp_task_wdt_reset();
+    Serial.println("STEP 14: SD init start"); Serial.flush();
     bool sdOk = initSDWithTimeout(5000);
+    esp_task_wdt_reset();
+    Serial.println("STEP 15: SD done"); Serial.flush();
     if (!sdOk) {
         ESP_LOGE(TAG_MAIN, "SD    ( )");
     }
-
     // --------------------------------------------------------
     // [5] [K3]   Mutex 
     // --------------------------------------------------------
     initStateMachine();
-
+    Serial.println("STEP 15: StateMachine done"); 
+    Serial.flush();
     // --------------------------------------------------------
     // [6] WiFi  
     // --------------------------------------------------------
+    esp_task_wdt_reset();  // ← 추가
+    Serial.println("STEP 16a: WiFi init start"); 
+    Serial.flush();
     initWifiNonBlocking();
+    esp_task_wdt_reset();  // ← 추가
+    Serial.println("STEP 16: WiFi init done");
+    Serial.flush();
 
     // --------------------------------------------------------
     // WiFi   ( 15,  sleep)
     // --------------------------------------------------------
+    esp_task_wdt_reset();  
     EventBits_t wifiEvt = xEventGroupWaitBits(g_sysEvents, EVT_WIFI_UP,
                                               pdFALSE, pdFALSE,
                                               pdMS_TO_TICKS(CFG::WIFI_TIMEOUT_MS));
+     esp_task_wdt_reset();                                         
     if (wifiEvt & EVT_WIFI_UP) {
         ESP_LOGI(TAG_MAIN, "WiFi    NTP ");
         g_ntpClient.begin();
@@ -1603,36 +1657,53 @@ void setup() {
     // --------------------------------------------------------
     // FreeRTOS   [E]  
     // --------------------------------------------------------
+    esp_task_wdt_reset();
+    Serial.println("STEP 18: tasks start"); Serial.flush();
+
     xTaskCreatePinnedToCore(taskControl, "Control",
                             CFG::STACK_CONTROL, nullptr, 5,
-                            &g_taskControl, 1);  // Core 1
+                            &g_taskControl, 1);
+    Serial.println("STEP 18a: Control task"); Serial.flush();
 
     xTaskCreatePinnedToCore(taskSensor, "Sensor",
                             CFG::STACK_SENSOR, nullptr, 4,
-                            &g_taskSensor, 1);   // Core 1
+                            &g_taskSensor, 1);
+    Serial.println("STEP 18b: Sensor task"); Serial.flush();
 
     xTaskCreatePinnedToCore(taskMqtt, "MQTT",
                             CFG::STACK_MQTT, nullptr, 3,
-                            &g_taskMqtt, 0);     // Core 0
+                            &g_taskMqtt, 0);
+    Serial.println("STEP 18c: MQTT task"); Serial.flush();
 
     xTaskCreatePinnedToCore(taskLogger, "Logger",
                             CFG::STACK_LOGGER, nullptr, 2,
-                            &g_taskLogger, 0);   // Core 0
+                            &g_taskLogger, 0);
+    Serial.println("STEP 18d: Logger task"); Serial.flush();
 
     xTaskCreatePinnedToCore(taskVoice, "Voice",
                             CFG::STACK_VOICE, nullptr, 2,
-                            &g_taskVoice, 0);    // Core 0
+                            &g_taskVoice, 0);
+    Serial.println("STEP 18e: Voice task"); Serial.flush();
 
     xTaskCreatePinnedToCore(taskMonitor, "Monitor",
                             CFG::STACK_MONITOR, nullptr, 1,
-                            &g_taskMonitor, 0);  // Core 0
+                            &g_taskMonitor, 0);
+    Serial.println("STEP 18f: Monitor task"); Serial.flush();
 
-    // OTA 
     TaskHandle_t otaTask = nullptr;
     xTaskCreatePinnedToCore(taskOTA, "OTA",
                             4096, nullptr, 3,
                             &otaTask, 0);
-
+    Serial.println("STEP 19: all tasks done"); Serial.flush();
+    esp_task_wdt_reset();
+// UI 초기화
+    extern UIManager uiManager;
+    uiManager.begin();
+    Serial.println("STEP 20: UI init done"); Serial.flush();
+// 슬립 방지 — lastIdleTime 현재 시간으로 초기화
+    extern void exitSleepMode();
+    exitSleepMode();
+    Serial.println("STEP 21: sleep reset done"); Serial.flush();
     ESP_LOGI(TAG_MAIN, "   ");
     SAFE_SERIAL_PRINTF("   - Free Heap: %u bytes", esp_get_free_heap_size());
 }
@@ -1641,6 +1712,7 @@ void setup() {
 // loop() - Arduino  ( , )
 // ============================================================
 void loop() {
+    esp_task_wdt_reset();  
     // FreeRTOS  loop() 
     // LED   
     static uint32_t lastBlinkMs = 0;
