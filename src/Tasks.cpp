@@ -203,7 +203,7 @@ static void uiUpdateStep() {
 
     if (!sleepMode && (now - lastIdleTime > IDLE_TIMEOUT)) {
         if (currentState == STATE_IDLE) {
-            enterSleepMode();
+           // enterSleepMode();
         }
     }
 

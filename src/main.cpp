@@ -1503,18 +1503,7 @@ void setup() {
     Serial.println("STEP 6: WDT done"); 
     Serial.flush();
     esp_task_wdt_reset();
-    // LCD 초기화
-    esp_task_wdt_delete(NULL);
-    Serial.println("LCD init start"); Serial.flush();
-    if (tft.begin()) {
-        Serial.println("LCD OK"); Serial.flush();
-        tft.fillScreen(0x0000);
-        tft.flush();
-    } else {
-        Serial.println("LCD FAIL"); Serial.flush();
-    }
-    esp_task_wdt_add(NULL);
-    esp_task_wdt_reset();
+    
     ESP_LOGI(TAG_MAIN, "WDT : %u", WDT_TIMEOUT);
 
     // --------------------------------------------------------
@@ -1618,6 +1607,38 @@ void setup() {
     Serial.println("STEP 13b: I2C done"); 
     Serial.flush();
     ESP_LOGI(TAG_MAIN, "I2C  ");
+
+    // TCA9554 RST (AXS15231B 필수) - Wire1 사용 (GPIO 21, 22)
+    {
+        Wire1.begin(21, 22);
+        uint8_t tca_addr = 0x20;
+        Wire1.beginTransmission(tca_addr);
+        Wire1.write(0x03); Wire1.write(0xFD); Wire1.endTransmission();
+        Wire1.beginTransmission(tca_addr);
+        Wire1.write(0x01); Wire1.write(0xFF); Wire1.endTransmission();
+        delay(10);
+        Wire1.beginTransmission(tca_addr);
+        Wire1.write(0x01); Wire1.write(0xFD); Wire1.endTransmission();
+        delay(10);
+        Wire1.beginTransmission(tca_addr);
+        Wire1.write(0x01); Wire1.write(0xFF); Wire1.endTransmission();
+        delay(200);
+        Serial.println("STEP 13c: TCA9554 RST done"); Serial.flush();
+    }
+
+    // LCD 초기화 (TCA9554 RST 이후)
+    esp_task_wdt_delete(NULL);
+    Serial.println("LCD init start"); Serial.flush();
+    if (tft.begin()) {
+        Serial.println("LCD OK"); Serial.flush();
+        tft.fillScreen(0xF800);
+        delay(3000);
+        tft.fillScreen(0x0000);
+    } else {
+        Serial.println("LCD FAIL"); Serial.flush();
+    }
+    esp_task_wdt_add(NULL);
+    esp_task_wdt_reset();
 
     // --------------------------------------------------------
     // [4] SD   ( 5)

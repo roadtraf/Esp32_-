@@ -358,32 +358,28 @@ static void drawEventRow() {
     }
 }
 
-// ================================================================
-//      [U1]
+/// ================================================================
+// drawMainScreen - 메인 화면
 // ================================================================
 void drawMainScreen() {
-    Serial.println("[UI] drawMainScreen called"); Serial.flush();  // ← 추가
-    Serial.printf("[UI] fillScreen color: 0x%04X\n", COLOR_BG_DARK); Serial.flush();  // ← 추가
+    Serial.println("[UI] drawMainScreen called"); Serial.flush();
+    Serial.printf("[UI] fillScreen color: 0x%04X\n", COLOR_BG_DARK); Serial.flush();
+ 
+    tft.fillScreen(0xF800);  // 테스트: 전체 빨간색
+    return;                   // 나머지 건너뜀 (테스트 후 제거)
+ 
     tft.fillScreen(COLOR_BG_DARK);
-    
-    // 임시 테스트 텍스트 추가
-    tft.setTextColor(0xFFFF);
-    tft.setTextSize(2);
-    tft.setCursor(10, 10);
-    tft.print("TEST OK");
-    
-    drawHeader("  ");
+    drawHeader("진공제어");
     drawStatusBar();
     drawSensorCards();
     drawPumpCard();
     drawControlButtons();
     drawEventRow();
-
-    //   ( /   )
+ 
     NavButton nav[] = {
-        {"", BTN_PRIMARY,   true},
-        {"", BTN_OUTLINE, true},
-        {"", BTN_OUTLINE,   true}
+        {"시작", BTN_PRIMARY,   true},
+        {"정지", BTN_OUTLINE, true},
+        {"설정", BTN_OUTLINE,   true}
     };
     drawNavBar(nav, 3);
 }

@@ -62,14 +62,13 @@
 class TFT_GFX {
 public:
     TFT_GFX() {}
-
     bool begin() {
         _bus = new Arduino_ESP32QSPI(
             LCD_QSPI_CS, LCD_QSPI_CLK,
             LCD_QSPI_D0, LCD_QSPI_D1,
             LCD_QSPI_D2, LCD_QSPI_D3);
         _panel = new Arduino_AXS15231B(
-            _bus, -1, 1, false, 320, 480);
+            _bus, -1, 3, false, 320, 480);
         _gfx = _panel;
         _canvas = nullptr;
 
@@ -84,14 +83,19 @@ public:
         return true;
     }
 
-    void init() { begin(); }
+    void init() { this->begin(); }
     void flush() { /* no-op: 직접 패널 방식 */ }
 
     void setBrightness(uint8_t val) {
-        analogWrite(LCD_BL_PIN, val);
+        Serial.printf("[LCD] setBrightness: %d\n", val); Serial.flush();
+    analogWrite(LCD_BL_PIN, val);
     }
 
-    void fillScreen(uint16_t color) { _gfx->fillScreen(color); }
+    void fillScreen(uint16_t color) {
+    Serial.printf("[GFX] fillScreen 0x%04X start\n", color); Serial.flush();
+    _gfx->fillScreen(color);
+    Serial.printf("[GFX] fillScreen 0x%04X done\n", color); Serial.flush();
+}  
     void drawPixel(int32_t x, int32_t y, uint16_t color) { _gfx->drawPixel(x, y, color); }
     void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t color) {
         _gfx->drawLine(x0, y0, x1, y1, color);
