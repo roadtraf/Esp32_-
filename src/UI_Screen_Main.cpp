@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // UI_Screen_Main.cpp -    
 // [U1] UITheme / UIComponents  
 // [U8] screenNeedsRedraw / currentScreen    UIManager 
@@ -365,8 +365,8 @@ void drawMainScreen() {
     Serial.println("[UI] drawMainScreen called"); Serial.flush();
     Serial.printf("[UI] fillScreen color: 0x%04X\n", COLOR_BG_DARK); Serial.flush();
  
-    tft.fillScreen(0xF800);  // 테스트: 전체 빨간색
-    return;                   // 나머지 건너뜀 (테스트 후 제거)
+
+
  
     tft.fillScreen(COLOR_BG_DARK);
     drawHeader("진공제어");

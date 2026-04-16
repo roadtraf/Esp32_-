@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file main.cpp
  * @brief ESP32-S3    v3.9.4 Hardened Edition - 
  * @details  9 [1]~[9] +  12 [A]~[L] =  21  
@@ -1610,18 +1610,18 @@ void setup() {
 
     // TCA9554 RST (AXS15231B 필수) - Wire1 사용 (GPIO 21, 22)
     {
-        Wire1.begin(21, 22);
+        Wire.begin(21, 22); // already initialized
         uint8_t tca_addr = 0x20;
-        Wire1.beginTransmission(tca_addr);
-        Wire1.write(0x03); Wire1.write(0xFD); Wire1.endTransmission();
-        Wire1.beginTransmission(tca_addr);
-        Wire1.write(0x01); Wire1.write(0xFF); Wire1.endTransmission();
+        Wire.beginTransmission(tca_addr);
+        Wire.write(0x03); Wire.write(0xFD); Wire.endTransmission();
+        Wire.beginTransmission(tca_addr);
+        Wire.write(0x01); Wire.write(0xFF); Wire.endTransmission();
         delay(10);
-        Wire1.beginTransmission(tca_addr);
-        Wire1.write(0x01); Wire1.write(0xFD); Wire1.endTransmission();
+        Wire.beginTransmission(tca_addr);
+        Wire.write(0x01); Wire.write(0xFD); Wire.endTransmission();
         delay(10);
-        Wire1.beginTransmission(tca_addr);
-        Wire1.write(0x01); Wire1.write(0xFF); Wire1.endTransmission();
+        Wire.beginTransmission(tca_addr);
+        Wire.write(0x01); Wire.write(0xFF); Wire.endTransmission();
         delay(200);
         Serial.println("STEP 13c: TCA9554 RST done"); Serial.flush();
     }

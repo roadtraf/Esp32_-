@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // GFX_Wrapper.hpp
 // LovyanGFX → Arduino_GFX API 래퍼
 // Waveshare ESP32-S3-Touch-LCD-3.5B (AXS15231B QSPI)
@@ -68,7 +68,7 @@ public:
             LCD_QSPI_D0, LCD_QSPI_D1,
             LCD_QSPI_D2, LCD_QSPI_D3);
         _panel = new Arduino_AXS15231B(
-            _bus, -1, 3, false, 320, 480);
+            _bus, -1, 0, false, 320, 480);
         _gfx = _panel;
         _canvas = nullptr;
 
@@ -78,8 +78,8 @@ public:
             return false;
         }
         Serial.println("GFX: begin OK"); Serial.flush();
-        pinMode(LCD_BL_PIN, OUTPUT);
-        analogWrite(LCD_BL_PIN, 200);
+        Serial.println("GFX: begin OK"); Serial.flush();
+        _gfx->setRotation(1);
         return true;
     }
 
