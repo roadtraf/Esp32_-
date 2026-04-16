@@ -45,7 +45,7 @@
 #include "UIManager.h"
 bool screenNeedsRedraw = true;
 void resetStatistics() { /* stub */ }
-#define GFX_WRAPPER_IMPLEMENTATION
+// GFX_WRAPPER_IMPLEMENTATION moved to tft_instance.cpp
 #include "GFX_Wrapper.hpp"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

@@ -1,4 +1,4 @@
-// Config.h    ESP32-S3    v3.9.5 
+﻿// Config.h    ESP32-S3    v3.9.5 
 //(UI  +  )
 
 #pragma once
@@ -186,8 +186,8 @@
 // ================================================================
 // 
 // ================================================================
-#define SCREEN_WIDTH   480
-#define SCREEN_HEIGHT  320
+#define SCREEN_WIDTH   320
+#define SCREEN_HEIGHT  480
 
 //   
 enum SystemState {

@@ -78,15 +78,15 @@ public:
             return false;
         }
         Serial.println("GFX: begin OK"); Serial.flush();
-        Serial.println("GFX: begin OK"); Serial.flush();
-        _gfx->setRotation(1);
+
+        // portrait native
+        pinMode(LCD_BL_PIN, OUTPUT);
+        analogWrite(LCD_BL_PIN, 200);
         return true;
     }
-
-    void init() { this->begin(); }
-    void flush() { /* no-op: 직접 패널 방식 */ }
-
+    void flush() { /* direct render - no-op */ }
     void setBrightness(uint8_t val) {
+
         Serial.printf("[LCD] setBrightness: %d\n", val); Serial.flush();
     analogWrite(LCD_BL_PIN, val);
     }

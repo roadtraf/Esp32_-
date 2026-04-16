@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // UITheme.h -  UI  
 // ================================================================
 #pragma once
@@ -55,8 +55,8 @@ namespace UITheme {
     // ================================================================
     //  
     // ================================================================
-    constexpr uint16_t SCREEN_WIDTH        = 480;
-    constexpr uint16_t SCREEN_HEIGHT       = 320;
+    constexpr uint16_t SCREEN_WIDTH        = 320;
+    constexpr uint16_t SCREEN_HEIGHT       = 480;
     
     constexpr uint8_t  HEADER_HEIGHT       = 30;
     constexpr uint8_t  FOOTER_HEIGHT       = 40;

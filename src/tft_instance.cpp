@@ -1,2 +1,2 @@
-#define GFX_WRAPPER_IMPLEMENTATION
+﻿#define GFX_WRAPPER_IMPLEMENTATION
 #include "GFX_Wrapper.hpp"
