@@ -365,12 +365,12 @@ void drawMainScreen() {
     Serial.println("[UI] drawMainScreen called"); Serial.flush();
     Serial.printf("[UI] fillScreen color: 0x%04X\n", COLOR_BG_DARK); Serial.flush();
  
-
-
- 
-    tft.fillScreen(COLOR_BG_DARK);
-    drawHeader("진공제어");
-    drawStatusBar();
+    Serial.println("A1"); Serial.flush(); drawHeader("Vacuum");
+    Serial.println("A2"); Serial.flush(); // drawStatusBar disabled
+    Serial.println("A3"); Serial.flush(); // drawSensorCards disabled
+    Serial.println("A4"); Serial.flush(); // drawPumpCard disabled
+    Serial.println("A5"); Serial.flush(); // drawControlButtons disabled
+    // return disabled
     drawSensorCards();
     drawPumpCard();
     drawControlButtons();

@@ -9,6 +9,9 @@
 #include <Arduino_GFX_Library.h>
 #include <Wire.h>
 #include <stdarg.h>
+#include "soc/timer_group_struct.h"
+#include "soc/timer_group_reg.h"
+#include <esp_task_wdt.h>
 
 #ifndef LCD_QSPI_CS
 #  define LCD_QSPI_CS  12
@@ -69,12 +72,18 @@ public:
             LCD_QSPI_D2, LCD_QSPI_D3);
         _panel = new Arduino_AXS15231B(
             _bus, -1, 0, false, 320, 480);
-        // no canvas
-        _gfx = _panel;
+        _canvas = new Arduino_Canvas(320, 480, _panel, 0, 0, 0);
+        _gfx = _canvas;
         Serial.println("GFX: begin start"); Serial.flush();
-        if (!_gfx->begin()) {
-            Serial.println("GFX: begin FAIL"); Serial.flush();
-            return false;
+        if (!_canvas->begin(80000000)) {
+            Serial.println("GFX: canvas FAIL"); Serial.flush();
+            _gfx = _panel;
+            if (!_panel->begin()) {
+                Serial.println("GFX: panel FAIL"); Serial.flush();
+                return false;
+            }
+        } else {
+            Serial.println("GFX: canvas OK"); Serial.flush();
         }
         Serial.println("GFX: begin OK"); Serial.flush();
         pinMode(LCD_BL_PIN, OUTPUT);
@@ -82,15 +91,27 @@ public:
         return true;
     }
     void init() { this->begin(); }
-    void flush() { /* direct panel - no flush needed */ }
-    void setBrightness(uint8_t val) { analogWrite(LCD_BL_PIN, val); }
+    void flush() { if (_canvas) { uint16_t* fb = _canvas->getFramebuffer(); if (fb) { int16_t w=_canvas->width(); int16_t h=_canvas->height(); int16_t ch=h/4; _panel->draw16bitRGBBitmap(0,0,fb,w,ch); taskYIELD(); _panel->draw16bitRGBBitmap(0,ch,fb+ch*w,w,ch); taskYIELD(); _panel->draw16bitRGBBitmap(0,ch*2,fb+ch*2*w,w,ch); taskYIELD(); _panel->draw16bitRGBBitmap(0,ch*3,fb+ch*3*w,w,h-ch*3); } } }
     void fillScreen(uint16_t color) { _gfx->fillScreen(color); }
-    void drawPixel(int32_t x, int32_t y, uint16_t color) { _gfx->drawPixel(x, y, color); }
+    void setBrightness(uint8_t val) { analogWrite(LCD_BL_PIN, val); }
+
+    void drawPixel(int32_t x, int32_t y, uint16_t color) {
+        if (_canvas) { uint16_t* fb=_canvas->getFramebuffer(); int16_t cw=_canvas->width(); int16_t ch=_canvas->height(); if(fb&&x>=0&&x<cw&&y>=0&&y<ch) fb[y*cw+x]=color; return; }
+        _gfx->drawPixel(x, y, color); }
     void drawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t color) { _gfx->drawLine(x0, y0, x1, y1, color); }
-    void drawFastHLine(int32_t x, int32_t y, int32_t w, uint16_t color) { _gfx->drawFastHLine(x, y, w, color); }
-    void drawFastVLine(int32_t x, int32_t y, int32_t h, uint16_t color) { _gfx->drawFastVLine(x, y, h, color); }
+    void drawFastHLine(int32_t x, int32_t y, int32_t w, uint16_t color) {
+        if (_canvas) { uint16_t* fb=_canvas->getFramebuffer(); int16_t cw=_canvas->width(); int16_t ch=_canvas->height(); if(fb&&y>=0&&y<ch){uint16_t* p=fb+y*cw+x; int16_t n=min((int32_t)w,cw-x); for(int i=0;i<n;i++) p[i]=color;} return; }
+        _gfx->drawFastHLine(x, y, w, color); }
+    void drawFastVLine(int32_t x, int32_t y, int32_t h, uint16_t color) {
+        if (_canvas) { uint16_t* fb=_canvas->getFramebuffer(); int16_t cw=_canvas->width(); int16_t ch=_canvas->height(); if(fb&&x>=0&&x<cw){for(int16_t r=y;r<y+h&&r<ch;r++) fb[r*cw+x]=color;} return; }
+        _gfx->drawFastVLine(x, y, h, color); }
     void drawRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t color) { _gfx->drawRect(x, y, w, h, color); }
-    void fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t color) { _gfx->fillRect(x, y, w, h, color); }
+    void fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t color) {
+        uint32_t t0 = millis();
+        _gfx->fillRect(x, y, w, h, color);
+        uint32_t dt = millis() - t0;
+        if (dt > 10) { Serial.printf("[fillRect] %ldms\n", dt); Serial.flush(); }
+    }
     void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint16_t color) { _gfx->drawRoundRect(x, y, w, h, r, color); }
     void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, uint16_t color) { _gfx->fillRoundRect(x, y, w, h, r, color); }
     void drawCircle(int32_t x, int32_t y, int32_t r, uint16_t color) { _gfx->drawCircle(x, y, r, color); }

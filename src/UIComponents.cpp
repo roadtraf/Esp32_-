@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // UIComponents.cpp -   UI  
 // ================================================================
 #include "Config.h"
@@ -18,14 +18,14 @@ namespace UIComponents {
 // ================================================================
 void drawHeader(const char* title, bool showManagerBadge) {
     using namespace UITheme;
-
-    // 
-    tft.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, COLOR_BG_DARK);
-    tft.drawFastHLine(0, HEADER_HEIGHT - 1, SCREEN_WIDTH, COLOR_DIVIDER);
-
-    // 
-    tft.setTextSize(TEXT_SIZE_SMALL);
-    tft.setTextColor(COLOR_TEXT_PRIMARY);
+    Serial.println("H1"); Serial.flush();
+    // fillRect disabled
+    // drawFastHLine disabled
+    Serial.println("H2"); Serial.flush();
+    tft.setTextSize(UITheme::TEXT_SIZE_SMALL);
+    tft.setCursor(UITheme::SPACING_SM, 10);
+    Serial.println("H3"); Serial.flush();
+    // tft.print(title); // disabled
     tft.setCursor(SPACING_SM, 10);
     tft.print(title);
 

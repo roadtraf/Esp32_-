@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // Tasks_Hardened.cpp - v3.9.4 Hardened FreeRTOS 
 // ================================================================
 // :
@@ -198,10 +198,10 @@ static void uiUpdateStep() {
 
        WDT_FEED();
        updateUI();
+       WDT_FEED();
+       // tft.flush(); // disabled
+       WDT_FEED();
        screenNeedsRedraw = false;
-    }
-
-    if (!sleepMode && (now - lastIdleTime > IDLE_TIMEOUT)) {
         if (currentState == STATE_IDLE) {
            // enterSleepMode();
         }

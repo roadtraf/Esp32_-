@@ -1495,7 +1495,7 @@ void setup() {
     // --------------------------------------------------------
     esp_task_wdt_add(NULL);  // 현재 태스크 WDT 등록
     esp_task_wdt_config_t wdtCfg = {
-        .timeout_ms     = 30000, // 30초로 늘림
+        .timeout_ms     = 60000, // 60초
         .idle_core_mask = 0,
         .trigger_panic  = true,
     };
@@ -1631,11 +1631,11 @@ void setup() {
     Serial.println("LCD init start"); Serial.flush();
     if (tft.begin()) {
         Serial.println("LCD OK"); Serial.flush();
-        tft.fillScreen(0xF800);
-        delay(3000);
-        tft.fillScreen(0x0000);
     } else {
         Serial.println("LCD FAIL"); Serial.flush();
+
+
+
     }
     esp_task_wdt_add(NULL);
     esp_task_wdt_reset();

@@ -1,4 +1,4 @@
-// ================================================================
+﻿// ================================================================
 // UIManager.cpp - UI  
 // [U3] vTaskDelay     
 // [U5] E-Stop      
@@ -172,7 +172,9 @@ void UIManager::drawCurrentScreen() {
     if (toastActive) {
         drawToastOverlay();
     }
-    tft.flush();
+    uint32_t t0=millis(); tft.flush(); Serial.printf("[flush] %lums\n",millis()-t0); Serial.flush();
+
+
 }
 
 // ================================================================
