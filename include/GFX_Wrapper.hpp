@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // GFX_Wrapper.hpp
 // LovyanGFX → Arduino_GFX API 래퍼
 // Waveshare ESP32-S3-Touch-LCD-3.5B (AXS15231B QSPI)
@@ -9,6 +9,15 @@
 #include <Arduino_GFX_Library.h>
 #include <Wire.h>
 #include <stdarg.h>
+#include "hal/wdt_hal.h"
+#include "esp_freertos_hooks.h"
+
+static IRAM_ATTR void feed_mwdt1_hook() {
+    volatile uint32_t* WP = (volatile uint32_t*)0x60020064UL;
+    volatile uint32_t* FD = (volatile uint32_t*)0x60020060UL;
+    *WP = 0x50D83AA1UL; *FD = 1; *WP = 0;
+}
+#include <esp_private/esp_int_wdt.h>
 #include "soc/timer_group_struct.h"
 #include "soc/timer_group_reg.h"
 #include <esp_task_wdt.h>
@@ -74,14 +83,13 @@ public:
             _bus, -1, 0, false, 320, 480);
         _canvas = new Arduino_Canvas(320, 480, _panel, 0, 0, 0);
         _gfx = _canvas;
+        esp_int_wdt_cpu_init(); // keep INT WDT but extend
+        esp_register_freertos_tick_hook(feed_mwdt1_hook);
         Serial.println("GFX: begin start"); Serial.flush();
         if (!_canvas->begin(80000000)) {
             Serial.println("GFX: canvas FAIL"); Serial.flush();
             _gfx = _panel;
-            if (!_panel->begin()) {
-                Serial.println("GFX: panel FAIL"); Serial.flush();
-                return false;
-            }
+            if (!_panel->begin()) { return false; }
         } else {
             Serial.println("GFX: canvas OK"); Serial.flush();
         }
@@ -91,7 +99,11 @@ public:
         return true;
     }
     void init() { this->begin(); }
-    void flush() { if (_canvas) { uint16_t* fb = _canvas->getFramebuffer(); if (fb) { int16_t w=_canvas->width(); int16_t h=_canvas->height(); int16_t ch=h/4; _panel->draw16bitRGBBitmap(0,0,fb,w,ch); taskYIELD(); _panel->draw16bitRGBBitmap(0,ch,fb+ch*w,w,ch); taskYIELD(); _panel->draw16bitRGBBitmap(0,ch*2,fb+ch*2*w,w,ch); taskYIELD(); _panel->draw16bitRGBBitmap(0,ch*3,fb+ch*3*w,w,h-ch*3); } } }
+    void flush() {
+        if (!_canvas) return; uint16_t* fb=_canvas->getFramebuffer(); if(!fb)return;
+        static int16_t part=0; int16_t w=_canvas->width(); int16_t h=_canvas->height();
+        int16_t segH=h/4; int16_t y0=part*segH; int16_t y1=(part==3)?h:y0+segH;
+        uint32_t segPx=(uint32_t)w*(y1-y0); const uint32_t CHK=4096; uint16_t* buf=(uint16_t*)heap_caps_malloc(CHK*2,MALLOC_CAP_DMA|MALLOC_CAP_INTERNAL); if(!buf)return; _panel->startWrite(); _panel->writeAddrWindow(0,y0,w,y1-y0); for(uint32_t i=0;i<segPx;i+=CHK){uint32_t n=(i+CHK<segPx)?CHK:segPx-i; memcpy(buf,fb+y0*w+i,n*2); _panel->writePixels(buf,n);} _panel->endWrite(); free(buf); part=(part+1)&3; }
     void fillScreen(uint16_t color) { _gfx->fillScreen(color); }
     void setBrightness(uint8_t val) { analogWrite(LCD_BL_PIN, val); }
 

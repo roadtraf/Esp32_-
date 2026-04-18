@@ -369,7 +369,7 @@ void drawMainScreen() {
     Serial.println("A2"); Serial.flush(); // drawStatusBar disabled
     Serial.println("A3"); Serial.flush(); // drawSensorCards disabled
     Serial.println("A4"); Serial.flush(); // drawPumpCard disabled
-    Serial.println("A5"); Serial.flush(); // drawControlButtons disabled
+    return; // ALL DISABLED FOR TEST
     // return disabled
     drawSensorCards();
     drawPumpCard();

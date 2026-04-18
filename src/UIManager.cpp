@@ -172,7 +172,7 @@ void UIManager::drawCurrentScreen() {
     if (toastActive) {
         drawToastOverlay();
     }
-    uint32_t t0=millis(); tft.flush(); Serial.printf("[flush] %lums\n",millis()-t0); Serial.flush();
+    Serial.println("FL_ENTER"); Serial.flush(); uint32_t t0=millis(); tft.flush(); Serial.printf("[flush] %lums\n",millis()-t0); Serial.flush();
 
 
 }
