@@ -101,10 +101,10 @@ public:
     void init() { this->begin(); }
     void flush() {
         if (!_canvas) return; uint16_t* fb=_canvas->getFramebuffer(); if(!fb)return;
-        static int16_t part=0; int16_t w=_canvas->width(); int16_t h=_canvas->height();
-        int16_t segH=h/4; int16_t y0=part*segH; int16_t y1=(part==3)?h:y0+segH;
-        uint32_t segPx=(uint32_t)w*(y1-y0); const uint32_t CHK=4096; uint16_t* buf=(uint16_t*)heap_caps_malloc(CHK*2,MALLOC_CAP_DMA|MALLOC_CAP_INTERNAL); if(!buf)return; _panel->startWrite(); _panel->writeAddrWindow(0,y0,w,y1-y0); for(uint32_t i=0;i<segPx;i+=CHK){uint32_t n=(i+CHK<segPx)?CHK:segPx-i; memcpy(buf,fb+y0*w+i,n*2); _panel->writePixels(buf,n);} _panel->endWrite(); free(buf); part=(part+1)&3; }
-    void fillScreen(uint16_t color) { _gfx->fillScreen(color); }
+        Serial.println("FL1"); Serial.flush();
+        uint32_t t0=millis();
+        _panel->draw16bitRGBBitmap(0,0,fb,320,1); // just 1 line!
+        Serial.printf("FL1 %dms\n",millis()-t0); Serial.flush(); }
     void setBrightness(uint8_t val) { analogWrite(LCD_BL_PIN, val); }
 
     void drawPixel(int32_t x, int32_t y, uint16_t color) {
